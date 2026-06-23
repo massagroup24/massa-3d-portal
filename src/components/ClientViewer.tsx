@@ -5,6 +5,7 @@ import { Project } from '../data/tourData';
 import { TourViewer } from './TourViewer';
 import { OverlayUI } from './OverlayUI';
 import { WelcomeScreen } from './WelcomeScreen';
+import { useTexture } from '@react-three/drei';
 
 export function ClientViewer() {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +42,34 @@ export function ClientViewer() {
     }
     loadProject();
   }, [id]);
+
+  // Pre-cargar imágenes para mejorar la velocidad percibida
+  useEffect(() => {
+    if (project && currentRoomId) {
+      const currentRoom = project.rooms[currentRoomId];
+      
+      // 1. Pre-cargar la imagen de la habitación actual (muy útil mientras se muestra el WelcomeScreen)
+      if (currentRoom?.imageUrl) {
+        useTexture.preload(currentRoom.imageUrl);
+      }
+      
+      // 2. Pre-cargar las habitaciones adyacentes (a las que se puede acceder por hotspots)
+      if (currentRoom?.hotspots) {
+        currentRoom.hotspots.forEach(hotspot => {
+          const target = project.rooms[hotspot.targetRoom];
+          if (target?.imageUrl) {
+            useTexture.preload(target.imageUrl);
+          }
+        });
+      }
+
+      // 3. Pre-cargar el minimapa
+      if (project.minimapImage) {
+        const img = new Image();
+        img.src = project.minimapImage;
+      }
+    }
+  }, [project, currentRoomId]);
 
   if (loading) {
     return (
