@@ -3,6 +3,7 @@ import { Project, Room, Hotspot } from '../data/tourData';
 import { Settings, Save, Plus, ChevronLeft, Upload, Trash2 } from 'lucide-react';
 import { saveProjectToSupabase, uploadImageToSupabase } from '../supabase';
 import { HotspotEditor3D } from './HotspotEditor3D';
+import { compressImage } from '../utils/imageCompressor';
 
 interface ConfiguratorProps {
   initialProject: Project;
@@ -115,15 +116,30 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
     try {
       setUploadingImage(true);
       
+      // --- AUTOCRECOMPRESIÓN DE IMÁGENES ---
+      // Si la imagen es muy pesada, la convierte a JPG y reduce su tamaño para WebGL
+      let fileToUpload = file;
+      if (file.type.startsWith('image/')) {
+        try {
+          // Para recorridos 360 (room), el estándar seguro para móviles es 4K (4096x2048).
+          // Para minimapas o miniaturas, basta con 1024px.
+          const maxWidth = uploadType === 'room' ? 4096 : 1024;
+          const maxHeight = uploadType === 'room' ? 2048 : 1024;
+          fileToUpload = await compressImage(file, maxWidth, maxHeight);
+        } catch (e) {
+          console.warn("No se pudo comprimir la imagen, subiendo original", e);
+        }
+      }
+
       // Limpiamos el nombre del archivo para quitar espacios, tildes y caracteres especiales (ñ, etc)
-      const sanitizedName = file.name
+      const sanitizedName = fileToUpload.name
         .normalize("NFD") // Descompone caracteres como 'ñ' o 'á'
         .replace(/[\u0300-\u036f]/g, "") // Remueve las tildes/acentos
         .replace(/[^a-zA-Z0-9.-]/g, "_"); // Reemplaza espacios y otros símbolos por guión bajo
 
       const prefix = uploadType === 'minimap' ? 'minimap' : uploadType === 'thumbnail' ? 'thumbnail' : selectedRoomId;
       const path = `projects/${project.id}/${prefix}-${sanitizedName}`;
-      const url = await uploadImageToSupabase(file, path);
+      const url = await uploadImageToSupabase(fileToUpload, path);
       
       if (uploadType === 'minimap') {
         setProject(prev => ({ ...prev, minimapImage: url }));
