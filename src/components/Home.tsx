@@ -1,5 +1,6 @@
 import { Project } from '../data/tourData';
-import { ArrowRight, Box, Settings, Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, Box, Settings, Plus, Trash2, Link as LinkIcon, Check } from 'lucide-react';
+import { useState } from 'react';
 
 interface HomeProps {
   projects: Record<string, Project>;
@@ -10,6 +11,16 @@ interface HomeProps {
 }
 
 export function Home({ projects, onSelectProject, onConfigureProject, onCreateProject, onDeleteProject }: HomeProps) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyLink = (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/tour/${projectId}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(projectId);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   // Obtenemos la foto del primer proyecto para usarla como fondo desenfocado
   const ambientBackground = Object.values(projects)[0]?.thumbnail || '';
 
@@ -103,16 +114,26 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
 
               {/* Botones de acción inferiores */}
               <div className="bg-black/40 px-6 py-3 border-t border-white/5 flex justify-between items-center">
-                <a 
-                  href={`/tour/${project.id}`} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-xs font-medium text-white/50 hover:text-white transition-colors flex items-center gap-1"
-                  title="Abrir como lo vería un cliente"
-                >
-                  Vista Cliente ↗
-                </a>
+                <div className="flex gap-3">
+                  <a 
+                    href={`/tour/${project.id}`} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-xs font-medium text-white/50 hover:text-white transition-colors flex items-center gap-1"
+                    title="Abrir como lo vería un cliente"
+                  >
+                    Ver ↗
+                  </a>
+                  <button 
+                    onClick={(e) => handleCopyLink(e, project.id)}
+                    className="text-xs font-medium text-white/50 hover:text-lime-400 transition-colors flex items-center gap-1"
+                    title="Copiar enlace para el cliente"
+                  >
+                    {copiedId === project.id ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <LinkIcon className="w-3.5 h-3.5" />}
+                    {copiedId === project.id ? '¡Copiado!' : 'Compartir'}
+                  </button>
+                </div>
                 <button 
                   onClick={(e) => { 
                     e.stopPropagation(); // Evita que al hacer clic se inicie el recorrido

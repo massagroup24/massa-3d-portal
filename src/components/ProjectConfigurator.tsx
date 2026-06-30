@@ -4,6 +4,7 @@ import { Settings, Save, Plus, ChevronLeft, Upload, Trash2 } from 'lucide-react'
 import { saveProjectToSupabase, uploadImageToSupabase } from '../supabase';
 import { HotspotEditor3D } from './HotspotEditor3D';
 import { compressImage } from '../utils/imageCompressor';
+import { Modal } from './Modal';
 
 interface ConfiguratorProps {
   initialProject: Project;
@@ -18,6 +19,17 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
   const [copied, setCopied] = useState(false);
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Modal States
+  const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
+  const [newRoomName, setNewRoomName] = useState('');
+
+  const [hotspotModal, setHotspotModal] = useState<{
+    isOpen: boolean;
+    position: [number, number, number] | null;
+    targetRoomId: string;
+    label: string;
+  }>({ isOpen: false, position: null, targetRoomId: '', label: '' });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const minimapInputRef = useRef<HTMLInputElement>(null);
@@ -48,19 +60,19 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
 
   const generateId = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Math.floor(Math.random() * 1000);
 
-  const handleAddRoom = () => {
-    const newName = prompt('Nombre de la nueva habitación:');
-    if (!newName) return;
+  const handleAddRoomSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRoomName.trim()) return;
     
-    const id = generateId(newName);
+    const id = generateId(newRoomName);
     setProject(prev => ({
       ...prev,
       rooms: {
         ...prev.rooms,
         [id]: {
           id,
-          name: newName,
-          description: 'Nueva descripción',
+          name: newRoomName.trim(),
+          description: '',
           imageUrl: '',
           minimapPosition: { x: 50, y: 50 },
           hotspots: []
@@ -68,6 +80,8 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
       }
     }));
     setSelectedRoomId(id);
+    setIsAddRoomModalOpen(false);
+    setNewRoomName('');
   };
 
   const handleDeleteRoom = (roomId: string) => {
@@ -157,24 +171,30 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
     }
   };
 
-  const handleAddHotspot = (position: [number, number, number]) => {
+  const handleAddHotspotClick = (position: [number, number, number]) => {
     if (!selectedRoomId) return;
     
-    // Select target room
-    const targetRoomId = prompt(`Ingresa el ID de la habitación destino.\nOpciones disponibles:\n${Object.values(project.rooms).filter(r => r.id !== selectedRoomId).map(r => `- ${r.id} (${r.name})`).join('\n')}`);
-    
-    if (!targetRoomId || !project.rooms[targetRoomId]) {
-      alert("ID de habitación inválido o no encontrado.");
-      return;
-    }
+    // Predeterminar a la primera habitación disponible
+    const otherRooms = Object.values(project.rooms).filter(r => r.id !== selectedRoomId);
+    const initialTarget = otherRooms.length > 0 ? otherRooms[0].id : '';
 
-    const label = prompt("Texto flotante del botón (deja vacío para ocultarlo):") || "";
+    setHotspotModal({
+      isOpen: true,
+      position,
+      targetRoomId: initialTarget,
+      label: ''
+    });
+  };
+
+  const handleAddHotspotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRoomId || !hotspotModal.position || !hotspotModal.targetRoomId) return;
     
     const newHotspot: Hotspot = {
       id: 'h_' + Math.random().toString(36).substring(2, 9),
-      position,
-      targetRoom: targetRoomId,
-      label
+      position: hotspotModal.position,
+      targetRoom: hotspotModal.targetRoomId,
+      label: hotspotModal.label.trim()
     };
 
     setProject(prev => {
@@ -190,6 +210,8 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
         }
       };
     });
+
+    setHotspotModal({ isOpen: false, position: null, targetRoomId: '', label: '' });
   };
 
   const handleDeleteHotspot = (hotspotId: string) => {
@@ -270,7 +292,7 @@ export const projectsData: Record<string, Project> = {
         <div className="w-[400px] border-r border-white/10 p-6 flex flex-col gap-6 overflow-y-auto bg-black/20">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-medium">Habitaciones</h2>
-            <button onClick={handleAddRoom} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-lime-400 transition-colors">
+            <button onClick={() => setIsAddRoomModalOpen(true)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-lime-400 transition-colors">
               <Plus className="w-5 h-5" />
             </button>
           </div>
@@ -287,7 +309,6 @@ export const projectsData: Record<string, Project> = {
                 }`}
               >
                 <h3 className="font-medium">{room.name}</h3>
-                <p className="text-xs text-white/40 font-mono mt-1">ID: {room.id}</p>
               </button>
             ))}
           </div>
@@ -314,24 +335,32 @@ export const projectsData: Record<string, Project> = {
               </div>
 
               <div>
-                <label className="block text-xs text-white/50 mb-1 uppercase tracking-wider">Imagen 360</label>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    value={project.rooms[selectedRoomId].imageUrl}
-                    onChange={(e) => handleUpdateRoom(selectedRoomId, 'imageUrl', e.target.value)}
-                    className="flex-1 bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-lime-500"
-                    placeholder="URL de la imagen"
-                  />
-                  <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={(e) => handleFileUpload(e, 'room')} />
+                <label className="block text-xs text-white/50 mb-2 uppercase tracking-wider">Imagen 360</label>
+                <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={(e) => handleFileUpload(e, 'room')} />
+                
+                {project.rooms[selectedRoomId].imageUrl ? (
+                  <div className="relative rounded-lg overflow-hidden border border-white/10 bg-black aspect-video group">
+                    <img src={project.rooms[selectedRoomId].imageUrl} alt="360 preview" className="w-full h-full object-cover opacity-60" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingImage}
+                        className="bg-lime-500 text-black px-4 py-2 rounded-lg font-medium hover:bg-lime-400 transition-colors flex items-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" /> Cambiar Imagen
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                   <button 
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingImage}
-                    className="bg-lime-500 text-black px-3 rounded-lg font-medium hover:bg-lime-400 transition-colors flex items-center justify-center disabled:opacity-50"
+                    className="w-full h-32 border-2 border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center text-white/50 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50"
                   >
-                    <Upload className="w-4 h-4" />
+                    <Upload className="w-6 h-6 mb-2" />
+                    <span className="text-sm font-medium">{uploadingImage ? 'Subiendo...' : 'Subir Imagen 360'}</span>
                   </button>
-                </div>
+                )}
               </div>
 
               <div>
@@ -340,14 +369,17 @@ export const projectsData: Record<string, Project> = {
                   <p className="text-xs text-white/30 italic">No hay puntos. Usa la Vista 360 para añadirlos.</p>
                 ) : (
                   <ul className="flex flex-col gap-2">
-                    {project.rooms[selectedRoomId].hotspots.map(hotspot => (
-                      <li key={hotspot.id} className="flex justify-between items-center bg-black/40 p-2 rounded border border-white/5">
-                        <span className="text-xs font-mono">{hotspot.label || 'Sin texto'} → {hotspot.targetRoom}</span>
-                        <button onClick={() => handleDeleteHotspot(hotspot.id)} className="text-red-400 hover:text-red-300 p-1">
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </li>
-                    ))}
+                    {project.rooms[selectedRoomId].hotspots.map(hotspot => {
+                      const targetRoomName = project.rooms[hotspot.targetRoom]?.name || hotspot.targetRoom;
+                      return (
+                        <li key={hotspot.id} className="flex justify-between items-center bg-black/40 p-2 rounded border border-white/5">
+                          <span className="text-xs text-white/80">{hotspot.label || 'Sin texto'} → <span className="font-medium text-lime-400">{targetRoomName}</span></span>
+                          <button onClick={() => handleDeleteHotspot(hotspot.id)} className="text-red-400 hover:text-red-300 p-1">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -363,19 +395,19 @@ export const projectsData: Record<string, Project> = {
               onClick={() => setActiveTab('settings')}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'settings' ? 'bg-lime-500 text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
             >
-              Ajustes del Proyecto
+              1. Info General
             </button>
             <button 
               onClick={() => setActiveTab('360')}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === '360' ? 'bg-lime-500 text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
             >
-              Vista 360 (Puntos Interactivos)
+              2. Editor 360
             </button>
             <button 
               onClick={() => setActiveTab('map')}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'map' ? 'bg-lime-500 text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
             >
-              Minimapa (Plano 2D)
+              3. Mapa Interactivo
             </button>
           </div>
 
@@ -408,34 +440,32 @@ export const projectsData: Record<string, Project> = {
 
                   <div>
                     <label className="block text-sm text-white/70 mb-2 uppercase tracking-wider font-medium">Imagen de Portada (Thumbnail)</label>
-                    <div className="flex gap-4 items-start">
-                      <div className="flex-1">
-                        <div className="flex gap-2">
-                          <input 
-                            type="text" 
-                            value={project.thumbnail}
-                            onChange={(e) => setProject(prev => ({ ...prev, thumbnail: e.target.value }))}
-                            className="flex-1 bg-black/50 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-lime-500 transition-colors"
-                            placeholder="URL de la imagen"
-                          />
-                          <input type="file" accept="image/*" className="hidden" ref={thumbnailInputRef} onChange={(e) => handleFileUpload(e, 'thumbnail')} />
+                    <input type="file" accept="image/*" className="hidden" ref={thumbnailInputRef} onChange={(e) => handleFileUpload(e, 'thumbnail')} />
+                    
+                    {project.thumbnail ? (
+                      <div className="relative w-48 h-32 bg-black rounded-xl border border-white/10 overflow-hidden group">
+                        <img src={project.thumbnail} alt="Portada" className="w-full h-full object-cover opacity-80" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button 
                             onClick={() => thumbnailInputRef.current?.click()}
                             disabled={uploadingImage}
-                            className="bg-lime-500 text-black px-6 rounded-lg font-medium hover:bg-lime-400 transition-colors flex items-center justify-center disabled:opacity-50"
+                            className="bg-lime-500 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-lime-400 transition-colors"
                           >
-                            <Upload className="w-5 h-5" />
+                            Cambiar
                           </button>
                         </div>
-                        <p className="text-xs text-white/40 mt-2">Esta imagen se mostrará en el menú principal "Tus Recorridos".</p>
                       </div>
-                      
-                      {project.thumbnail && (
-                        <div className="w-40 h-28 bg-black rounded-lg border border-white/10 overflow-hidden flex-shrink-0">
-                          <img src={project.thumbnail} alt="Portada" className="w-full h-full object-cover opacity-80" />
-                        </div>
-                      )}
-                    </div>
+                    ) : (
+                      <button 
+                        onClick={() => thumbnailInputRef.current?.click()}
+                        disabled={uploadingImage}
+                        className="w-48 h-32 border-2 border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center text-white/50 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50"
+                      >
+                        <Upload className="w-6 h-6 mb-2" />
+                        <span className="text-sm font-medium">{uploadingImage ? 'Subiendo...' : 'Subir Portada'}</span>
+                      </button>
+                    )}
+                    <p className="text-xs text-white/40 mt-3">Esta imagen se mostrará en el menú principal "Tus Recorridos".</p>
                   </div>
                 </div>
               </div>
@@ -444,7 +474,7 @@ export const projectsData: Record<string, Project> = {
             {activeTab === '360' && selectedRoomId && project.rooms[selectedRoomId] && (
               <HotspotEditor3D 
                 room={project.rooms[selectedRoomId]} 
-                onAddHotspot={handleAddHotspot} 
+                onAddHotspot={handleAddHotspotClick} 
               />
             )}
             {activeTab === '360' && !selectedRoomId && (
@@ -502,6 +532,78 @@ export const projectsData: Record<string, Project> = {
 
         </div>
       </div>
+
+      {/* MODALES */}
+      
+      {/* Modal: Nueva Habitación */}
+      <Modal 
+        isOpen={isAddRoomModalOpen} 
+        onClose={() => setIsAddRoomModalOpen(false)}
+        title="Crear Nueva Habitación"
+      >
+        <form onSubmit={handleAddRoomSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-sm text-white/70 mb-2">Nombre de la habitación</label>
+            <input 
+              type="text" 
+              autoFocus
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              placeholder="Ej: Sala Principal, Baño Turco..."
+              className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-lime-500 transition-colors text-white"
+            />
+          </div>
+          <button 
+            type="submit"
+            disabled={!newRoomName.trim()}
+            className="w-full bg-lime-500 text-black font-medium py-3 rounded-lg hover:bg-lime-400 transition-colors disabled:opacity-50 mt-2"
+          >
+            Crear Habitación
+          </button>
+        </form>
+      </Modal>
+
+      {/* Modal: Añadir Punto de Navegación */}
+      <Modal
+        isOpen={hotspotModal.isOpen}
+        onClose={() => setHotspotModal({ isOpen: false, position: null, targetRoomId: '', label: '' })}
+        title="Enlazar Habitación"
+      >
+        <form onSubmit={handleAddHotspotSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-sm text-white/70 mb-2">¿A dónde lleva este botón?</label>
+            <select
+              value={hotspotModal.targetRoomId}
+              onChange={(e) => setHotspotModal(prev => ({ ...prev, targetRoomId: e.target.value }))}
+              className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-lime-500 transition-colors text-white appearance-none"
+            >
+              {Object.values(project.rooms).filter(r => r.id !== selectedRoomId).map(room => (
+                <option key={room.id} value={room.id}>{room.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm text-white/70 mb-2">Texto del botón (Opcional)</label>
+            <input 
+              type="text" 
+              value={hotspotModal.label}
+              onChange={(e) => setHotspotModal(prev => ({ ...prev, label: e.target.value }))}
+              placeholder="Ej: Ir al Pasillo"
+              className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-lime-500 transition-colors text-white"
+            />
+          </div>
+
+          <button 
+            type="submit"
+            disabled={!hotspotModal.targetRoomId}
+            className="w-full bg-lime-500 text-black font-medium py-3 rounded-lg hover:bg-lime-400 transition-colors disabled:opacity-50 mt-2"
+          >
+            Guardar Enlace
+          </button>
+        </form>
+      </Modal>
+
     </div>
   );
 }
