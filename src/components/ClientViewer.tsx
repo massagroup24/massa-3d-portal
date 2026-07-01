@@ -94,7 +94,7 @@ export function ClientViewer() {
   }
 
   if (!started) {
-    return <WelcomeScreen projectName={project.name} onStart={() => setStarted(true)} onBack={() => { window.location.href = '/'; }} />;
+    return <WelcomeScreen projectName={project.name} onStart={() => setStarted(true)} />;
   }
 
   if (!currentRoomId || !project.rooms[currentRoomId]) {
