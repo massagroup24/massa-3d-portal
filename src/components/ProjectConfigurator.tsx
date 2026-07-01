@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Project, Room, Hotspot } from '../data/tourData';
 import { Settings, Save, Plus, ChevronLeft, Upload, Trash2 } from 'lucide-react';
-import { saveProjectToSupabase, uploadImageToSupabase } from '../supabase';
+import { saveProjectToSupabase, uploadImageToSupabase, deleteImageFromSupabase } from '../supabase';
 import { HotspotEditor3D } from './HotspotEditor3D';
 import { compressImage } from '../utils/imageCompressor';
 import { Modal } from './Modal';
@@ -19,6 +19,7 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
   const [copied, setCopied] = useState(false);
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [deletingMinimap, setDeletingMinimap] = useState(false);
 
   // Modal States
   const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
@@ -130,18 +131,18 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
     try {
       setUploadingImage(true);
       
-      // --- AUTOCRECOMPRESIÓN DE IMÁGENES ---
-      // Si la imagen es muy pesada, la convierte a JPG y reduce su tamaño para WebGL
+      // --- AUTO-OPTIMIZACIÓN WEBP 6K INTELIGENTE ---
+      // Convierte renders pesados a formato WebP ligero en 6K (88% calidad) para máxima velocidad y nitidez intacta
       let fileToUpload = file;
       if (file.type.startsWith('image/')) {
         try {
-          // Para recorridos 360 (room), el estándar seguro para móviles es 4K (4096x2048).
-          // Para minimapas o miniaturas, basta con 1024px.
-          const maxWidth = uploadType === 'room' ? 4096 : 1024;
-          const maxHeight = uploadType === 'room' ? 2048 : 1024;
+          // Para recorridos 360 (room), el estándar de máxima fidelidad y velocidad es 6K (6144x3072).
+          // Para minimapas o miniaturas, basta con 1200px.
+          const maxWidth = uploadType === 'room' ? 6144 : 1200;
+          const maxHeight = uploadType === 'room' ? 3072 : 1200;
           fileToUpload = await compressImage(file, maxWidth, maxHeight);
         } catch (e) {
-          console.warn("No se pudo comprimir la imagen, subiendo original", e);
+          console.warn("No se pudo optimizar la imagen, subiendo original", e);
         }
       }
 
@@ -168,6 +169,49 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
     } finally {
       setUploadingImage(false);
       if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleDeleteMinimap = async () => {
+    if (!project.minimapImage) return;
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este plano? Se borrará de la nube y de la base de datos.')) {
+      return;
+    }
+
+    try {
+      setDeletingMinimap(true);
+      setSavingState('saving');
+
+      // 1. Intentar eliminar el archivo del Storage en Supabase si es posible
+      try {
+        await deleteImageFromSupabase(project.minimapImage);
+      } catch (err) {
+        console.warn('No se pudo eliminar el archivo del storage, continuando con actualización de BD:', err);
+      }
+
+      // 2. Actualizar el estado y guardar en BD inmediatamente
+      const updatedProject = { ...project, minimapImage: '' };
+      setProject(updatedProject);
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo de espera agotado al conectar con Supabase (límite 15s)')), 15000)
+      );
+
+      await Promise.race([
+        saveProjectToSupabase(updatedProject),
+        timeoutPromise
+      ]);
+
+      if (onSave) onSave(updatedProject);
+
+      setSavingState('saved');
+      setTimeout(() => setSavingState('idle'), 3000);
+    } catch (err: any) {
+      console.error('Error al eliminar y guardar plano:', err);
+      alert('Hubo un error al eliminar el plano en la base de datos: ' + (err.message || err));
+      setSavingState('error');
+    } finally {
+      setDeletingMinimap(false);
     }
   };
 
@@ -358,7 +402,7 @@ export const projectsData: Record<string, Project> = {
                     className="w-full h-32 border-2 border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center text-white/50 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50"
                   >
                     <Upload className="w-6 h-6 mb-2" />
-                    <span className="text-sm font-medium">{uploadingImage ? 'Subiendo...' : 'Subir Imagen 360'}</span>
+                    <span className="text-sm font-medium">{uploadingImage ? '⚡ Optimizando y subiendo...' : 'Subir Imagen 360'}</span>
                   </button>
                 )}
               </div>
@@ -462,7 +506,7 @@ export const projectsData: Record<string, Project> = {
                         className="w-48 h-32 border-2 border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center text-white/50 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50"
                       >
                         <Upload className="w-6 h-6 mb-2" />
-                        <span className="text-sm font-medium">{uploadingImage ? 'Subiendo...' : 'Subir Portada'}</span>
+                        <span className="text-sm font-medium">{uploadingImage ? '⚡ Optimizando y subiendo...' : 'Subir Portada'}</span>
                       </button>
                     )}
                     <p className="text-xs text-white/40 mt-3">Esta imagen se mostrará en el menú principal "Tus Recorridos".</p>
@@ -483,19 +527,48 @@ export const projectsData: Record<string, Project> = {
 
             {activeTab === 'map' && (
               <div className="w-full h-full flex flex-col items-center justify-center">
-                <div className="mb-4 flex gap-4 items-center bg-white/5 px-6 py-3 rounded-full border border-white/10">
+                <div className="mb-4 flex gap-4 items-center bg-white/5 px-6 py-3 rounded-full border border-white/10 shadow-lg">
                   <span className="text-sm text-white/70">Plano actual:</span>
                   <input type="file" accept="image/*" className="hidden" ref={minimapInputRef} onChange={(e) => handleFileUpload(e, 'minimap')} />
                   <button 
                     onClick={() => minimapInputRef.current?.click()}
-                    disabled={uploadingImage}
-                    className="flex items-center gap-2 text-sm text-lime-400 hover:text-lime-300 transition-colors"
+                    disabled={uploadingImage || deletingMinimap}
+                    className="flex items-center gap-2 text-sm font-medium text-lime-400 hover:text-lime-300 transition-colors disabled:opacity-50"
                   >
-                    <Upload className="w-4 h-4" /> {uploadingImage ? 'Subiendo...' : 'Subir Nuevo Plano'}
+                    <Upload className="w-4 h-4" /> {uploadingImage ? '⚡ Optimizando y subiendo...' : 'Subir Nuevo Plano'}
                   </button>
+                  {project.minimapImage && (
+                    <>
+                      <div className="w-[1px] h-4 bg-white/15" />
+                      <button 
+                        onClick={handleDeleteMinimap}
+                        disabled={uploadingImage || deletingMinimap}
+                        className="flex items-center gap-2 text-sm font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 group"
+                        title="Eliminar plano actual de la nube y la base de datos"
+                      >
+                        <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" /> {deletingMinimap ? 'Eliminando...' : 'Eliminar Plano'}
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 <div className="relative bg-white/5 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center min-w-[600px] min-h-[400px]">
+                  {project.minimapImage && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteMinimap();
+                      }}
+                      disabled={uploadingImage || deletingMinimap}
+                      className="absolute top-4 right-4 z-30 bg-black/70 hover:bg-red-500 text-red-400 hover:text-white border border-white/10 p-2.5 rounded-xl transition-all shadow-lg flex items-center gap-2 group disabled:opacity-50"
+                      title="Eliminar plano actual de la nube y la base de datos"
+                    >
+                      <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-medium max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out">
+                        {deletingMinimap ? 'Eliminando...' : 'Eliminar Plano'}
+                      </span>
+                    </button>
+                  )}
                   <div className="relative inline-block cursor-default w-full h-full" onClick={handleMapClick}>
                     {project.minimapImage ? (
                       <img 

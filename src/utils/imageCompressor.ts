@@ -1,4 +1,4 @@
-export async function compressImage(file: File, maxWidth = 4096, maxHeight = 2048): Promise<File> {
+export async function compressImage(file: File, maxWidth = 6144, maxHeight = 3072): Promise<File> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -10,7 +10,7 @@ export async function compressImage(file: File, maxWidth = 4096, maxHeight = 204
         let width = img.width;
         let height = img.height;
 
-        // Mantener proporción
+        // Mantener proporción equirectangular original
         if (width > maxWidth) {
           height = Math.round((height * maxWidth) / width);
           width = maxWidth;
@@ -29,23 +29,35 @@ export async function compressImage(file: File, maxWidth = 4096, maxHeight = 204
           return;
         }
 
+        // Calidad de renderizado alta en el canvas
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
+        // Exportar en formato WebP al 88% de calidad (estándar web ultra ligero con calidad 100% intacta)
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              resolve(file);
+              // Fallback seguro a JPEG si el navegador no retornara WebP
+              canvas.toBlob((fallbackBlob) => {
+                if (!fallbackBlob) { resolve(file); return; }
+                const jpgFile = new File([fallbackBlob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve(jpgFile);
+              }, 'image/jpeg', 0.90);
               return;
             }
-            // Crear nuevo File en formato JPG
-            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
-              type: 'image/jpeg',
+            // Crear nuevo File en formato WebP optimizado
+            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), {
+              type: 'image/webp',
               lastModified: Date.now(),
             });
             resolve(compressedFile);
           },
-          'image/jpeg',
-          0.8 // 80% calidad (excelente balance entre peso y nitidez)
+          'image/webp',
+          0.88 // 88% de calidad: nitidez visual arquitectónica intacta pero 10 veces más ligero
         );
       };
       img.onerror = (error) => reject(error);

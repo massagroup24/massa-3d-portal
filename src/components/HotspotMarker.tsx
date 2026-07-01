@@ -19,12 +19,14 @@ export function HotspotMarker({ hotspot, onClick }: HotspotMarkerProps) {
           <Navigation className="w-5 h-5 -rotate-45 drop-shadow-md" />
         </div>
         
-        {/* The label tooltip */}
-        <div className="absolute top-14 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap border border-white/10 shadow-xl">
-            {hotspot.label}
+        {/* The label tooltip - Visible por defecto en móviles y en hover en escritorio */}
+        {hotspot.label && (
+          <div className="absolute top-14 opacity-95 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 pointer-events-none z-20">
+            <div className="bg-black/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap border border-white/20 shadow-xl shadow-black/50 tracking-wide">
+              {hotspot.label}
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Soft pulse ring */}
         <div className="absolute w-12 h-12 rounded-full border border-white/50 animate-ping opacity-20 pointer-events-none" />

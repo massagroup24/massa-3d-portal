@@ -89,3 +89,30 @@ export async function uploadImageToSupabase(file: File, path: string): Promise<s
 
   return publicUrlData.publicUrl;
 }
+
+/**
+ * Helper para eliminar imágenes de Supabase Storage por su URL pública o ruta
+ */
+export async function deleteImageFromSupabase(urlOrPath: string): Promise<void> {
+  if (!urlOrPath) return;
+  try {
+    let cleanPath = urlOrPath;
+    const bucketMarker = `/${STORAGE_BUCKET}/`;
+    const index = urlOrPath.indexOf(bucketMarker);
+    if (index !== -1) {
+      cleanPath = urlOrPath.substring(index + bucketMarker.length);
+    }
+    cleanPath = cleanPath.split('?')[0];
+    if (cleanPath.startsWith('/')) cleanPath = cleanPath.slice(1);
+
+    const { error } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .remove([cleanPath]);
+
+    if (error) {
+      console.warn("No se pudo eliminar el archivo de Supabase Storage:", error.message);
+    }
+  } catch (err) {
+    console.error("Error al intentar eliminar la imagen de Supabase Storage:", err);
+  }
+}
