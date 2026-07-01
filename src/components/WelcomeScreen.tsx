@@ -2,7 +2,7 @@ import { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
-import { Compass, MousePointerClick, Clock, ArrowRight, Eye } from 'lucide-react';
+import { Compass, MousePointerClick, Clock, ArrowRight, Eye, ArrowLeft } from 'lucide-react';
 
 function ParticleBackground() {
   const ref = useRef<THREE.Points>(null);
@@ -33,11 +33,24 @@ function ParticleBackground() {
 interface WelcomeScreenProps {
   projectName: string;
   onStart: () => void;
+  onBack?: () => void;
 }
 
-export function WelcomeScreen({ projectName, onStart }: WelcomeScreenProps) {
+export function WelcomeScreen({ projectName, onStart, onBack }: WelcomeScreenProps) {
   return (
     <div className="fixed inset-0 z-50 bg-[#050508] flex flex-col items-center justify-center overflow-y-auto p-4 sm:p-6 select-none">
+      {/* Botón superior Volver al Portal */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="absolute top-6 left-6 z-30 bg-white/10 hover:bg-white/20 border border-white/15 text-white/80 hover:text-white px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-2 backdrop-blur-md shadow-lg group hover:border-lime-400/40"
+          title="Regresar al Portal Principal"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform text-lime-400" />
+          <span>Volver al Menú</span>
+        </button>
+      )}
+
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Canvas camera={{ position: [0, 0, 1] }}>
           <ParticleBackground />
@@ -108,14 +121,26 @@ export function WelcomeScreen({ projectName, onStart }: WelcomeScreenProps) {
           </div>
         </div>
         
-        {/* Botón de Iniciar */}
-        <button 
-          onClick={onStart}
-          className="mt-2 px-10 py-4 bg-lime-500 text-black text-base sm:text-lg font-bold rounded-full hover:bg-lime-400 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(163,230,53,0.3)] hover:shadow-[0_0_40px_rgba(163,230,53,0.6)] flex items-center gap-3 group"
-        >
-          <span>Comenzar Recorrido</span>
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </button>
+        {/* Botones de Acción */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-3 w-full">
+          <button 
+            onClick={onStart}
+            className="px-10 py-4 bg-lime-500 text-black text-base sm:text-lg font-bold rounded-full hover:bg-lime-400 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(163,230,53,0.3)] hover:shadow-[0_0_40px_rgba(163,230,53,0.6)] flex items-center gap-3 group"
+          >
+            <span>Comenzar Recorrido</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
+
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="px-6 py-4 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-sm font-medium rounded-full border border-white/15 transition-all flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4 text-white/60" />
+              <span>Volver al Menú Principal</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

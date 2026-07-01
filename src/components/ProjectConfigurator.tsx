@@ -579,7 +579,7 @@ export const projectsData: Record<string, Project> = {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-white/70 mb-2 uppercase tracking-wider font-medium flex items-center justify-between">
+                    <label className="flex items-center justify-between text-sm text-white/70 mb-2 uppercase tracking-wider font-medium">
                       <span>PIN de Seguridad para Creador Visual</span>
                       <span className="text-xs text-lime-400 normal-case font-normal">Por defecto: 1234</span>
                     </label>

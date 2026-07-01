@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { Project } from '../data/tourData';
-import { TourViewer } from './TourViewer';
-import { OverlayUI } from './OverlayUI';
+import { TourContainer } from './TourContainer';
 import { WelcomeScreen } from './WelcomeScreen';
 import { useTexture } from '@react-three/drei';
 
@@ -95,32 +94,19 @@ export function ClientViewer() {
   }
 
   if (!started) {
-    return <WelcomeScreen projectName={project.name} onStart={() => setStarted(true)} />;
+    return <WelcomeScreen projectName={project.name} onStart={() => setStarted(true)} onBack={() => { window.location.href = '/'; }} />;
+  }
+
+  if (!currentRoomId || !project.rooms[currentRoomId]) {
+    return null;
   }
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black">
-      {/* 3D Canvas Layer */}
-      <div className="absolute inset-0 z-0">
-        {currentRoomId && project.rooms[currentRoomId] && (
-          <TourViewer 
-            room={project.rooms[currentRoomId]} 
-            onNavigate={setCurrentRoomId}
-          />
-        )}
-      </div>
-
-      {/* 2D UI Overlay Layer */}
-      <div className="absolute inset-0 z-10 pointer-events-none">
-        {currentRoomId && project.rooms[currentRoomId] && (
-          <OverlayUI 
-            currentRoom={project.rooms[currentRoomId]} 
-            rooms={project.rooms}
-            minimapImage={project.minimapImage}
-            onNavigate={setCurrentRoomId}
-          />
-        )}
-      </div>
-    </div>
+    <TourContainer 
+      currentRoom={project.rooms[currentRoomId]} 
+      rooms={project.rooms}
+      minimapImage={project.minimapImage}
+      onNavigate={setCurrentRoomId}
+    />
   );
 }

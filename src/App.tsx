@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { TourViewer } from './components/TourViewer';
-import { OverlayUI } from './components/OverlayUI';
+import { TourContainer } from './components/TourContainer';
 import { Home } from './components/Home';
 import { ProjectConfigurator } from './components/ProjectConfigurator';
 import { ClientViewer } from './components/ClientViewer';
@@ -226,28 +225,19 @@ function AdminPanel() {
       <WelcomeScreen 
         projectName={currentProject.name} 
         onStart={() => setTourStarted(true)} 
+        onBack={handleBackToHome}
       />
     );
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
-      {/* 3D Canvas Layer */}
-      <div className="absolute inset-0 z-0">
-        <TourViewer room={currentRoom} onNavigate={handleRoomChange} />
-      </div>
-
-      {/* 2D UI Overlay Layer */}
-      <div className="absolute inset-0 z-10 pointer-events-none">
-        <OverlayUI 
-          currentRoom={currentRoom} 
-          rooms={currentProject.rooms}
-          minimapImage={currentProject.minimapImage}
-          onNavigate={handleRoomChange} 
-          onBackToHome={handleBackToHome}
-        />
-      </div>
-    </div>
+    <TourContainer 
+      currentRoom={currentRoom}
+      rooms={currentProject.rooms}
+      minimapImage={currentProject.minimapImage}
+      onNavigate={handleRoomChange}
+      onBackToHome={handleBackToHome}
+    />
   );
 }
 

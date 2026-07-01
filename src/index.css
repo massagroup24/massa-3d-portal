@@ -41,3 +41,24 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Barra de desplazamiento ejecutiva personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #060609;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  border: 2px solid #060609;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 230, 53, 0.6);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) #060609;
+}

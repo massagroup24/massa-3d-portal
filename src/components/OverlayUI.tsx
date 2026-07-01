@@ -6,7 +6,7 @@ interface OverlayUIProps {
   currentRoom: Room;
   rooms: Record<string, Room>;
   minimapImage: string;
-  onNavigate: (roomId: string) => void;
+  onNavigate: (roomId: string, position?: [number, number, number]) => void;
   onBackToHome?: () => void;
 }
 

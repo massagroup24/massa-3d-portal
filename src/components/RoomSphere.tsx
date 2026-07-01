@@ -5,7 +5,7 @@ import { HotspotMarker } from './HotspotMarker';
 
 interface RoomSphereProps {
   room: Room;
-  onNavigate: (roomId: string) => void;
+  onNavigate: (roomId: string, targetPosition?: [number, number, number]) => void;
 }
 
 export function RoomSphere({ room, onNavigate }: RoomSphereProps) {
@@ -31,7 +31,7 @@ export function RoomSphere({ room, onNavigate }: RoomSphereProps) {
         <HotspotMarker 
           key={hotspot.id} 
           hotspot={hotspot} 
-          onClick={() => onNavigate(hotspot.targetRoom)} 
+          onClick={() => onNavigate(hotspot.targetRoom, hotspot.position)} 
         />
       ))}
     </group>
