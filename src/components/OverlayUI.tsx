@@ -19,7 +19,9 @@ export function OverlayUI({ currentRoom, rooms, minimapImage, onNavigate, onBack
   useEffect(() => {
     const timer = setTimeout(() => setShowIndicator(false), 4000);
     return () => clearTimeout(timer);
-  }, [currentRoom.id]);
+  }, [currentRoom?.id]);
+
+  if (!currentRoom) return null;
 
   return (
     <div className="w-full h-full flex flex-col justify-between p-3 sm:p-6">
@@ -85,12 +87,12 @@ export function OverlayUI({ currentRoom, rooms, minimapImage, onNavigate, onBack
               </button>
             </div>
             
-            <div className="relative w-[85vw] max-w-[340px] h-[210px] sm:w-96 sm:h-72 bg-white/5 rounded-xl overflow-hidden border border-white/10 group flex items-center justify-center">
-              <div className="relative h-full flex-shrink-0">
+            <div className="relative bg-black/60 rounded-xl overflow-hidden border border-white/10 group flex items-center justify-center max-w-[92vw] sm:max-w-[500px] max-h-[48vh] p-2 transition-all shadow-2xl">
+              <div className="relative inline-block w-fit h-fit max-w-full max-h-[44vh]">
                 <img 
                   src={minimapImage} 
                   alt="Plano del proyecto" 
-                  className="h-full w-auto object-contain opacity-85 group-hover:opacity-100 transition-opacity"
+                  className="block max-w-full max-h-[44vh] w-auto h-auto object-contain opacity-90 group-hover:opacity-100 transition-all duration-300 rounded-lg mx-auto"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
@@ -99,8 +101,8 @@ export function OverlayUI({ currentRoom, rooms, minimapImage, onNavigate, onBack
                   Pega tu 'plano.png' en public
                 </div>
 
-                {Object.values(rooms).map((room) => {
-                  const isCurrent = currentRoom.id === room.id;
+                {Object.values(rooms || {}).filter(Boolean).map((room) => {
+                  const isCurrent = currentRoom?.id === room?.id;
                   return (
                     <div
                       key={room.id}
@@ -128,19 +130,19 @@ export function OverlayUI({ currentRoom, rooms, minimapImage, onNavigate, onBack
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center gap-2 max-w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 max-w-[96vw] sm:max-w-full pointer-events-auto">
             <button 
               onClick={() => setIsMinimapOpen(true)}
-              className="bg-black/75 backdrop-blur-xl border border-white/20 hover:border-lime-500/50 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 font-medium text-xs sm:text-sm transition-all hover:bg-black/90 group flex-shrink-0"
+              className="bg-black/80 backdrop-blur-xl border border-white/20 hover:border-lime-500/50 text-white px-4 py-2 rounded-full shadow-2xl flex items-center justify-center gap-2 font-medium text-xs sm:text-sm transition-all hover:bg-black/90 active:scale-95 group w-fit flex-shrink-0"
             >
               <Map className="w-4 h-4 text-lime-400 group-hover:scale-110 transition-transform" />
               <span>Ver Plano ({Object.keys(rooms).length})</span>
             </button>
 
             {/* Selector rápido de habitaciones en barra flotante */}
-            <div className="flex items-center gap-1.5 overflow-x-auto max-w-[calc(100vw-150px)] sm:max-w-xl py-1 no-scrollbar">
-              {Object.values(rooms).map((r) => {
-                const isCurrent = currentRoom.id === r.id;
+            <div className="flex items-center gap-1.5 overflow-x-auto max-w-[92vw] sm:max-w-xl py-1 no-scrollbar">
+              {Object.values(rooms || {}).filter(Boolean).map((r) => {
+                const isCurrent = currentRoom?.id === r?.id;
                 return (
                   <button
                     key={r.id}

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Project, Room, Hotspot } from '../data/tourData';
-import { Settings, Save, Plus, ChevronLeft, Upload, Trash2 } from 'lucide-react';
+import { Settings, Save, Plus, ChevronLeft, Upload, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { saveProjectToSupabase, uploadImageToSupabase, deleteImageFromSupabase } from '../supabase';
 import { HotspotEditor3D } from './HotspotEditor3D';
 import { compressImage } from '../utils/imageCompressor';
@@ -92,15 +92,65 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
     }
     
     if (window.confirm('¿Estás seguro de que deseas eliminar esta habitación y todos sus puntos de navegación?')) {
+      const remainingIds = Object.keys(project.rooms).filter(id => id !== roomId);
+      const nextRoomId = remainingIds.length > 0 ? remainingIds[0] : null;
+
       setProject(prev => {
         const newRooms = { ...prev.rooms };
         delete newRooms[roomId];
-        return { ...prev, rooms: newRooms };
+        
+        // Limpiar puntos de navegación (hotspots) en otras habitaciones que apunten a la habitación borrada
+        Object.keys(newRooms).forEach(key => {
+          if (newRooms[key] && newRooms[key].hotspots) {
+            newRooms[key] = {
+              ...newRooms[key],
+              hotspots: newRooms[key].hotspots.filter(h => h && h.targetRoom !== roomId)
+            };
+          }
+        });
+
+        // Si se elimina la habitación inicial, reasignarla a la primera disponible
+        const newInitialRoomId = prev.initialRoomId === roomId && nextRoomId ? nextRoomId : prev.initialRoomId;
+
+        return { ...prev, rooms: newRooms, initialRoomId: newInitialRoomId };
       });
+
       if (selectedRoomId === roomId) {
-        setSelectedRoomId(null); // Deselecciona la habitación eliminada
+        setSelectedRoomId(nextRoomId);
       }
     }
+  };
+
+  const handleMoveRoom = (roomId: string, direction: 'up' | 'down') => {
+    const keys = Object.keys(project.rooms);
+    const index = keys.indexOf(roomId);
+    if (index === -1) return;
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= keys.length) return;
+
+    // Intercambiar las claves en el arreglo
+    const newKeys = [...keys];
+    const temp = newKeys[index];
+    newKeys[index] = newKeys[targetIndex];
+    newKeys[targetIndex] = temp;
+
+    // Reconstruir el objeto rooms en el nuevo orden exacto
+    const newRooms: Record<string, Room> = {};
+    newKeys.forEach(k => {
+      if (project.rooms[k]) {
+        newRooms[k] = project.rooms[k];
+      }
+    });
+
+    // La habitación en la posición #1 será automáticamente la initialRoomId
+    const newInitialRoomId = newKeys[0];
+
+    setProject(prev => ({
+      ...prev,
+      rooms: newRooms,
+      initialRoomId: newInitialRoomId
+    }));
   };
 
   const handleUpdateRoom = (roomId: string, field: keyof Room, value: any) => {
@@ -334,27 +384,73 @@ export const projectsData: Record<string, Project> = {
         
         {/* Left Panel: Rooms List & Details */}
         <div className="w-[400px] border-r border-white/10 p-6 flex flex-col gap-6 overflow-y-auto bg-black/20">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-medium">Habitaciones</h2>
-            <button onClick={() => setIsAddRoomModalOpen(true)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-lime-400 transition-colors">
-              <Plus className="w-5 h-5" />
-            </button>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-medium">Habitaciones</h2>
+              <button onClick={() => setIsAddRoomModalOpen(true)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-lime-400 transition-colors" title="Añadir nueva habitación">
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-xs text-white/50">
+              Usa las flechas ⬆️ ⬇️ para ordenar. La sección <span className="text-lime-400 font-medium">#1</span> será la vista inicial del cliente.
+            </p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            {Object.values(project.rooms).map(room => (
-              <button
-                key={room.id}
-                onClick={() => setSelectedRoomId(room.id)}
-                className={`text-left p-3 rounded-lg border transition-all ${
-                  selectedRoomId === room.id 
-                    ? 'bg-lime-500/10 border-lime-500/50' 
-                    : 'bg-white/5 border-white/10 hover:border-white/30'
-                }`}
-              >
-                <h3 className="font-medium">{room.name}</h3>
-              </button>
-            ))}
+          <div className="flex flex-col gap-2.5">
+            {Object.values(project.rooms).map((room, index) => {
+              const isFirst = index === 0;
+              const isLast = index === Object.keys(project.rooms).length - 1;
+              const isSelected = selectedRoomId === room.id;
+              return (
+                <div
+                  key={room.id}
+                  onClick={() => setSelectedRoomId(room.id)}
+                  className={`group flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
+                    isSelected 
+                      ? 'bg-lime-500/15 border-lime-500/60 shadow-[0_0_20px_rgba(132,204,22,0.15)]' 
+                      : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
+                    <span className={`w-6 h-6 flex items-center justify-center text-xs font-mono rounded-lg flex-shrink-0 transition-colors ${
+                      isFirst ? 'bg-lime-500 text-black font-extrabold shadow-md shadow-lime-500/30' : 'bg-white/10 text-white/60 group-hover:bg-white/20'
+                    }`}>
+                      {index + 1}
+                    </span>
+                    <div className="flex flex-col min-w-0">
+                      <h3 className="font-medium truncate text-sm sm:text-base text-white/90 group-hover:text-white">{room.name}</h3>
+                      {isFirst && (
+                        <span className="text-[10px] text-lime-400 font-semibold tracking-wider uppercase flex items-center gap-1 mt-0.5 animate-pulse">
+                          ★ Primera Vista (Inicio)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Flechas para reordenar */}
+                  <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveRoom(room.id, 'up')}
+                      disabled={isFirst}
+                      title="Subir en el orden"
+                      className="p-1.5 hover:bg-white/15 active:scale-95 rounded-lg text-white/70 hover:text-white disabled:opacity-20 disabled:pointer-events-none transition-all border border-transparent hover:border-white/20"
+                    >
+                      <ArrowUp className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveRoom(room.id, 'down')}
+                      disabled={isLast}
+                      title="Bajar en el orden"
+                      className="p-1.5 hover:bg-white/15 active:scale-95 rounded-lg text-white/70 hover:text-white disabled:opacity-20 disabled:pointer-events-none transition-all border border-transparent hover:border-white/20"
+                    >
+                      <ArrowDown className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Active Room Editor */}
@@ -483,6 +579,22 @@ export const projectsData: Record<string, Project> = {
                   </div>
 
                   <div>
+                    <label className="block text-sm text-white/70 mb-2 uppercase tracking-wider font-medium flex items-center justify-between">
+                      <span>PIN de Seguridad para Creador Visual</span>
+                      <span className="text-xs text-lime-400 normal-case font-normal">Por defecto: 1234</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      value={project.pin || "1234"}
+                      onChange={(e) => setProject(prev => ({ ...prev, pin: e.target.value }))}
+                      className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-lime-500 transition-colors font-mono tracking-widest text-lg"
+                      placeholder="Ej: 1234 o 2026"
+                      maxLength={10}
+                    />
+                    <p className="text-xs text-white/40 mt-1">Este PIN se solicitará al pulsar en 'Abrir Creador Visual' desde el menú principal.</p>
+                  </div>
+
+                  <div>
                     <label className="block text-sm text-white/70 mb-2 uppercase tracking-wider font-medium">Imagen de Portada (Thumbnail)</label>
                     <input type="file" accept="image/*" className="hidden" ref={thumbnailInputRef} onChange={(e) => handleFileUpload(e, 'thumbnail')} />
                     
@@ -552,7 +664,7 @@ export const projectsData: Record<string, Project> = {
                   )}
                 </div>
 
-                <div className="relative bg-white/5 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center min-w-[600px] min-h-[400px]">
+                <div className={`relative bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center ${!project.minimapImage ? 'min-w-[600px] min-h-[400px]' : 'w-fit h-fit max-w-[90vw] max-h-[75vh]'}`}>
                   {project.minimapImage && (
                     <button
                       onClick={(e) => {
@@ -569,12 +681,12 @@ export const projectsData: Record<string, Project> = {
                       </span>
                     </button>
                   )}
-                  <div className="relative inline-block cursor-default w-full h-full" onClick={handleMapClick}>
+                  <div className={`relative inline-block cursor-default ${!project.minimapImage ? 'w-full h-full min-w-[500px] min-h-[350px]' : 'w-fit h-fit max-w-full max-h-[68vh] shadow-2xl rounded-xl overflow-hidden border border-white/15 bg-black/40'}`} onClick={handleMapClick}>
                     {project.minimapImage ? (
                       <img 
                         src={project.minimapImage} 
                         alt="Plano" 
-                        className="max-h-[60vh] w-full h-full object-contain opacity-90 hover:opacity-100 transition-opacity pointer-events-none" 
+                        className="block max-h-[68vh] max-w-full w-auto h-auto object-contain opacity-95 hover:opacity-100 transition-opacity pointer-events-none select-none" 
                         onError={(e) => {
                           // Si falla, mostramos un fallback en el src para no romper el layout
                           (e.target as HTMLImageElement).style.display = 'none';

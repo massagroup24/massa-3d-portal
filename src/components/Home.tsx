@@ -1,6 +1,7 @@
 import { Project } from '../data/tourData';
-import { ArrowRight, Box, Settings, Plus, Trash2, Link as LinkIcon, Check } from 'lucide-react';
+import { ArrowRight, Box, Settings, Plus, Trash2, Link as LinkIcon, Check, Lock, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
+import { Modal } from './Modal';
 
 interface HomeProps {
   projects: Record<string, Project>;
@@ -12,6 +13,31 @@ interface HomeProps {
 
 export function Home({ projects, onSelectProject, onConfigureProject, onCreateProject, onDeleteProject }: HomeProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [pinModalProject, setPinModalProject] = useState<Project | null>(null);
+  const [enteredPin, setEnteredPin] = useState('');
+  const [pinError, setPinError] = useState(false);
+
+  const handleOpenConfiguratorClick = (e: React.MouseEvent, project: Project) => {
+    e.stopPropagation();
+    setPinModalProject(project);
+    setEnteredPin('');
+    setPinError(false);
+  };
+
+  const handleVerifyPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pinModalProject) return;
+    const correctPin = pinModalProject.pin || "1234";
+    if (enteredPin === correctPin) {
+      const targetId = pinModalProject.id;
+      setPinModalProject(null);
+      setEnteredPin('');
+      setPinError(false);
+      onConfigureProject(targetId);
+    } else {
+      setPinError(true);
+    }
+  };
 
   const handleCopyLink = (e: React.MouseEvent, projectId: string) => {
     e.stopPropagation();
@@ -135,10 +161,7 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
                   </button>
                 </div>
                 <button 
-                  onClick={(e) => { 
-                    e.stopPropagation(); // Evita que al hacer clic se inicie el recorrido
-                    onConfigureProject(project.id); 
-                  }}
+                  onClick={(e) => handleOpenConfiguratorClick(e, project)}
                   className="flex items-center gap-2 text-xs font-medium text-lime-500 hover:text-lime-400 transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5" />
@@ -162,6 +185,76 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
 
         </div>
       </div>
+
+      {/* Modal de Ingreso con PIN */}
+      <Modal 
+        isOpen={!!pinModalProject} 
+        onClose={() => {
+          setPinModalProject(null);
+          setEnteredPin('');
+          setPinError(false);
+        }}
+        title="Acceso Protegido"
+      >
+        <form onSubmit={handleVerifyPin} className="flex flex-col gap-5 text-center">
+          <div className="w-14 h-14 bg-lime-500/10 border border-lime-500/30 rounded-full flex items-center justify-center mx-auto text-lime-400 mb-1 shadow-[0_0_20px_rgba(132,204,22,0.2)]">
+            <Lock className="w-7 h-7" />
+          </div>
+          
+          <div>
+            <h4 className="text-white font-semibold text-lg mb-1">Creador Visual 3D</h4>
+            <p className="text-white/60 text-xs leading-relaxed">
+              Introduce el PIN de seguridad de <span className="text-white font-medium">"{pinModalProject?.name}"</span> para ingresar a la edición.
+            </p>
+          </div>
+
+          <div className="relative mt-2">
+            <input
+              type="password"
+              value={enteredPin}
+              onChange={(e) => {
+                setEnteredPin(e.target.value);
+                if (pinError) setPinError(false);
+              }}
+              autoFocus
+              placeholder="••••"
+              className={`w-full bg-black/60 border ${pinError ? 'border-red-500/80 text-red-300 focus:border-red-400' : 'border-white/20 focus:border-lime-500 text-white'} rounded-xl px-4 py-3.5 text-center text-xl tracking-[0.5em] font-mono focus:outline-none transition-all shadow-inner`}
+              maxLength={10}
+            />
+            {pinError && (
+              <p className="text-red-400 text-xs mt-2 font-medium flex items-center justify-center gap-1.5 animate-bounce">
+                <AlertCircle className="w-3.5 h-3.5" /> PIN incorrecto. Inténtalo de nuevo.
+              </p>
+            )}
+            {!pinError && (
+              <p className="text-white/40 text-[11px] mt-2">
+                PIN por defecto: <code className="bg-white/10 px-1.5 py-0.5 rounded text-white/70 font-mono">1234</code> (editable en Ajustes).
+              </p>
+            )}
+          </div>
+
+          <div className="flex gap-3 mt-3">
+            <button
+              type="button"
+              onClick={() => {
+                setPinModalProject(null);
+                setEnteredPin('');
+                setPinError(false);
+              }}
+              className="flex-1 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 py-3 rounded-xl text-sm font-medium transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-lime-500 hover:bg-lime-400 text-black py-3 rounded-xl text-sm font-semibold shadow-[0_0_20px_rgba(132,204,22,0.3)] hover:shadow-[0_0_25px_rgba(132,204,22,0.5)] transition-all flex items-center justify-center gap-2"
+            >
+              <span>Ingresar</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

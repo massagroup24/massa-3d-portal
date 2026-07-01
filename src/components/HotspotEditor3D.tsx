@@ -30,6 +30,8 @@ function EditableSphere({ imageUrl, onClick }: { imageUrl: string; onClick: (p: 
 export function HotspotEditor3D({ room, onAddHotspot }: HotspotEditorProps) {
   const [addingPoint, setAddingPoint] = useState(false);
 
+  if (!room) return null;
+
   return (
     <div className="relative w-full h-full rounded-xl overflow-hidden border border-white/20">
       
@@ -75,7 +77,7 @@ export function HotspotEditor3D({ room, onAddHotspot }: HotspotEditorProps) {
         </Suspense>
         
         {/* Render existing hotspots as ghost markers */}
-        {room.hotspots.map((hotspot) => (
+        {(room.hotspots || []).filter(Boolean).map((hotspot) => (
           <Html key={hotspot.id} position={hotspot.position} center>
             <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm border border-white flex items-center justify-center opacity-50 pointer-events-none">
               <div className="w-2 h-2 bg-white rounded-full"></div>

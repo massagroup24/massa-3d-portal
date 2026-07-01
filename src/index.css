@@ -5,6 +5,15 @@
 @layer base {
   html, body, #root {
     @apply w-full h-full m-0 p-0 overflow-hidden bg-black font-sans;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  canvas {
+    touch-action: none !important;
+    outline: none !important;
+    -webkit-touch-callout: none;
+    user-select: none;
   }
 }
 

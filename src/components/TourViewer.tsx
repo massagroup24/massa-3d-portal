@@ -47,6 +47,7 @@ interface TourViewerProps {
 }
 
 export function TourViewer({ room, onNavigate }: TourViewerProps) {
+  if (!room) return null;
   return (
     <Canvas camera={{ position: [0, 0, 0.1], fov: 75 }}>
       <ResponsiveCamera />

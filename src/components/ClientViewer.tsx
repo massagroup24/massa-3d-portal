@@ -32,8 +32,14 @@ export function ClientViewer() {
         }
 
         const proj = data.data as Project;
+        if (!proj || !proj.rooms) {
+          setError("El proyecto está incompleto o corrupto en la nube.");
+          return;
+        }
         setProject(proj);
-        setCurrentRoomId(proj.initialRoomId);
+        const firstRoomId = Object.keys(proj.rooms)[0];
+        const validRoomId = proj.rooms[proj.initialRoomId] ? proj.initialRoomId : firstRoomId;
+        setCurrentRoomId(validRoomId || null);
       } catch (err) {
         setError("Error de conexión al cargar el proyecto.");
       } finally {

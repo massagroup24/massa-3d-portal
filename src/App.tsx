@@ -5,6 +5,7 @@ import { OverlayUI } from './components/OverlayUI';
 import { Home } from './components/Home';
 import { ProjectConfigurator } from './components/ProjectConfigurator';
 import { ClientViewer } from './components/ClientViewer';
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { projectsData, Project } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 
@@ -13,6 +14,7 @@ function AdminPanel() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
   const [configuringProjectId, setConfiguringProjectId] = useState<string | null>(null);
+  const [tourStarted, setTourStarted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncError, setSyncError] = useState<string | null>(null);
 
@@ -43,7 +45,9 @@ function AdminPanel() {
           // Mapeamos el arreglo a un Record<string, Project>
           const loadedProjects: Record<string, Project> = {};
           fbProjects.forEach(p => {
-            loadedProjects[p.id] = p;
+            if (p && p.id) {
+              loadedProjects[p.id] = p;
+            }
           });
           setProjects(loadedProjects);
         }
@@ -61,12 +65,19 @@ function AdminPanel() {
 
   const handleSelectProject = (projectId: string) => {
     setActiveProjectId(projectId);
-    setCurrentRoomId(projects[projectId].initialRoomId);
+    setTourStarted(false);
+    const proj = projects[projectId];
+    if (proj) {
+      const firstRoomId = proj.rooms ? Object.keys(proj.rooms)[0] : null;
+      const validRoomId = (proj.rooms && proj.rooms[proj.initialRoomId]) ? proj.initialRoomId : firstRoomId;
+      setCurrentRoomId(validRoomId || null);
+    }
   };
 
   const handleBackToHome = () => {
     setActiveProjectId(null);
     setCurrentRoomId(null);
+    setTourStarted(false);
   };
 
   const handleRoomChange = (roomId: string) => {
@@ -75,6 +86,7 @@ function AdminPanel() {
 
   // Guardar proyecto actualizado en el estado local
   const handleSaveProject = (updatedProject: Project) => {
+    if (!updatedProject || !updatedProject.id) return;
     setProjects(prev => ({
       ...prev,
       [updatedProject.id]: updatedProject
@@ -90,6 +102,7 @@ function AdminPanel() {
       thumbnail: "", // Sin imagen por defecto
       minimapImage: "", // Sin plano por defecto
       initialRoomId: "room_1",
+      pin: "1234", // PIN de seguridad por defecto para el Creador Visual
       rooms: {
         "room_1": {
           id: "room_1",
@@ -193,7 +206,29 @@ function AdminPanel() {
   }
 
   const currentProject = projects[activeProjectId];
-  const currentRoom = currentProject.rooms[currentRoomId];
+  const firstAvailableRoomId = currentProject?.rooms ? Object.keys(currentProject.rooms)[0] : null;
+  const currentRoom = currentProject?.rooms ? (currentProject.rooms[currentRoomId] || (firstAvailableRoomId ? currentProject.rooms[firstAvailableRoomId] : undefined)) : undefined;
+
+  if (!currentProject || !currentRoom) {
+    return (
+      <div className="w-full h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center gap-4 p-6 text-center">
+        <h2 className="text-xl font-bold text-red-400">Habitación no encontrada</h2>
+        <p className="text-white/70 max-w-md">No se pudo cargar la habitación seleccionada o el proyecto no tiene habitaciones configuradas.</p>
+        <button onClick={handleBackToHome} className="px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition font-medium">
+          Volver al Menú Principal
+        </button>
+      </div>
+    );
+  }
+
+  if (!tourStarted) {
+    return (
+      <WelcomeScreen 
+        projectName={currentProject.name} 
+        onStart={() => setTourStarted(true)} 
+      />
+    );
+  }
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">

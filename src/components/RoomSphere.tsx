@@ -9,6 +9,7 @@ interface RoomSphereProps {
 }
 
 export function RoomSphere({ room, onNavigate }: RoomSphereProps) {
+  if (!room || !room.imageUrl) return null;
   // Load the equirectangular texture
   const texture = useTexture(room.imageUrl);
 
@@ -26,7 +27,7 @@ export function RoomSphere({ room, onNavigate }: RoomSphereProps) {
       </mesh>
 
       {/* Render all hotspots for the current room */}
-      {room.hotspots.map((hotspot) => (
+      {(room.hotspots || []).filter(Boolean).map((hotspot) => (
         <HotspotMarker 
           key={hotspot.id} 
           hotspot={hotspot} 

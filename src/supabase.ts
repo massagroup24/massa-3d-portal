@@ -24,7 +24,9 @@ export async function getProjectsFromSupabase(): Promise<Project[]> {
   const projects: Project[] = [];
   if (data) {
     data.forEach((row) => {
-      projects.push(row.data as Project);
+      if (row && row.data && typeof row.data === 'object' && 'id' in row.data && row.data.id) {
+        projects.push(row.data as Project);
+      }
     });
   }
   return projects;
@@ -34,6 +36,10 @@ export async function getProjectsFromSupabase(): Promise<Project[]> {
  * Guarda o actualiza un proyecto en Supabase
  */
 export async function saveProjectToSupabase(project: Project): Promise<void> {
+  if (!project || !project.id) {
+    console.warn("Intento de guardar un proyecto no válido o sin ID en Supabase:", project);
+    return;
+  }
   const { error } = await supabase
     .from(PROJECTS_TABLE)
     .upsert({ id: project.id, data: project });

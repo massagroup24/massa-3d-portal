@@ -15,7 +15,7 @@ export function HotspotMarker({ hotspot, onClick }: HotspotMarkerProps) {
         className="group relative flex flex-col items-center justify-center cursor-pointer pointer-events-auto"
       >
         {/* The glowing icon button */}
-        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:bg-white/20">
+        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:bg-white/20 active:scale-90 active:bg-lime-500/40 active:border-lime-400">
           <Navigation className="w-5 h-5 -rotate-45 drop-shadow-md" />
         </div>
         

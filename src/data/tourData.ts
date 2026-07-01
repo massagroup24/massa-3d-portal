@@ -23,6 +23,7 @@ export interface Project {
   minimapImage: string;
   initialRoomId: string;
   rooms: Record<string, Room>;
+  pin?: string; // PIN de seguridad para acceder al Creador Visual
 }
 
 export const projectsData: Record<string, Project> = {
