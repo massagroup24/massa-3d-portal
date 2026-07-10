@@ -63,11 +63,11 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
   const totalRooms = Object.values(projects).reduce((acc, p) => acc + Object.keys(p.rooms || {}).length, 0);
 
   return (
-    <div className="w-full h-screen bg-[#060609] text-white selection:bg-lime-500 selection:text-black font-sans relative overflow-y-auto overflow-x-hidden">
+    <div className="w-full min-h-screen bg-[#060609] text-white selection:bg-lime-500 selection:text-black font-sans relative overflow-y-auto overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       
       {/* Executive Navbar */}
       <header className="sticky top-0 z-40 w-full bg-[#060609]/80 backdrop-blur-2xl border-b border-white/10 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-[5rem] py-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3">
           <div className="flex items-center gap-6">
             <div className="bg-white px-5 py-2.5 rounded-xl shadow-[0_0_25px_rgba(255,255,255,0.15)] border border-white/20 flex items-center justify-center">
               <img 
