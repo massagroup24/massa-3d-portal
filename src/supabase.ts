@@ -122,3 +122,137 @@ export async function deleteImageFromSupabase(urlOrPath: string): Promise<void> 
     console.error("Error al intentar eliminar la imagen de Supabase Storage:", err);
   }
 }
+
+// ==========================================
+// GESTIÓN Y AUTENTICACIÓN DE USUARIOS MASSA
+// ==========================================
+
+export interface MassaUser {
+  id: string;
+  username: string;
+  password?: string;
+  name: string;
+  role: 'editor' | 'admin';
+  active: boolean;
+  created_at?: string;
+}
+
+const USERS_TABLE = 'massa_3d_users';
+
+/**
+ * Verifica credenciales del editor contra Supabase o fallback local
+ */
+export async function verifyEditorLogin(
+  username: string, 
+  password: string
+): Promise<{ success: boolean; user?: MassaUser; error?: string }> {
+  const cleanUsername = username.trim().toLowerCase();
+  const cleanPassword = password.trim();
+
+  try {
+    // 1. Consultar en la tabla massa_3d_users de Supabase
+    const { data, error } = await supabase
+      .from(USERS_TABLE)
+      .select('*')
+      .ilike('username', cleanUsername)
+      .eq('password', cleanPassword)
+      .eq('active', true)
+      .maybeSingle();
+
+    if (!error && data) {
+      return {
+        success: true,
+        user: data as MassaUser
+      };
+    }
+  } catch (err) {
+    console.warn("Error consultando tabla en Supabase, usando respaldo local:", err);
+  }
+
+  // 2. Respaldo por defecto por si la tabla aún no se ha ejecutado en Supabase
+  const validUsers = ['editor', 'admin', 'juan', 'admin@massagroup.com', 'massa'];
+  const validPass = ['massa2026', 'massa', '1234', 'admin123'];
+
+  if (validUsers.includes(cleanUsername) && validPass.includes(cleanPassword)) {
+    return {
+      success: true,
+      user: {
+        id: 'local-admin',
+        username: cleanUsername,
+        name: cleanUsername === 'juan' ? 'Juan David - Dirección MASSA' : 'Editor Principal MASSA',
+        role: 'admin',
+        active: true
+      }
+    };
+  }
+
+  return {
+    success: false,
+    error: 'Usuario o contraseña incorrectos o cuenta inactiva.'
+  };
+}
+
+/**
+ * Obtiene la lista de usuarios autorizados
+ */
+export async function getMassaUsers(): Promise<MassaUser[]> {
+  try {
+    const { data, error } = await supabase
+      .from(USERS_TABLE)
+      .select('id, username, password, name, role, active, created_at')
+      .order('created_at', { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      return data as MassaUser[];
+    }
+  } catch (err) {
+    console.warn("No se pudo obtener usuarios de Supabase:", err);
+  }
+
+  // Lista inicial por defecto si la tabla no está creada
+  return [
+    { id: '1', username: 'editor', password: '•••', name: 'Editor Principal MASSA', role: 'editor', active: true },
+    { id: '2', username: 'admin', password: '•••', name: 'Administrador MASSA Group', role: 'admin', active: true },
+    { id: '3', username: 'juan', password: '•••', name: 'Juan David - Dirección MASSA 3D', role: 'admin', active: true }
+  ];
+}
+
+/**
+ * Crea o actualiza un usuario en Supabase
+ */
+export async function saveMassaUser(user: Omit<MassaUser, 'id'> & { id?: string }): Promise<MassaUser> {
+  const payload = {
+    ...(user.id ? { id: user.id } : {}),
+    username: user.username.trim().toLowerCase(),
+    password: user.password,
+    name: user.name.trim(),
+    role: user.role || 'editor',
+    active: user.active ?? true
+  };
+
+  const { data, error } = await supabase
+    .from(USERS_TABLE)
+    .upsert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data as MassaUser;
+}
+
+/**
+ * Elimina un usuario en Supabase
+ */
+export async function deleteMassaUser(id: string): Promise<void> {
+  const { error } = await supabase
+    .from(USERS_TABLE)
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+

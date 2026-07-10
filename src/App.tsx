@@ -5,10 +5,20 @@ import { Home } from './components/Home';
 import { ProjectConfigurator } from './components/ProjectConfigurator';
 import { ClientViewer } from './components/ClientViewer';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { PWAInstallBanner } from './components/PWAInstallBanner';
+import { RolePortalScreen } from './components/RolePortalScreen';
 import { projectsData, Project } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 
 function AdminPanel() {
+  const [userRole, setUserRole] = useState<'portal' | 'visitor' | 'editor'>(() => {
+    try {
+      const saved = localStorage.getItem('massa_3d_role');
+      return (saved === 'editor' || saved === 'visitor') ? saved : 'portal';
+    } catch {
+      return 'portal';
+    }
+  });
   const [projects, setProjects] = useState<Record<string, Project>>(projectsData);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
@@ -161,6 +171,16 @@ function AdminPanel() {
     );
   }
 
+  // Renderizar Pantalla de Selección de Perfil si el usuario aún no escoge
+  if (userRole === 'portal') {
+    return (
+      <RolePortalScreen
+        onSelectVisitor={() => setUserRole('visitor')}
+        onLoginEditor={() => setUserRole('editor')}
+      />
+    );
+  }
+
   // Renderizar Configurator si está activo
   if (configuringProjectId) {
     const projectToConfigure = projects[configuringProjectId];
@@ -199,6 +219,8 @@ function AdminPanel() {
           onConfigureProject={setConfiguringProjectId}
           onCreateProject={handleCreateNewProject}
           onDeleteProject={handleDeleteProject}
+          userRole={userRole === 'editor' ? 'editor' : 'visitor'}
+          onSwitchRole={() => setUserRole('portal')}
         />
       </div>
     );
@@ -243,10 +265,13 @@ function AdminPanel() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<AdminPanel />} />
-      <Route path="/tour/:id" element={<ClientViewer />} />
-    </Routes>
+    <>
+      <PWAInstallBanner />
+      <Routes>
+        <Route path="/" element={<AdminPanel />} />
+        <Route path="/tour/:id" element={<ClientViewer />} />
+      </Routes>
+    </>
   );
 }
 

@@ -1,0 +1,24 @@
+{
+  "name": "Massa Group | Recorridos Virtuales 360°",
+  "short_name": "Massa 3D",
+  "description": "Portal interactivo de visualización arquitectónica 3D y recorridos virtuales de Massa Group",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080d0a",
+  "theme_color": "#99cc33",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/MASSA_REBRANDING_PROFILE_REDES_ENTREGABLE_2023_003.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/MASSA_REBRANDING_PROFILE_REDES_ENTREGABLE_2023_003.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
