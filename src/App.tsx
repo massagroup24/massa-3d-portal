@@ -206,7 +206,7 @@ function AdminPanel() {
   // Renderizar Home si no hay proyecto seleccionado
   if (!activeProjectId || !currentRoomId) {
     return (
-      <div className="relative">
+      <div className="relative w-full h-full overflow-hidden">
         {syncError && (
           <div className="absolute top-24 left-1/2 -translate-x-1/2 z-50 bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-2 rounded-full text-xs font-medium flex items-center gap-2 backdrop-blur-md shadow-lg animate-bounce">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>

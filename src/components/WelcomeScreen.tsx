@@ -38,15 +38,15 @@ interface WelcomeScreenProps {
 
 export function WelcomeScreen({ projectName, onStart, onBack }: WelcomeScreenProps) {
   return (
-    <div className="fixed inset-0 z-50 bg-[#050508] flex flex-col items-center justify-center overflow-y-auto p-4 sm:p-6 select-none">
+    <div className="w-full h-full min-h-screen fixed inset-0 z-50 bg-[#050508] flex flex-col items-center justify-center overflow-y-auto p-4 sm:p-6 select-none pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       {/* Botón superior Volver al Portal */}
       {onBack && (
         <button
           onClick={onBack}
-          className="absolute top-6 left-6 z-30 bg-white/10 hover:bg-white/20 border border-white/15 text-white/80 hover:text-white px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-2 backdrop-blur-md shadow-lg group hover:border-lime-400/40"
+          className="fixed top-4 left-4 sm:top-6 sm:left-6 z-40 bg-black/80 hover:bg-black border border-white/20 text-white hover:text-lime-400 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-2 backdrop-blur-xl shadow-2xl group hover:border-lime-400/60"
           title="Regresar al Portal Principal"
         >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform text-lime-400" />
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform text-lime-400 shrink-0" />
           <span>Volver al Menú</span>
         </button>
       )}
@@ -57,7 +57,7 @@ export function WelcomeScreen({ projectName, onStart, onBack }: WelcomeScreenPro
         </Canvas>
       </div>
       
-      <div className="relative z-10 flex flex-col items-center gap-6 sm:gap-7 text-center max-w-3xl mx-auto my-auto py-6 animate-in fade-in zoom-in-95 duration-500">
+      <div className="relative z-10 flex flex-col items-center gap-6 sm:gap-7 text-center max-w-3xl mx-auto my-auto py-12 sm:py-16 animate-in fade-in zoom-in-95 duration-500">
         {/* Badge superior */}
         <div className="inline-flex items-center gap-2 bg-lime-500/10 border border-lime-500/30 px-4 py-1.5 rounded-full backdrop-blur-md shadow-[0_0_20px_rgba(163,230,53,0.15)]">
           <Eye className="w-4 h-4 text-lime-400 animate-pulse" />

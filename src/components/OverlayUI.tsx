@@ -23,21 +23,22 @@ export function OverlayUI({ currentRoom, rooms, minimapImage, onNavigate, onBack
 
   if (!currentRoom) return null;
 
+  const handleBack = onBackToHome || (() => { window.location.href = '/'; });
+
   return (
-    <div className="w-full h-full flex flex-col justify-between p-3 sm:p-6">
+    <div className="w-full h-full flex flex-col justify-between p-3 sm:p-6 select-none pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       
       {/* Top Header Responsivo */}
       <header className="flex justify-between items-start gap-2 pointer-events-auto">
         <div className="flex flex-col gap-2 sm:gap-4 max-w-[65vw] sm:max-w-sm">
-          {onBackToHome && (
-            <button 
-              onClick={onBackToHome}
-              className="flex items-center gap-1.5 text-white/80 hover:text-white bg-black/60 backdrop-blur-xl border border-white/15 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium transition-all hover:bg-white/10 w-fit shadow-xl"
-            >
-              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>Volver</span>
-            </button>
-          )}
+          <button 
+            onClick={handleBack}
+            className="flex items-center gap-2 text-white bg-black/85 hover:bg-black border border-white/25 hover:border-lime-400 rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-2xl group w-fit"
+            title="Regresar al Menú / Portal Principal"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-lime-400 group-hover:-translate-x-1 transition-transform shrink-0" />
+            <span>Volver al Menú</span>
+          </button>
 
           <div className="bg-black/60 backdrop-blur-xl border border-white/15 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-2xl text-white">
             <h1 className="text-lg sm:text-2xl md:text-3xl font-light tracking-wide mb-1 sm:mb-2">{currentRoom.name}</h1>

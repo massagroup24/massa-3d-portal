@@ -337,25 +337,30 @@ export const projectsData: Record<string, Project> = {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0a0a0f] text-white flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[#0a0a0f] text-white flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-white/10 bg-black/50">
-        <div className="flex items-center gap-4">
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <ChevronLeft className="w-5 h-5" />
+      <header className="flex flex-wrap sm:flex-nowrap items-center justify-between p-3 sm:p-4 border-b border-white/10 bg-black/70 backdrop-blur-xl gap-3 shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <button 
+            onClick={onClose} 
+            className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors font-semibold text-xs sm:text-sm border border-white/15 shrink-0 shadow-lg"
+            title="Volver al Portafolio de Proyectos / Menú"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-lime-400 shrink-0" />
+            <span>Volver al Portafolio</span>
           </button>
-          <div className="flex items-center gap-2 text-lime-400">
-            <Settings className="w-5 h-5" />
-            <h1 className="font-semibold tracking-wide">Configurador: {project.name}</h1>
+          <div className="flex items-center gap-2 text-lime-400 min-w-0">
+            <Settings className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+            <h1 className="font-semibold tracking-wide text-xs sm:text-base truncate">Configurador: {project.name}</h1>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
           <button 
             onClick={handleSaveToSupabase}
             disabled={savingState === 'saving'}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full font-medium transition-all text-sm ${
-              savingState === 'saving' ? 'bg-zinc-855/50 text-white/50 cursor-not-allowed border border-white/10' :
+            className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl sm:rounded-full font-bold transition-all text-xs sm:text-sm shadow-lg ${
+              savingState === 'saving' ? 'bg-zinc-800/50 text-white/50 cursor-not-allowed border border-white/10' :
               savingState === 'saved' ? 'bg-green-500 text-white' :
               savingState === 'error' ? 'bg-red-500 text-white hover:bg-red-600' :
               'bg-lime-500 text-black hover:bg-lime-400'
@@ -369,21 +374,21 @@ export const projectsData: Record<string, Project> = {
 
           <button 
             onClick={handleExport}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full font-medium transition-all text-sm bg-white/5 border border-white/10 text-white hover:bg-white/10 ${
+            className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl sm:rounded-full font-medium transition-all text-xs sm:text-sm bg-white/5 border border-white/10 text-white hover:bg-white/10 ${
               copied ? 'text-green-400 border-green-500/30' : ''
             }`}
           >
-            <Save className="w-4 h-4" />
+            <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             {copied ? '¡Copiado!' : 'Exportar Código'}
           </button>
         </div>
       </header>
 
       {/* Main Workspace */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
         
         {/* Left Panel: Rooms List & Details */}
-        <div className="w-[400px] border-r border-white/10 p-6 flex flex-col gap-6 overflow-y-auto bg-black/20">
+        <div className="w-full lg:w-[400px] border-b lg:border-b-0 lg:border-r border-white/10 p-4 sm:p-6 flex flex-col gap-6 max-h-[42vh] lg:max-h-full overflow-y-auto bg-black/20 shrink-0">
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-medium">Habitaciones</h2>
@@ -528,32 +533,32 @@ export const projectsData: Record<string, Project> = {
         </div>
 
         {/* Right Panel: Tabs for 360 Editor / Minimap Editor */}
-        <div className="flex-1 flex flex-col bg-[#050508] relative">
+        <div className="w-full flex-1 flex flex-col bg-[#050508] relative min-h-[520px] lg:min-h-0 overflow-y-auto lg:overflow-hidden">
           
-          <div className="flex gap-1 p-4 border-b border-white/10 bg-black/20">
+          <div className="flex gap-1.5 p-3 sm:p-4 border-b border-white/10 bg-black/20 overflow-x-auto shrink-0">
             <button 
               onClick={() => setActiveTab('settings')}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'settings' ? 'bg-lime-500 text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
+              className={`px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 ${activeTab === 'settings' ? 'bg-lime-500 text-black font-bold shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
             >
               1. Info General
             </button>
             <button 
               onClick={() => setActiveTab('360')}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === '360' ? 'bg-lime-500 text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
+              className={`px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 ${activeTab === '360' ? 'bg-lime-500 text-black font-bold shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
             >
               2. Editor 360
             </button>
             <button 
               onClick={() => setActiveTab('map')}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'map' ? 'bg-lime-500 text-black' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
+              className={`px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 ${activeTab === 'map' ? 'bg-lime-500 text-black font-bold shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
             >
               3. Mapa Interactivo
             </button>
           </div>
 
-          <div className="flex-1 relative p-6">
+          <div className="flex-1 relative p-4 sm:p-6 overflow-y-auto">
             {activeTab === 'settings' && (
-              <div className="w-full h-full p-8 flex flex-col gap-8 max-w-3xl mx-auto overflow-y-auto">
+              <div className="w-full h-full py-4 sm:py-6 flex flex-col gap-8 max-w-3xl mx-auto">
                 <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
                   <h2 className="text-2xl font-semibold text-lime-400 border-b border-white/10 pb-4">Ajustes Generales del Proyecto</h2>
                   
@@ -638,33 +643,33 @@ export const projectsData: Record<string, Project> = {
             )}
 
             {activeTab === 'map' && (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                <div className="mb-4 flex gap-4 items-center bg-white/5 px-6 py-3 rounded-full border border-white/10 shadow-lg">
-                  <span className="text-sm text-white/70">Plano actual:</span>
+              <div className="w-full h-full flex flex-col items-center justify-center py-4">
+                <div className="mb-4 flex flex-wrap gap-3 sm:gap-4 items-center justify-center bg-white/5 px-4 py-3 sm:px-6 sm:py-3 rounded-2xl sm:rounded-full border border-white/10 shadow-lg max-w-full">
+                  <span className="text-xs sm:text-sm text-white/70">Plano actual:</span>
                   <input type="file" accept="image/*" className="hidden" ref={minimapInputRef} onChange={(e) => handleFileUpload(e, 'minimap')} />
                   <button 
                     onClick={() => minimapInputRef.current?.click()}
                     disabled={uploadingImage || deletingMinimap}
-                    className="flex items-center gap-2 text-sm font-medium text-lime-400 hover:text-lime-300 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 text-xs sm:text-sm font-medium text-lime-400 hover:text-lime-300 transition-colors disabled:opacity-50"
                   >
-                    <Upload className="w-4 h-4" /> {uploadingImage ? '⚡ Optimizando y subiendo...' : 'Subir Nuevo Plano'}
+                    <Upload className="w-4 h-4 shrink-0" /> {uploadingImage ? '⚡ Subiendo...' : 'Subir Nuevo Plano'}
                   </button>
                   {project.minimapImage && (
                     <>
-                      <div className="w-[1px] h-4 bg-white/15" />
+                      <div className="hidden sm:block w-[1px] h-4 bg-white/15" />
                       <button 
                         onClick={handleDeleteMinimap}
                         disabled={uploadingImage || deletingMinimap}
-                        className="flex items-center gap-2 text-sm font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 group"
+                        className="flex items-center gap-2 text-xs sm:text-sm font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 group"
                         title="Eliminar plano actual de la nube y la base de datos"
                       >
-                        <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" /> {deletingMinimap ? 'Eliminando...' : 'Eliminar Plano'}
+                        <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform shrink-0" /> {deletingMinimap ? 'Eliminando...' : 'Eliminar Plano'}
                       </button>
                     </>
                   )}
                 </div>
 
-                <div className={`relative bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center ${!project.minimapImage ? 'min-w-[600px] min-h-[400px]' : 'w-fit h-fit max-w-[90vw] max-h-[75vh]'}`}>
+                <div className={`relative bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center ${!project.minimapImage ? 'w-full min-w-[260px] max-w-[600px] min-h-[300px] sm:min-h-[400px]' : 'w-fit h-fit max-w-[90vw] max-h-[75vh]'}`}>
                   {project.minimapImage && (
                     <button
                       onClick={(e) => {

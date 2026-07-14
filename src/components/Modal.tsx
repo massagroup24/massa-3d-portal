@@ -20,8 +20,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       />
       
       {/* Modal Content */}
-      <div className="relative bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5">
+      <div className="relative bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5 shrink-0">
           <h3 className="text-lg font-medium text-white">{title}</h3>
           <button 
             onClick={onClose}
@@ -30,7 +30,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto">
           {children}
         </div>
       </div>

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { Project } from '../data/tourData';
 import { TourContainer } from './TourContainer';
 import { WelcomeScreen } from './WelcomeScreen';
 import { useTexture } from '@react-three/drei';
+import { ArrowLeft } from 'lucide-react';
 
 export function ClientViewer() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,15 +88,28 @@ export function ClientViewer() {
 
   if (error || !project) {
     return (
-      <div className="fixed inset-0 bg-[#050508] flex flex-col items-center justify-center gap-4 text-center px-4">
+      <div className="fixed inset-0 bg-[#050508] flex flex-col items-center justify-center gap-5 text-center px-4 overflow-y-auto">
         <h1 className="text-4xl text-red-400 font-bold">¡Oops!</h1>
-        <p className="text-white/70">{error || "Proyecto no encontrado"}</p>
+        <p className="text-white/70 max-w-md">{error || "Proyecto no encontrado"}</p>
+        <button 
+          onClick={() => navigate('/')} 
+          className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-white font-semibold flex items-center gap-2 transition-all shadow-xl mt-2"
+        >
+          <ArrowLeft className="w-5 h-5 text-lime-400" />
+          <span>Volver al Portal Principal</span>
+        </button>
       </div>
     );
   }
 
   if (!started) {
-    return <WelcomeScreen projectName={project.name} onStart={() => setStarted(true)} />;
+    return (
+      <WelcomeScreen 
+        projectName={project.name} 
+        onStart={() => setStarted(true)} 
+        onBack={() => navigate('/')} 
+      />
+    );
   }
 
   if (!currentRoomId || !project.rooms[currentRoomId]) {
@@ -107,6 +122,7 @@ export function ClientViewer() {
       rooms={project.rooms}
       minimapImage={project.minimapImage}
       onNavigate={setCurrentRoomId}
+      onBackToHome={() => navigate('/')}
     />
   );
 }

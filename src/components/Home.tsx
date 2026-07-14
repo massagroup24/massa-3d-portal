@@ -1,5 +1,5 @@
 import { Project } from '../data/tourData';
-import { ArrowRight, Settings, Plus, Trash2, Link as LinkIcon, Check, Lock, AlertCircle, Building2, Globe, Shield, Compass, Layers, Monitor, LogOut, Users } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Settings, Plus, Trash2, Link as LinkIcon, Check, Lock, AlertCircle, Building2, Globe, Shield, Compass, Layers, Monitor, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { UserAccessModal } from './UserAccessModal';
@@ -63,7 +63,7 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
   const totalRooms = Object.values(projects).reduce((acc, p) => acc + Object.keys(p.rooms || {}).length, 0);
 
   return (
-    <div className="w-full min-h-screen bg-[#060609] text-white selection:bg-lime-500 selection:text-black font-sans relative overflow-y-auto overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <div className="w-full h-full bg-[#060609] text-white selection:bg-lime-500 selection:text-black font-sans relative overflow-y-auto overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       
       {/* Executive Navbar */}
       <header className="sticky top-0 z-40 w-full bg-[#060609]/80 backdrop-blur-2xl border-b border-white/10 transition-all duration-300">
@@ -99,11 +99,11 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
             {onSwitchRole && (
               <button
                 onClick={onSwitchRole}
-                className="bg-white/5 hover:bg-white/10 border border-white/15 text-white/80 hover:text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all"
-                title="Cambiar Perfil de Acceso"
+                className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-3 sm:px-3.5 py-2 sm:py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md group"
+                title="Volver al Portal Principal / Selección de Perfil"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Cambiar Perfil</span>
+                <ArrowLeft className="w-3.5 h-3.5 text-lime-400 group-hover:-translate-x-0.5 transition-transform" />
+                <span>Volver al Portal</span>
               </button>
             )}
 

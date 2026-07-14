@@ -5,10 +5,9 @@ import {
   Lock, 
   User, 
   ArrowRight, 
-  Compass, 
   Sparkles, 
   AlertCircle,
-  Building2
+  X
 } from 'lucide-react';
 import { verifyEditorLogin } from '../supabase';
 
@@ -59,7 +58,7 @@ export function RolePortalScreen({ onSelectVisitor, onLoginEditor }: RolePortalS
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#06060a] text-white flex flex-col justify-between relative overflow-hidden selection:bg-[#99cc33] selection:text-black font-sans pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
+    <div className="w-full h-full bg-[#06060a] text-white flex flex-col justify-between relative overflow-y-auto overflow-x-hidden selection:bg-[#99cc33] selection:text-black font-sans pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       
       {/* Luces Ambientales y Grid Arquitectónico */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_900px_at_50%_30%,rgba(153,204,51,0.16),transparent)] pointer-events-none" />
@@ -88,10 +87,10 @@ export function RolePortalScreen({ onSelectVisitor, onLoginEditor }: RolePortalS
         {/* Botón pequeño de Inicio de Sesión arriba a la derecha */}
         <button
           onClick={() => setShowLoginModal(true)}
-          className="bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-[#99cc33]/40 text-gray-400 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-medium flex items-center gap-1.5 transition-all group shrink-0"
+          className="bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-[#99cc33]/40 text-gray-400 hover:text-white px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all group shrink-0 shadow-lg"
           title="Iniciar Sesión (Editor / Admin)"
         >
-          <Lock className="w-3 h-3 text-[#99cc33] group-hover:scale-110 transition-transform" />
+          <Lock className="w-3.5 h-3.5 text-[#99cc33] group-hover:scale-110 transition-transform" />
           <span>Login Editor</span>
         </button>
       </header>
@@ -136,19 +135,19 @@ export function RolePortalScreen({ onSelectVisitor, onLoginEditor }: RolePortalS
       </main>
 
       {/* Pie de Página */}
-      <footer className="w-full text-center py-4 px-4 text-[10px] sm:text-xs text-gray-500 relative z-10">
+      <footer className="w-full text-center py-4 px-4 text-[10px] sm:text-xs text-gray-500 relative z-10 shrink-0">
         © {new Date().getFullYear()} MASSA GROUP • SISTEMA DE RECORRIDOS VIRTUALES 360°
       </footer>
 
       {/* MODAL DE INICIO DE SESIÓN PARA EL EDITOR */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#0e110f] border border-[#99cc33]/40 rounded-3xl p-7 max-w-md w-full shadow-[0_25px_60px_rgba(0,0,0,0.95)] relative animate-in zoom-in-95 duration-300"
+            className="bg-[#0e110f] border border-[#99cc33]/40 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-[0_25px_60px_rgba(0,0,0,0.95)] relative animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto flex flex-col my-auto"
           >
             {/* Header del Modal */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-2xl bg-[#99cc33]/20 border border-[#99cc33]/40 flex items-center justify-center text-[#99cc33]">
                   <Lock className="w-5 h-5" />
@@ -162,6 +161,13 @@ export function RolePortalScreen({ onSelectVisitor, onLoginEditor }: RolePortalS
                   </p>
                 </div>
               </div>
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-colors"
+                title="Cerrar modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Formulario de Autenticación */}
