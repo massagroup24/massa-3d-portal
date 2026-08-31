@@ -256,3 +256,61 @@ export async function deleteMassaUser(id: string): Promise<void> {
   }
 }
 
+// ==========================================
+// REGISTRO DE VISITAS
+// ==========================================
+
+export interface VisitRecord {
+  id: string;
+  project_id: string;
+  project_name?: string;
+  platform?: string;
+  user_agent?: string;
+  referrer?: string;
+  created_at: string;
+}
+
+/**
+ * Registra una visita a un proyecto
+ */
+export async function logProjectVisit(projectId: string, projectName: string = ''): Promise<void> {
+  try {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    await supabase.from('tour_visits').insert({
+      project_id: projectId,
+      project_name: projectName,
+      platform: isMobile ? 'Mobile' : 'Desktop',
+      user_agent: navigator.userAgent,
+      referrer: document.referrer || 'Directo'
+    });
+  } catch (err) {
+    console.warn("No se pudo registrar la visita:", err);
+  }
+}
+
+/**
+ * Obtiene el registro de visitas (opcionalmente filtrado por proyecto)
+ */
+export async function getProjectVisits(projectId?: string): Promise<VisitRecord[]> {
+  try {
+    let query = supabase
+      .from('tour_visits')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
+
+    const { data, error } = await query;
+    if (!error && data) {
+      return data as VisitRecord[];
+    }
+  } catch (err) {
+    console.error("Error obteniendo visitas:", err);
+  }
+  return [];
+}
+

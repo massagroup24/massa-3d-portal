@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
+import { supabase, logProjectVisit } from '../supabase';
 import { Project } from '../data/tourData';
 import { TourContainer } from './TourContainer';
 import { WelcomeScreen } from './WelcomeScreen';
@@ -38,6 +38,7 @@ export function ClientViewer() {
           return;
         }
         setProject(proj);
+        logProjectVisit(proj.id, proj.name);
         const firstRoomId = Object.keys(proj.rooms)[0];
         const validRoomId = proj.rooms[proj.initialRoomId] ? proj.initialRoomId : firstRoomId;
         setCurrentRoomId(validRoomId || null);

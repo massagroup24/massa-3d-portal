@@ -1,8 +1,9 @@
 import { Project } from '../data/tourData';
-import { ArrowRight, ArrowLeft, Settings, Plus, Trash2, Link as LinkIcon, Check, Lock, AlertCircle, Building2, Globe, Shield, Compass, Layers, Monitor, Users } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Settings, Plus, Trash2, Link as LinkIcon, Check, Lock, AlertCircle, Building2, Globe, Shield, Compass, Layers, Monitor, Users, Activity } from 'lucide-react';
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { UserAccessModal } from './UserAccessModal';
+import { VisitsDashboard } from './VisitsDashboard';
 
 interface HomeProps {
   projects: Record<string, Project>;
@@ -18,8 +19,12 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [pinModalProject, setPinModalProject] = useState<Project | null>(null);
   const [enteredPin, setEnteredPin] = useState('');
+  
+  const userLevel = sessionStorage.getItem('massa_3d_user_level');
+  const isAdmin = userLevel === 'admin';
   const [pinError, setPinError] = useState(false);
   const [showUsersModal, setShowUsersModal] = useState(false);
+  const [showVisitsModal, setShowVisitsModal] = useState(false);
 
   const handleOpenConfiguratorClick = (e: React.MouseEvent, project: Project) => {
     e.stopPropagation();
@@ -109,6 +114,17 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
 
             {userRole === 'editor' && (
               <>
+                {isAdmin && (
+                  <button
+                    onClick={() => setShowVisitsModal(true)}
+                    className="bg-white/5 hover:bg-white/10 border border-[#99cc33]/30 text-[#99cc33] hover:text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                    title="Ver registro de visitas"
+                  >
+                    <Activity className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Métricas</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => setShowUsersModal(true)}
                   className="bg-white/5 hover:bg-white/10 border border-[#99cc33]/30 text-[#99cc33] hover:text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
@@ -417,6 +433,11 @@ export function Home({ projects, onSelectProject, onConfigureProject, onCreatePr
       {/* Modal de Gestión de Usuarios MASSA */}
       {showUsersModal && (
         <UserAccessModal onClose={() => setShowUsersModal(false)} />
+      )}
+
+      {/* Modal de Registro de Visitas */}
+      {showVisitsModal && (
+        <VisitsDashboard onClose={() => setShowVisitsModal(false)} />
       )}
     </div>
   );

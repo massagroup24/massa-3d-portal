@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
-  Plus, 
   Trash2, 
   Shield, 
   X, 
-  Key, 
-  UserCheck, 
   RefreshCw, 
   AlertCircle,
-  Check,
   UserPlus
 } from 'lucide-react';
 import { MassaUser, getMassaUsers, saveMassaUser, deleteMassaUser } from '../supabase';
@@ -28,7 +24,7 @@ export function UserAccessModal({ onClose }: UserAccessModalProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState<'editor' | 'admin'>('editor');
+  const [role] = useState<'editor' | 'admin'>('editor');
   const [saving, setSaving] = useState(false);
 
   const fetchUsers = async () => {

@@ -13,7 +13,10 @@ import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 function AdminPanel() {
   const [userRole, setUserRole] = useState<'portal' | 'visitor' | 'editor'>(() => {
     try {
-      const saved = localStorage.getItem('massa_3d_role');
+      if (localStorage.getItem('massa_3d_role')) {
+        localStorage.removeItem('massa_3d_role');
+      }
+      const saved = sessionStorage.getItem('massa_3d_role');
       return (saved === 'editor' || saved === 'visitor') ? saved : 'portal';
     } catch {
       return 'portal';
