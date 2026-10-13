@@ -98,6 +98,21 @@ export const PORTFOLIO_WORKS: PortfolioWork[] = [
   },
 ];
 
+function getTitleFontSize(title: string): string {
+  const len = title.length;
+  if (len <= 8) {
+    return 'text-7xl sm:text-9xl md:text-[10rem] lg:text-[13vw]';
+  }
+  if (len <= 11) {
+    return 'text-6xl sm:text-8xl md:text-9xl lg:text-[11vw]';
+  }
+  if (len <= 13) {
+    return 'text-5xl sm:text-7xl md:text-8xl lg:text-[9.2vw]';
+  }
+  // Títulos largos (14+ caracteres como "RESIDENCIA BAMBÚ", "PENTHOUSE MASSA", etc.)
+  return 'text-4xl sm:text-6xl md:text-7xl lg:text-[7.6vw] xl:text-[8vw]';
+}
+
 interface GuestPortfolioShowcaseProps {
   onSelectProject: (projectId: string) => void;
   onOpenLogin: () => void;
@@ -211,10 +226,10 @@ export function GuestPortfolioShowcase({
       </header>
 
       {/* 3. Área Central: Carrusel de Thumbnails + Tipografía Monumental SKIPER6 */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12 max-w-7xl mx-auto w-full">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-start px-4 sm:px-6 pt-4 sm:pt-6 pb-6 max-w-7xl mx-auto w-full">
         
-        {/* Tira Superior de Miniaturas (Inspirado en skiper6) */}
-        <div className="relative mb-8 sm:mb-14 max-w-full">
+        {/* Tira Superior de Miniaturas (Inamovible: anclada en la parte superior sin desplazamientos) */}
+        <div className="relative mb-6 sm:mb-10 max-w-full shrink-0 z-20">
           <div className="flex items-center justify-start md:justify-center gap-2 sm:gap-3.5 p-2 sm:p-2.5 rounded-3xl bg-[#141416]/85 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-x-auto no-scrollbar max-w-full">
             {PORTFOLIO_WORKS.map((work, idx) => {
               const isHovered = hoveredIndex === idx;
@@ -272,21 +287,22 @@ export function GuestPortfolioShowcase({
           </div>
         </div>
 
-        {/* Tipografía Monumental Dinámica: "PORTAFOLIO" o NOMBRE DE LA OBRA */}
+        {/* Tipografía Monumental Dinámica: Ocupa el espacio restante centrado sin alterar la posición de la barra */}
         <div 
           onClick={() => activeWork && onSelectProject(activeWork.id)}
-          className={`w-full flex flex-col items-center justify-center py-2 sm:py-6 select-none ${activeWork ? 'cursor-pointer group' : ''}`}
+          className={`flex-1 w-full flex flex-col items-center justify-center select-none ${activeWork ? 'cursor-pointer group' : ''}`}
         >
-          <div className="relative min-h-[90px] sm:min-h-[140px] md:min-h-[180px] lg:min-h-[220px] flex items-center justify-center w-full overflow-hidden">
+          {/* Caja con altura fija reservada para garantizar CLS = 0 (cero saltos visuales) */}
+          <div className="relative h-[110px] sm:h-[150px] md:h-[190px] lg:h-[230px] flex items-center justify-center w-full px-2 overflow-hidden">
             <AnimatePresence mode="wait">
               {activeWork ? (
                 <m.h1
                   key={activeWork.id}
-                  initial={{ opacity: 0, y: 40, scale: 0.94 }}
+                  initial={{ opacity: 0, y: 35, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -40, scale: 0.94 }}
-                  transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="font-monumental text-6xl sm:text-8xl md:text-9xl lg:text-[13vw] font-black text-[#9CD01A] tracking-tight text-center leading-none filter drop-shadow-[0_10px_35px_rgba(156,208,26,0.35)] group-hover:scale-103 transition-transform"
+                  exit={{ opacity: 0, y: -35, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+                  className={`font-monumental ${getTitleFontSize(activeWork.name)} font-black text-[#9CD01A] tracking-tight text-center leading-none filter drop-shadow-[0_10px_35px_rgba(156,208,26,0.35)] whitespace-nowrap select-none group-hover:scale-102 transition-transform`}
                 >
                   {activeWork.name}
                 </m.h1>
@@ -296,8 +312,8 @@ export function GuestPortfolioShowcase({
                   initial={{ opacity: 0, y: 30, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -30, scale: 0.96 }}
-                  transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="font-monumental text-6xl sm:text-8xl md:text-9xl lg:text-[13vw] font-black text-white/90 tracking-tight text-center leading-none filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+                  transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="font-monumental text-6xl sm:text-8xl md:text-9xl lg:text-[11.5vw] font-black text-white/95 tracking-tight text-center leading-none filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] whitespace-nowrap select-none"
                 >
                   PORTAFOLIO
                 </m.h1>
@@ -305,16 +321,16 @@ export function GuestPortfolioShowcase({
             </AnimatePresence>
           </div>
 
-          {/* Subtítulo Dinámico Interactivo */}
-          <div className="mt-4 sm:mt-6 min-h-[44px] flex items-center justify-center">
+          {/* Subtítulo Dinámico Interactivo con altura reservada para que no cause saltos */}
+          <div className="mt-3 sm:mt-5 h-[48px] flex items-center justify-center">
             <AnimatePresence mode="wait">
               {activeWork ? (
                 <m.div
                   key={`sub-${activeWork.id}`}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
                   className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 rounded-full bg-[#161618]/90 backdrop-blur-xl border border-[#9CD01A]/30 text-xs sm:text-sm text-white shadow-xl group-hover:border-[#9CD01A]"
                 >
                   <span className="flex items-center gap-1 text-[#9CD01A] font-semibold">
@@ -339,10 +355,10 @@ export function GuestPortfolioShowcase({
               ) : (
                 <m.div
                   key="default-sub"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
                   className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-[#A3A3A3]"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#9CD01A]" />
