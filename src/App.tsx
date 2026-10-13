@@ -1,42 +1,55 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { LazyMotion, domAnimation } from 'framer-motion';
 import { TourContainer } from './components/TourContainer';
 import { Home } from './components/Home';
 import { ProjectConfigurator } from './components/ProjectConfigurator';
 import { ClientViewer } from './components/ClientViewer';
-import { WelcomeScreen } from './components/WelcomeScreen';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
-import { RolePortalScreen } from './components/RolePortalScreen';
-import { projectsData, Project } from './data/tourData';
+import { LoginScreen } from './components/LoginScreen';
+import { PortalLayout } from './components/layout/PortalLayout';
+import { ClientHome } from './components/ClientHome';
+import { SectionPlaceholder } from './components/SectionPlaceholder';
+import { NavTab } from './components/ui/Dock';
+import { projectsData, Project, normalizeProject } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 
-function AdminPanel() {
-  const [userRole, setUserRole] = useState<'portal' | 'visitor' | 'editor'>(() => {
+function MainPortal() {
+  // Estado de rol: 'portal' (muestra login), 'client' (portal cliente), 'architect' (panel arquitecto)
+  const [userRole, setUserRole] = useState<'portal' | 'client' | 'architect'>(() => {
     try {
-      if (localStorage.getItem('massa_3d_role')) {
-        localStorage.removeItem('massa_3d_role');
-      }
       const saved = sessionStorage.getItem('massa_3d_role');
-      return (saved === 'editor' || saved === 'visitor') ? saved : 'portal';
+      if (saved === 'editor') return 'architect';
+      if (saved === 'visitor') return 'client';
+      return 'portal';
     } catch {
       return 'portal';
     }
   });
-  const [projects, setProjects] = useState<Record<string, Project>>(projectsData);
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+
+  const [activeTab, setActiveTab] = useState<NavTab>('home');
+  const [projects, setProjects] = useState<Record<string, Project>>(() => {
+    const normalized: Record<string, Project> = {};
+    Object.keys(projectsData).forEach(key => {
+      normalized[key] = normalizeProject(projectsData[key]);
+    });
+    return normalized;
+  });
+
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(() => {
+    return Object.keys(projectsData)[0] || null;
+  });
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
   const [configuringProjectId, setConfiguringProjectId] = useState<string | null>(null);
   const [tourStarted, setTourStarted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncError, setSyncError] = useState<string | null>(null);
 
-  // Cargar proyectos desde Supabase
+  // Cargar proyectos desde Supabase con normalización defensiva
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        
-        // Promesa de timeout para evitar que la app se quede colgada
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("Tiempo de espera agotado (límite 10s)")), 10000)
         );
@@ -47,27 +60,30 @@ function AdminPanel() {
         ]);
         
         if (fbProjects.length === 0) {
-          // Si no hay datos en la nube, subimos los locales inicialmente para poblar la BD
-          console.log("Base de datos de Supabase vacía. Sincronizando datos locales...");
           for (const key of Object.keys(projectsData)) {
             await saveProjectToSupabase(projectsData[key]);
           }
-          setProjects(projectsData);
+          const normalized: Record<string, Project> = {};
+          Object.keys(projectsData).forEach(key => {
+            normalized[key] = normalizeProject(projectsData[key]);
+          });
+          setProjects(normalized);
         } else {
-          // Mapeamos el arreglo a un Record<string, Project>
           const loadedProjects: Record<string, Project> = {};
           fbProjects.forEach(p => {
             if (p && p.id) {
-              loadedProjects[p.id] = p;
+              loadedProjects[p.id] = normalizeProject(p);
             }
           });
           setProjects(loadedProjects);
+          if (!activeProjectId && fbProjects[0]?.id) {
+            setActiveProjectId(fbProjects[0].id);
+          }
         }
         setSyncError(null);
       } catch (error: any) {
-        console.error("Error conectando a Supabase, usando datos locales:", error);
-        setSyncError("Conexión con Supabase fallida. Revisa si creaste la tabla 'projects'.");
-        // Fallback a datos locales ya configurados por defecto
+        console.warn("Usando datos locales por desconexión de Supabase:", error);
+        setSyncError("Conexión con Supabase en modo local.");
       } finally {
         setLoading(false);
       }
@@ -86,22 +102,41 @@ function AdminPanel() {
     }
   };
 
-  const handleBackToHome = () => {
-    setActiveProjectId(null);
-    setCurrentRoomId(null);
+  const handleStart360Tour = () => {
+    const projId = activeProjectId || Object.keys(projects)[0];
+    if (projId && projects[projId]) {
+      const proj = projects[projId];
+      const firstRoomId = proj.rooms ? Object.keys(proj.rooms)[0] : null;
+      const validRoomId = (proj.rooms && proj.rooms[proj.initialRoomId]) ? proj.initialRoomId : firstRoomId;
+      setCurrentRoomId(validRoomId || null);
+      setActiveProjectId(projId);
+      setTourStarted(true);
+    }
+  };
+
+  const handleBackToPortal = () => {
     setTourStarted(false);
+    setActiveTab('home');
   };
 
-  const handleRoomChange = (roomId: string) => {
-    setCurrentRoomId(roomId);
+  const handleLogout = () => {
+    sessionStorage.removeItem('massa_3d_role');
+    sessionStorage.removeItem('massa_client_email');
+    setUserRole('portal');
+    setTourStarted(false);
+    setActiveTab('home');
   };
 
-  // Guardar proyecto actualizado en el estado local
+  const handleLoginSuccess = (role: 'client' | 'architect') => {
+    setUserRole(role);
+    setActiveTab('home');
+  };
+
   const handleSaveProject = (updatedProject: Project) => {
     if (!updatedProject || !updatedProject.id) return;
     setProjects(prev => ({
       ...prev,
-      [updatedProject.id]: updatedProject
+      [updatedProject.id]: normalizeProject(updatedProject)
     }));
   };
 
@@ -109,45 +144,33 @@ function AdminPanel() {
     const newId = `project_${Date.now()}`;
     const newProject: Project = {
       id: newId,
-      name: "Nuevo Proyecto",
-      description: "Descripción de tu nuevo recorrido 360.",
-      thumbnail: "", // Sin imagen por defecto
-      minimapImage: "", // Sin plano por defecto
+      name: "Nuevo Proyecto MASSA",
+      description: "Descripción de tu proyecto arquitectónico.",
+      thumbnail: "",
+      minimapImage: "",
       initialRoomId: "room_1",
-      pin: "1234", // PIN de seguridad por defecto para el Creador Visual
       rooms: {
         "room_1": {
           id: "room_1",
           name: "Habitación Inicial",
           description: "Punto de partida",
-          imageUrl: "", // El usuario la subirá
+          imageUrl: "",
           minimapPosition: { x: 50, y: 50 },
           hotspots: []
         }
       }
     };
-    
-    // Guardamos el proyecto de forma temporal en la memoria
-    setProjects(prev => ({
-      ...prev,
-      [newId]: newProject
-    }));
-    
-    // Abrimos el configurador para ese nuevo proyecto
+    setProjects(prev => ({ ...prev, [newId]: newProject }));
     setConfiguringProjectId(newId);
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este proyecto de forma permanente? Se borrará de la nube.");
+    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este proyecto de forma permanente?");
     if (!confirmDelete) return;
 
     try {
-      // 1. Lo borramos en Supabase
-      import('./supabase').then(async (m) => {
-        await m.deleteProjectFromSupabase(projectId);
-      });
-
-      // 2. Lo borramos de la interfaz (estado local)
+      const { deleteProjectFromSupabase } = await import('./supabase');
+      await deleteProjectFromSupabase(projectId);
       setProjects(prev => {
         const copy = { ...prev };
         delete copy[projectId];
@@ -159,122 +182,166 @@ function AdminPanel() {
     }
   };
 
-  // Renderizar pantalla de carga premium mientras conecta con la nube
+  // Pantalla de carga mientras conecta
   if (loading) {
     return (
-      <div className="w-full h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center gap-5">
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-4 border-lime-500/20"></div>
-          <div className="absolute inset-0 rounded-full border-4 border-t-lime-400 animate-spin"></div>
+      <div className="w-full h-screen bg-[#0D0D0E] text-white flex flex-col items-center justify-center gap-5">
+        <div className="relative w-14 h-14">
+          <div className="absolute inset-0 rounded-full border-4 border-[#9CD01A]/20"></div>
+          <div className="absolute inset-0 rounded-full border-4 border-t-[#9CD01A] animate-spin"></div>
         </div>
-        <div className="text-sm font-light tracking-widest text-lime-400 animate-pulse uppercase">
-          Estableciendo conexión en la nube...
+        <div className="text-xs font-semibold tracking-widest text-[#9CD01A] animate-pulse uppercase">
+          VIEW by MASSA GROUP
         </div>
       </div>
     );
   }
 
-  // Renderizar Pantalla de Selección de Perfil si el usuario aún no escoge
+  // 1. Pantalla de Login si no ha iniciado sesión
   if (userRole === 'portal') {
     return (
-      <RolePortalScreen
-        onSelectVisitor={() => setUserRole('visitor')}
-        onLoginEditor={() => setUserRole('editor')}
+      <LoginScreen
+        onLoginSuccess={handleLoginSuccess}
+        onExplorePublicTours={() => {
+          setUserRole('client');
+        }}
       />
     );
   }
 
-  // Renderizar Configurator si está activo
+  // 2. Editor de Recorridos 360 (Si está activo por el arquitecto)
   if (configuringProjectId) {
     const projectToConfigure = projects[configuringProjectId];
-    
-    // Protección contra race conditions (si React aún no actualiza el estado 'projects')
     if (!projectToConfigure) {
       return (
-        <div className="w-full h-screen bg-[#0a0a0f] flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-lime-500/20 border-t-lime-400 rounded-full animate-spin"></div>
+        <div className="w-full h-screen bg-[#0D0D0E] flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-[#9CD01A]/20 border-t-[#9CD01A] rounded-full animate-spin"></div>
         </div>
       );
     }
 
     return (
-      <ProjectConfigurator 
-        initialProject={projectToConfigure} 
-        onClose={() => setConfiguringProjectId(null)} 
+      <ProjectConfigurator
+        initialProject={projectToConfigure}
+        onClose={() => setConfiguringProjectId(null)}
         onSave={handleSaveProject}
       />
     );
   }
 
-  // Renderizar Home si no hay proyecto seleccionado
-  if (!activeProjectId || !currentRoomId) {
+  // 3. Recorrido 360° en pantalla completa (Reutilizando motor Three.js existente)
+  const currentProject = (activeProjectId && projects[activeProjectId]) ? projects[activeProjectId] : Object.values(projects)[0];
+  const firstAvailableRoomId = currentProject?.rooms ? Object.keys(currentProject.rooms)[0] : null;
+  const currentRoom = currentProject?.rooms 
+    ? (currentRoomId && currentProject.rooms[currentRoomId] ? currentProject.rooms[currentRoomId] : (firstAvailableRoomId ? currentProject.rooms[firstAvailableRoomId] : undefined)) 
+    : undefined;
+
+  if (tourStarted && currentProject && currentRoom) {
     return (
-      <div className="relative w-full h-full overflow-hidden">
-        {syncError && (
-          <div className="absolute top-24 left-1/2 -translate-x-1/2 z-50 bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-2 rounded-full text-xs font-medium flex items-center gap-2 backdrop-blur-md shadow-lg animate-bounce">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-            {syncError}
+      <TourContainer
+        currentRoom={currentRoom}
+        rooms={currentProject.rooms}
+        minimapImage={currentProject.minimapImage}
+        onNavigate={(roomId) => setCurrentRoomId(roomId)}
+        onBackToHome={handleBackToPortal}
+      />
+    );
+  }
+
+  // 4. Panel de Administrador / Arquitecto (si seleccionó rol Arquitecto)
+  if (userRole === 'architect') {
+    return (
+      <div className="relative w-full min-h-screen bg-[#0D0D0E] text-white">
+        {/* Banner de barra superior para alternar a vista de cliente */}
+        <div className="bg-[#171717]/90 border-b border-white/10 px-4 py-2.5 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#9CD01A]" />
+            <span className="font-bold text-[#F5F5F5]">Modo Arquitecto MASSA</span>
           </div>
-        )}
-        <Home 
-          projects={projects} 
-          onSelectProject={handleSelectProject} 
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setUserRole('client')}
+              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F5F5] font-semibold transition"
+            >
+              Ver Portal como Cliente
+            </button>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 font-semibold transition"
+            >
+              Salir
+            </button>
+          </div>
+        </div>
+
+        <Home
+          projects={projects}
+          onSelectProject={handleSelectProject}
           onConfigureProject={setConfiguringProjectId}
           onCreateProject={handleCreateNewProject}
           onDeleteProject={handleDeleteProject}
-          userRole={userRole === 'editor' ? 'editor' : 'visitor'}
+          userRole="editor"
           onSwitchRole={() => setUserRole('portal')}
         />
       </div>
     );
   }
 
-  const currentProject = projects[activeProjectId];
-  const firstAvailableRoomId = currentProject?.rooms ? Object.keys(currentProject.rooms)[0] : null;
-  const currentRoom = currentProject?.rooms ? (currentProject.rooms[currentRoomId] || (firstAvailableRoomId ? currentProject.rooms[firstAvailableRoomId] : undefined)) : undefined;
-
-  if (!currentProject || !currentRoom) {
-    return (
-      <div className="w-full h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center gap-4 p-6 text-center">
-        <h2 className="text-xl font-bold text-red-400">Habitación no encontrada</h2>
-        <p className="text-white/70 max-w-md">No se pudo cargar la habitación seleccionada o el proyecto no tiene habitaciones configuradas.</p>
-        <button onClick={handleBackToHome} className="px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition font-medium">
-          Volver al Menú Principal
-        </button>
-      </div>
-    );
-  }
-
-  if (!tourStarted) {
-    return (
-      <WelcomeScreen 
-        projectName={currentProject.name} 
-        onStart={() => setTourStarted(true)} 
-        onBack={handleBackToHome}
-      />
-    );
-  }
-
+  // 5. Portal del Cliente con Sistema de Diseño visionOS (Fase 1)
   return (
-    <TourContainer 
-      currentRoom={currentRoom}
-      rooms={currentProject.rooms}
-      minimapImage={currentProject.minimapImage}
-      onNavigate={handleRoomChange}
-      onBackToHome={handleBackToHome}
-    />
+    <PortalLayout
+      activeTab={activeTab}
+      onSelectTab={(tab) => {
+        if (tab === 'tour360') {
+          handleStart360Tour();
+        } else {
+          setActiveTab(tab);
+        }
+      }}
+      projectName={currentProject?.name || 'Villa Serena'}
+      userRole="client"
+      onLogout={handleLogout}
+    >
+      {syncError && (
+        <div className="mb-4 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs px-3.5 py-1.5 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+          <span>{syncError}</span>
+        </div>
+      )}
+      {activeTab === 'home' ? (
+        <ClientHome
+          projectName={currentProject?.name || 'Villa Serena'}
+          clientName="Carlos"
+          phase="FASE 3"
+          progressPercentage={68}
+          onNavigateSection={(tab) => {
+            if (tab === 'tour360') {
+              handleStart360Tour();
+            } else {
+              setActiveTab(tab);
+            }
+          }}
+          onOpen360Tour={handleStart360Tour}
+        />
+      ) : (
+        <SectionPlaceholder
+          tab={activeTab}
+          onBackToHome={() => setActiveTab('home')}
+        />
+      )}
+    </PortalLayout>
   );
 }
 
 export default function App() {
   return (
-    <>
+    <LazyMotion features={domAnimation}>
       <PWAInstallBanner />
       <Routes>
-        <Route path="/" element={<AdminPanel />} />
+        <Route path="/" element={<MainPortal />} />
         <Route path="/tour/:id" element={<ClientViewer />} />
       </Routes>
-    </>
+    </LazyMotion>
   );
 }
-

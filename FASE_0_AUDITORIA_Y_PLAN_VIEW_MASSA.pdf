@@ -1,0 +1,164 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+3 0 obj
+<< /Length 3759 >>
+stream
+0.051 0.051 0.055 rg 0 0 595.28 841.89 re f
+0.09 0.09 0.09 rg 36 730 523.28 80 re f
+0.612 0.816 0.102 RG 1 w 36 730 523.28 80 re S
+BT /F2 8 Tf 0.612 0.816 0.102 rg 48 788 Td (PLAN ARQUITECTONICO CORREGIDO - FASE 0 v2.0) Tj ET
+BT /F2 16 Tf 1 1 1 rg 48 765 Td (MODELO RELACIONAL Y RLS EN SUPABASE) Tj ET
+BT /F1 9 Tf 0.7 0.7 0.7 rg 48 746 Td (Separacion de Responsabilidades y Seguridad en Base de Datos) Tj ET
+BT /F1 8 Tf 0.5 0.5 0.5 rg 480 746 Td (Pagina 1 de 3) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 705 Td (1. PRINCIPIO DE SEPARACION: JSON 360 vs. TABLAS RELACIONALES) Tj ET
+BT /F2 8.2 Tf 1 1 1 rg 36 692 Td (- projects.data \(JSONB\): Se mantiene INTACTO para rooms, hotspots, minimapa y recorrido 360.) Tj ET
+BT /F2 8.2 Tf 1 0.6 0.6 rg 36 680 Td (- PROHIBICION: No guardar renders, planos, modelos 3D ni avances dentro del JSON de projects.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 668 Td (- Tablas Relacionales Nuevas: Se normalizan en PostgreSQL con RLS y claves foraneas.) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 652 Td (2. ESQUEMA RELACIONAL IMPLEMENTADO) Tj ET
+0.09 0.09 0.09 rg 36 464 523.28 175 re f
+0.2 0.2 0.2 RG 0.5 w 36 464 523.28 175 re S
+BT /F2 7.8 Tf 0.612 0.816 0.102 rg 46 625 Td (TABLA) Tj 145 625 Td (COLUMNAS CLAVE) Tj 340 625 Td (PROPOSITO Y SEGURIDAD RLS) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 612 Td (projects) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 145 612 Td (id, data, current_phase, progress, published_for_client) Tj ET
+BT /F1 7.2 Tf 0.612 0.816 0.102 rg 340 612 Td (Conserva data para 360; agrega phase y progress.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 582 Td (user_profiles) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 145 582 Td (id \(auth.uid\), email, name, role \(client/architect/admin\)) Tj ET
+BT /F1 7.2 Tf 0.612 0.816 0.102 rg 340 582 Td (Vinculado a Supabase Auth; gestion de roles.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 552 Td (project_members) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 145 552 Td (id, project_id, user_id, role, created_at) Tj ET
+BT /F1 7.2 Tf 0.612 0.816 0.102 rg 340 552 Td (Asignacion explicita cliente <-> proyecto.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 522 Td (project_media) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 145 522 Td (id, project_id, type \(render/blueprint/model_3d\), storage_path, published) Tj ET
+BT /F1 7.2 Tf 0.612 0.816 0.102 rg 340 522 Td (Renders, planos y 3D en bucket privado con RLS.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 492 Td (progress_updates) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 145 492 Td (id, project_id, percentage, phase_title, photos, before_after, published) Tj ET
+BT /F1 7.2 Tf 0.612 0.816 0.102 rg 340 492 Td (Feed de avances con fotos y comparador antes/despues.) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 455 Td (3. POLITICAS RLS EN BASE DE DATOS \(NO EN EL CLIENTE\)) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 442 Td (- staff_access: Arquitectos y administradores tienen control total \(SELECT, INSERT, UPDATE, DELETE\).) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 430 Td (- clients_projects: Clientes solo ven proyectos asignados en project_members con published_for_client = true.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 418 Td (- clients_media: Clientes solo leen project_media donde published = true Y pertenezcan a su proyecto asignado.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 406 Td (- clients_updates: Clientes solo leen progress_updates con published = true de sus proyectos asignados.) Tj ET
+BT /F2 8 Tf 0.612 0.816 0.102 rg 36 394 Td (- APLICACION ESTRICTA: El backend de PostgreSQL filtra las filas; jamas viaja contenido privado no publicado.) Tj ET
+0.2 0.2 0.2 RG 0.5 w 36 30 523.28 0 re S
+BT /F1 7.5 Tf 0.5 0.5 0.5 rg 36 20 Td (VIEW by MASSA GROUP - Especificacion de Ingenieria y Arquitectura v2.0) Tj ET
+BT /F2 7.5 Tf 0.612 0.816 0.102 rg 450 20 Td (MASSA LIME #9CD01A) Tj ET
+endstream
+endobj
+4 0 obj
+<< /Length 3558 >>
+stream
+0.051 0.051 0.055 rg 0 0 595.28 841.89 re f
+0.09 0.09 0.09 rg 36 730 523.28 80 re f
+0.612 0.816 0.102 RG 1 w 36 730 523.28 80 re S
+BT /F2 8 Tf 0.612 0.816 0.102 rg 48 788 Td (PLAN ARQUITECTONICO CORREGIDO - FASE 0 v2.0) Tj ET
+BT /F2 16 Tf 1 1 1 rg 48 765 Td (SEGURIDAD, RETROCOMPATIBILIDAD Y WEBGL) Tj ET
+BT /F1 9 Tf 0.7 0.7 0.7 rg 48 746 Td (Migracion Auth, Normalizacion y Gestion de Recursos 3D) Tj ET
+BT /F1 8 Tf 0.5 0.5 0.5 rg 480 746 Td (Pagina 2 de 3) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 705 Td (4. AUDITORIA DE SEGURIDAD Y MIGRACION A SUPABASE AUTH) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 692 Td (- Fuga de PIN Corregida: El PIN ya no viaja en el JSON al navegador; la edicion se valida por JWT.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 680 Td (- Supabase Auth con Roles: Migracion suave desde massa_3d_users hacia auth.users y user_profiles.) Tj ET
+BT /F2 8.2 Tf 0.612 0.816 0.102 rg 36 668 Td (- Buckets Privados y URLs Firmadas: Bucket "project-vault" privado. Se generan URLs firmadas con TTL de 1h.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 656 Td (- Cache de URLs firmadas en memoria del cliente para evitar sobrecargar la API de Storage.) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 640 Td (5. RETROCOMPATIBILIDAD Y NORMALIZACION DEFENSIVA) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 627 Td (- Guardado Seguro: saveProjectToSupabase solo actualiza atributos 360 sin sobreescribir tablas relacionales.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 615 Td (- Funcion normalizeProject\(\): Valida y sanea projects antiguos asignando valores seguros por defecto) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 603 Td (  \(garantiza que hotspots sean arreglos de 3 numeros y minimapa tenga x=50, y=50 si faltan\).) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 587 Td (6. ARQUITECTURA WEBGL Y CICLO DE VIDA \(CERO FUGAS DE MEMORIA\)) Tj ET
+0.09 0.09 0.09 rg 36 404 523.28 170 re f
+0.2 0.2 0.2 RG 0.5 w 36 404 523.28 170 re S
+BT /F2 7.8 Tf 0.612 0.816 0.102 rg 46 560 Td (DIRECTIVA WEBGL) Tj 170 560 Td (ESTRATEGIA TECNICA Y MOTIVACION) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 547 Td (Contexto Unico) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 170 547 Td (Jamas coexisten dos Canvas en el DOM. Carga lazy con React.lazy y Suspense.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 523 Td (Disposal Explicito) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 170 523 Td (Hook useDisposeThree recorre la escena liberando geometry, texture y material.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 499 Td (Resolucion en Movil) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 170 499 Td (Limite maximo de 2048x1024 / 4096x2048 px en texturas equirectangulares.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 475 Td (frameloop="demand") Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 170 475 Td (En el visor de Modelo 3D \(.glb\) para renderizar solo ante orbit o cambio de capas.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 451 Td (Compresion Draco) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 170 451 Td (Modelos GLB optimizados con Draco/meshopt decodificados en Web Workers.) Tj ET
+BT /F2 7.3 Tf 1 1 1 rg 46 427 Td (Context Lost/Restored) Tj ET
+BT /F1 7.2 Tf 0.85 0.85 0.85 rg 170 427 Td (Escucha activa de webglcontextlost con event.preventDefault\(\) para restauracion limpia.) Tj ET
+BT /F2 7.8 Tf 0.612 0.816 0.102 rg 36 396 Td (Verificacion en Desarrollo: renderer.info.memory activo en consola para auditar geometrias y texturas.) Tj ET
+0.2 0.2 0.2 RG 0.5 w 36 30 523.28 0 re S
+BT /F1 7.5 Tf 0.5 0.5 0.5 rg 36 20 Td (VIEW by MASSA GROUP - Especificacion de Ingenieria y Arquitectura v2.0) Tj ET
+BT /F2 7.5 Tf 0.612 0.816 0.102 rg 450 20 Td (MASSA LIME #9CD01A) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Length 4048 >>
+stream
+0.051 0.051 0.055 rg 0 0 595.28 841.89 re f
+0.09 0.09 0.09 rg 36 730 523.28 80 re f
+0.612 0.816 0.102 RG 1 w 36 730 523.28 80 re S
+BT /F2 8 Tf 0.612 0.816 0.102 rg 48 788 Td (PLAN ARQUITECTONICO CORREGIDO - FASE 0 v2.0) Tj ET
+BT /F2 16 Tf 1 1 1 rg 48 765 Td (ANIMACIONES, SUBIDAS EN OBRA Y FECHAS) Tj ET
+BT /F1 9 Tf 0.7 0.7 0.7 rg 48 746 Td (Optimizacion Framer Motion, IndexedDB + TUS y Calculo Temporal) Tj ET
+BT /F1 8 Tf 0.5 0.5 0.5 rg 480 746 Td (Pagina 3 de 3) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 705 Td (7. ANIMACIONES DE ALTO RENDIMIENTO \(60 FPS\)) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 692 Td (- LazyMotion de Framer Motion: Uso estricto de <LazyMotion features={domAnimation}> \(~35kB menos\).) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 680 Td (- Cero Re-renders en Efectos Continuos: Orbes de fondo en CSS @keyframes; spotlight de cursor con variables CSS.) Tj ET
+BT /F2 8 Tf 1 1 1 rg 36 668 Td (- Sin Tilt en Tactil: Efecto 3D de tarjetas condicionado a \(pointer: fine\); desactivado en moviles.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 656.2 Td (- Desactivacion de Blur sobre WebGL: Con visor 3D/360 activo, los paneles usan fondo solido sin backdrop-blur.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 644.2 Td (- Pausa de Orbes: Las animaciones de fondo se pausan cuando un canvas WebGL esta montado.) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 628.2 Td (8. COLA DE SUBIDAS RESILIENTE EN OBRA \(INDEXEDDB + TUS\)) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 615.2 Td (- Persistencia Local: Object Store "upload_queue" en IndexedDB para no perder fotos ante cortes de red.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 603.2 Td (- Protocolo TUS Reanudable: Subidas a Supabase Storage con reanudacion por byte offset y exponential backoff.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 591.2 Td (- Idempotencia: ID generado en cliente \(crypto.randomUUID\(\)\) para evitar duplicacion de archivos.) Tj ET
+BT /F2 8 Tf 0.612 0.816 0.102 rg 36 579.2 Td (- Transaccionalidad: El registro en la base de datos relacional SOLO se crea tras finalizar la subida al Storage.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 567.4000000000001 Td (- UI de Cola con Reintentos: Boton de reintentar por archivo y conmutador "Subir solo con Wi-Fi".) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 555.4000000000001 Td (- Deteccion Online: Reintento automatico con window.online y al abrir la app \(sin depender de sync de iOS\).) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 539.4000000000001 Td (9. CALCULO DINAMICO DE FECHAS \("Actualizado hoy"\)) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 526.4000000000001 Td (- En Base de Datos: Se persiste updated_at TIMESTAMPTZ real, nunca un texto estatico.) Tj ET
+BT /F1 8.2 Tf 0.9 0.9 0.9 rg 36 514.4000000000001 Td (- Formateo Dinamico en Cliente: Funcion formatProjectUpdateTag\(\) compara contra Date.now\(\):) Tj ET
+BT /F2 7.8 Tf 0.612 0.816 0.102 rg 36 502.4000000000001 Td (  <24h: "ACTUALIZADO HOY" | <48h: "ACTUALIZADO AYER" | <7d: "ACTUALIZADO HACE X DIAS" | Fecha exacta.) Tj ET
+BT /F2 10.5 Tf 0.612 0.816 0.102 rg 36 484.80000000000007 Td (10. HOJA DE RUTA Y TRANSICION A FASE 1) Tj ET
+0.09 0.09 0.09 rg 36 396.80000000000007 523.28 75 re f
+0.2 0.2 0.2 RG 0.5 w 36 396.80000000000007 523.28 75 re S
+BT /F1 7.4 Tf 0.9 0.9 0.9 rg 46 457.80000000000007 Td (1. Creacion inmediata de la rama git: feature/portal-view-massa.) Tj ET
+BT /F1 7.4 Tf 0.9 0.9 0.9 rg 46 443.80000000000007 Td (2. Implementacion de tokens CSS visionOS en src/index.css y componentes base \(GlassCard, Button, Dock\).) Tj ET
+BT /F1 7.4 Tf 0.9 0.9 0.9 rg 46 429.80000000000007 Td (3. Creacion de la pantalla de Login con selector Cliente / Arquitecto y estetica oficial de Stitch.) Tj ET
+BT /F1 7.4 Tf 0.9 0.9 0.9 rg 46 415.80000000000007 Td (4. Implementacion del cliente de normalizacion y conexion a las nuevas tablas relacionales.) Tj ET
+0.2 0.2 0.2 RG 0.5 w 36 30 523.28 0 re S
+BT /F1 7.5 Tf 0.5 0.5 0.5 rg 36 20 Td (VIEW by MASSA GROUP - Especificacion de Ingenieria y Arquitectura v2.0) Tj ET
+BT /F2 7.5 Tf 0.612 0.816 0.102 rg 450 20 Td (MASSA LIME #9CD01A) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 595.28 841.89] /Contents 3 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 595.28 841.89] /Contents 4 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> >>
+endobj
+8 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 595.28 841.89] /Contents 5 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> >>
+endobj
+9 0 obj
+<< /Type /Pages /Kids [6 0 R 7 0 R 8 0 R] /Count 3 >>
+endobj
+10 0 obj
+<< /Type /Catalog /Pages 6 0 R >>
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000106 00000 n 
+0000000208 00000 n 
+0000004019 00000 n 
+0000007629 00000 n 
+0000011729 00000 n 
+0000011871 00000 n 
+0000012013 00000 n 
+0000012155 00000 n 
+0000012224 00000 n 
+trailer
+<< /Size 11 /Root 10 0 R >>
+startxref
+12274
+%%EOF

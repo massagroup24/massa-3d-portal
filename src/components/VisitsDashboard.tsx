@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getProjectVisits, VisitRecord } from '../supabase';
 import { RefreshCw, Activity, X, Smartphone, Monitor } from 'lucide-react';
 

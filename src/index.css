@@ -1,14 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-massa-lime: #9CD01A;
+  --color-massa-lime-hover: #ABDE24;
+  --color-massa-carbon: #171717;
+  --color-massa-obsidian: #0D0D0E;
+  --color-massa-text: #F5F5F5;
+  --color-massa-muted: #A3A3A3;
+  --color-massa-border: rgba(255, 255, 255, 0.08);
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
 @layer base {
   html, body, #root {
-    @apply w-full h-full m-0 p-0 overflow-hidden bg-black font-sans;
-    overscroll-behavior: none;
+    @apply w-full h-full m-0 p-0 overflow-x-hidden bg-[#0D0D0E] text-[#F5F5F5] font-sans;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
+  ::selection {
+    background-color: #9CD01A;
+    color: #0D0D0E;
+  }
+
   canvas {
     touch-action: none !important;
     outline: none !important;
@@ -17,23 +37,168 @@
   }
 }
 
-/* Custom animations for the UI */
-@keyframes pulse-soft {
+/* =========================================================================
+   SISTEMA DE CLASES VISIONOS (Apple Glassmorphism & Micro-interacciones)
+   ========================================================================= */
+
+@layer components {
+  /* Panel de vidrio base visionOS */
+  .glass-panel {
+    background: rgba(23, 23, 23, 0.72);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Tarjeta interactiva con brillo sutil */
+  .glass-card {
+    background: rgba(23, 23, 23, 0.70);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    border-color: rgba(156, 208, 26, 0.35);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(156, 208, 26, 0.12);
+  }
+
+  /* Píldora de vidrio para selectores y estados */
+  .glass-pill {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+  }
+
+  /* Botón primario de marca Massa Lime */
+  .btn-primary {
+    background-color: #9CD01A;
+    color: #0D0D0E;
+    font-weight: 700;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 0 25px rgba(156, 208, 26, 0.35);
+  }
+
+  .btn-primary:hover {
+    background-color: #ABDE24;
+    box-shadow: 0 0 35px rgba(156, 208, 26, 0.55);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  /* Botón secundario de vidrio */
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #F5F5F5;
+    font-weight: 600;
+    transition: all 0.25s ease;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(156, 208, 26, 0.4);
+    color: #FFFFFF;
+  }
+
+  /* Dock flotante desktop */
+  .glass-dock {
+    background: rgba(15, 15, 17, 0.82);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+
+  /* Barra inferior móvil */
+  .glass-mobile-bar {
+    background: rgba(13, 13, 15, 0.88);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* =========================================================================
+   ANIMACIONES CSS PURAS (60 FPS, ACELERADAS POR GPU, SIN RE-RENDERS)
+   ========================================================================= */
+
+@keyframes orb-float-1 {
   0%, 100% {
-    opacity: 1;
-    transform: scale(1) translateX(-50%);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    opacity: 0.7;
-    transform: scale(1.05) translateX(-47.5%);
+    transform: translate3d(60px, -45px, 0) scale(1.15);
   }
 }
 
-.animate-pulse-soft {
-  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@keyframes orb-float-2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-50px, 40px, 0) scale(0.9);
+  }
 }
 
-/* Ocultar barra de desplazamiento en listas horizontales (ej: selector rápido de habitaciones en móvil) */
+@keyframes orb-float-3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(40px, 50px, 0) scale(1.1);
+  }
+}
+
+.animate-orb-1 {
+  animation: orb-float-1 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-orb-2 {
+  animation: orb-float-2 26s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-orb-3 {
+  animation: orb-float-3 30s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Pausa de animaciones cuando hay WebGL activo para optimizar GPU */
+[data-webgl-active="true"] .animate-orb-1,
+[data-webgl-active="true"] .animate-orb-2,
+[data-webgl-active="true"] .animate-orb-3 {
+  animation-play-state: paused !important;
+}
+
+/* Efecto de levitación sutil de íconos */
+@keyframes levitate {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-levitate {
+  animation: levitate 4s ease-in-out infinite;
+}
+
+/* =========================================================================
+   BARRAS DE DESPLAZAMIENTO Y UTILIDADES
+   ========================================================================= */
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -42,23 +207,21 @@
   scrollbar-width: none;
 }
 
-/* Barra de desplazamiento ejecutiva personalizada */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #060609;
+  background: #0D0D0E;
 }
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
-  border: 2px solid #060609;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(163, 230, 53, 0.6);
+  background: rgba(156, 208, 26, 0.6);
 }
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) #060609;
+  scrollbar-color: rgba(255, 255, 255, 0.18) #0D0D0E;
 }

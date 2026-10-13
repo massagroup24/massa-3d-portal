@@ -125,3 +125,85 @@ export const projectsData: Record<string, Project> = {
     }
   }
 };
+
+/**
+ * Normaliza defensivamente un proyecto garantizando retrocompatibilidad con tours antiguos.
+ */
+export function normalizeProject(raw: any): Project {
+  if (!raw || typeof raw !== 'object') {
+    return {
+      id: `project_${Date.now()}`,
+      name: 'Proyecto',
+      description: '',
+      thumbnail: '',
+      minimapImage: '',
+      initialRoomId: 'room_1',
+      rooms: {
+        room_1: {
+          id: 'room_1',
+          name: 'Habitación Inicial',
+          description: '',
+          imageUrl: '',
+          minimapPosition: { x: 50, y: 50 },
+          hotspots: []
+        }
+      }
+    };
+  }
+
+  const id = String(raw.id || `project_${Date.now()}`);
+  const name = String(raw.name || 'Proyecto sin título');
+  const description = String(raw.description || '');
+  const thumbnail = String(raw.thumbnail || '');
+  const minimapImage = String(raw.minimapImage || '');
+
+  const rawRooms = raw.rooms && typeof raw.rooms === 'object' ? raw.rooms : {};
+  const rooms: Record<string, Room> = {};
+
+  for (const [roomId, roomData] of Object.entries<any>(rawRooms)) {
+    if (!roomData) continue;
+    const hotspots: Hotspot[] = Array.isArray(roomData.hotspots)
+      ? roomData.hotspots
+          .filter((h: any) => h && Array.isArray(h.position) && h.position.length === 3)
+          .map((h: any) => ({
+            id: String(h.id || `h_${Math.random()}`),
+            position: [
+              Number(h.position[0]) || 0,
+              Number(h.position[1]) || 0,
+              Number(h.position[2]) || 0
+            ] as [number, number, number],
+            targetRoom: String(h.targetRoom || ''),
+            label: String(h.label || '')
+          }))
+      : [];
+
+    rooms[roomId] = {
+      id: roomId,
+      name: String(roomData.name || 'Habitación'),
+      description: String(roomData.description || ''),
+      imageUrl: String(roomData.imageUrl || ''),
+      minimapPosition: {
+        x: typeof roomData.minimapPosition?.x === 'number' ? roomData.minimapPosition.x : 50,
+        y: typeof roomData.minimapPosition?.y === 'number' ? roomData.minimapPosition.y : 50,
+      },
+      hotspots
+    };
+  }
+
+  const roomKeys = Object.keys(rooms);
+  const initialRoomId = raw.initialRoomId && rooms[raw.initialRoomId]
+    ? raw.initialRoomId
+    : (roomKeys[0] || 'room_1');
+
+  return {
+    id,
+    name,
+    description,
+    thumbnail,
+    minimapImage,
+    initialRoomId,
+    rooms,
+    pin: raw.pin
+  };
+}
+
