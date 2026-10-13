@@ -1,11 +1,12 @@
 import { useRef, useState, type ComponentType, type MouseEvent } from 'react';
-import { Home, TrendingUp, Image as ImageIcon, Compass, Phone, Box, Rotate3d } from 'lucide-react';
+import { Home, TrendingUp, Image as ImageIcon, Compass, Phone, Box, Rotate3d, FileText } from 'lucide-react';
 
-export type NavTab = 'home' | 'progress' | 'renders' | 'blueprints' | 'contact' | 'tour360' | 'model3d';
+export type NavTab = 'home' | 'progress' | 'renders' | 'blueprints' | 'contact' | 'tour360' | 'model3d' | 'specs';
 
 interface DockProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
+  userRole?: 'client' | 'architect' | 'guest';
   className?: string;
 }
 
@@ -25,10 +26,20 @@ const DOCK_ITEMS: DockItem[] = [
   { id: 'contact', label: 'Contacto', icon: Phone },
 ];
 
-export function Dock({ activeTab, onSelectTab, className = '' }: DockProps) {
+const GUEST_DOCK_ITEMS: DockItem[] = [
+  { id: 'home', label: 'Inicio', icon: Home },
+  { id: 'renders', label: 'Renders', icon: ImageIcon },
+  { id: 'tour360', label: 'Tour 360°', icon: Rotate3d },
+  { id: 'specs', label: 'Ficha Técnica', icon: FileText },
+  { id: 'contact', label: 'Contacto', icon: Phone },
+];
+
+export function Dock({ activeTab, onSelectTab, userRole = 'client', className = '' }: DockProps) {
   const dockRef = useRef<HTMLDivElement>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [mouseX, setMouseX] = useState<number | null>(null);
+
+  const visibleItems = userRole === 'guest' ? GUEST_DOCK_ITEMS : DOCK_ITEMS;
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!dockRef.current) return;
@@ -56,7 +67,7 @@ export function Dock({ activeTab, onSelectTab, className = '' }: DockProps) {
         ${className}
       `}
     >
-      {DOCK_ITEMS.map((item, index) => {
+      {visibleItems.map((item, index) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
 

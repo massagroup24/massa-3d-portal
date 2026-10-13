@@ -2,8 +2,10 @@ import { Bell, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   projectName?: string;
-  userRole?: 'client' | 'architect';
+  userRole?: 'client' | 'architect' | 'guest';
   onLogout?: () => void;
+  publicProjects?: { id: string; name: string }[];
+  onSelectProject?: (id: string) => void;
   className?: string;
 }
 
@@ -11,6 +13,8 @@ export function Header({
   projectName = 'Villa Serena',
   userRole = 'client',
   onLogout,
+  publicProjects,
+  onSelectProject,
   className = '',
 }: HeaderProps) {
   return (
@@ -43,16 +47,38 @@ export function Header({
                 VIEW
               </span>
             </div>
-            <span className="text-sm sm:text-base font-bold text-[#F5F5F5] tracking-tight truncate max-w-[180px] sm:max-w-none">
-              {projectName}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm sm:text-base font-bold text-[#F5F5F5] tracking-tight truncate max-w-[150px] sm:max-w-none">
+                {projectName}
+              </span>
+              {userRole === 'guest' && publicProjects && publicProjects.length > 1 && onSelectProject && (
+                <select
+                  value={publicProjects.find(p => p.name === projectName)?.id || ''}
+                  onChange={(e) => onSelectProject(e.target.value)}
+                  className="bg-[#171717] border border-white/15 text-white/80 text-[11px] rounded-lg px-2 py-0.5 focus:outline-none focus:border-[#9CD01A] cursor-pointer hidden md:inline-block"
+                  title="Cambiar proyecto público"
+                >
+                  {publicProjects.map((p) => (
+                    <option key={p.id} value={p.id} className="bg-[#171717] text-white">
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Centro / Badge de Perfil (Oculto en móvil muy pequeño) */}
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-xs font-medium text-white/80">
           <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_8px_rgba(156,208,26,0.8)]" />
-          <span>{userRole === 'architect' ? 'Panel Arquitecto' : 'Home Cliente'}</span>
+          <span>
+            {userRole === 'guest' 
+              ? 'Portafolio Público • Invitado' 
+              : userRole === 'architect' 
+              ? 'Panel Arquitecto' 
+              : 'Home Cliente'}
+          </span>
         </div>
 
         {/* Lado Derecho: Acciones (Notificaciones & Salir) */}

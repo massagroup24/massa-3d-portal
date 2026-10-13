@@ -60,6 +60,12 @@ const SECTION_METADATA: Record<NavTab, { title: string; subtitle: string; icon: 
     icon: Sparkles,
     description: 'Recorrido fotográfico 360° con puntos de navegación interactivos.',
   },
+  specs: {
+    title: 'Especificaciones del Proyecto',
+    subtitle: 'Ficha técnica y memoria arquitectónica',
+    icon: Layers,
+    description: 'Memoria descriptiva, áreas, materiales y concepto de diseño.',
+  },
 };
 
 export function SectionPlaceholder({ tab, onBackToHome }: SectionPlaceholderProps) {

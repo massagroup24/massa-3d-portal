@@ -42,12 +42,36 @@ export interface ProgressUpdateItem {
   media?: ProgressMediaItem[];
 }
 
+export interface ProjectMaterialItem {
+  name: string;
+  category: string;
+  description: string;
+}
+
+export interface ProjectPublicSpecs {
+  areaBuilt: string;
+  lotArea?: string;
+  levels: string;
+  typology: string;
+  location: string;
+  year: string;
+  architecturalStyle: string;
+  designConcept: string;
+  keyFeatures: string[];
+  materials: ProjectMaterialItem[];
+  spatialProgram: {
+    zone: string;
+    spaces: string[];
+  }[];
+}
+
 export interface ProjectPortalData {
   id: string;
   name: string;
   clientName: string;
   currentPhase: string;
   currentProgress: number;
+  isPublic?: boolean;
   architect: {
     name: string;
     role: string;
@@ -58,6 +82,7 @@ export interface ProjectPortalData {
   renders: ProjectMediaItem[];
   blueprints: ProjectMediaItem[];
   progressUpdates: ProgressUpdateItem[];
+  publicSpecs: ProjectPublicSpecs;
   beforeAfterComparison?: {
     beforeImage: string;
     beforeLabel: string;
@@ -309,12 +334,15 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       progressUpdates = DEFAULT_PROGRESS;
     }
 
+    const publicSpecs = getProjectPublicSpecs(projectName);
+
     return {
       id: projectId,
       name: projectName,
       clientName,
       currentPhase: projRow?.current_phase || 'FASE 3: ACABADOS DE LUJO',
       currentProgress: projRow?.current_progress ?? 68,
+      isPublic: projRow?.published_for_client ?? true,
       architect: {
         name: projRow?.architect_name || 'Mateo Rossi',
         role: projRow?.architect_role || 'Director de Proyecto MASSA',
@@ -325,6 +353,7 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       renders,
       blueprints,
       progressUpdates,
+      publicSpecs,
       beforeAfterComparison: {
         beforeImage: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1600&q=80',
         beforeLabel: 'Mayo 2026 • Terreno y Cimentación',
@@ -334,12 +363,14 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
     };
   } catch (err) {
     console.warn('Error cargando portal data, retornando fallback seguro:', err);
+    const fallbackName = fallbackProject?.name || 'Villa Serena';
     return {
       id: projectId,
-      name: fallbackProject?.name || 'Villa Serena',
+      name: fallbackName,
       clientName: 'Carlos',
       currentPhase: 'FASE 3: ACABADOS DE LUJO',
       currentProgress: 68,
+      isPublic: true,
       architect: {
         name: 'Mateo Rossi',
         role: 'Director de Proyecto MASSA',
@@ -350,6 +381,7 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       renders: DEFAULT_RENDERS,
       blueprints: DEFAULT_BLUEPRINTS,
       progressUpdates: DEFAULT_PROGRESS,
+      publicSpecs: getProjectPublicSpecs(fallbackName),
       beforeAfterComparison: {
         beforeImage: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1600&q=80',
         beforeLabel: 'Mayo 2026 • Terreno y Cimentación',
@@ -358,4 +390,70 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       }
     };
   }
+}
+
+export function getProjectPublicSpecs(projectName: string): ProjectPublicSpecs {
+  const isCommercial = projectName.toLowerCase().includes('marquimoda') || projectName.toLowerCase().includes('oficina');
+  
+  if (isCommercial) {
+    return {
+      areaBuilt: '620 m²',
+      lotArea: 'Nivel Corporativo Completo',
+      levels: '2 Niveles Integrados',
+      typology: 'Sede Corporativa & Oficinas de Diseño',
+      location: 'Valle del Cauca, Colombia',
+      year: '2026',
+      architecturalStyle: 'Minimalismo Corporativo & Biofilia Laboral',
+      designConcept: 'Espacios diáfanos de trabajo colaborativo que maximizan el confort lumínico y acústico, integrando áreas gerenciales privadas, cafetería lounge y zonas operativas con ergonomía avanzada.',
+      keyFeatures: [
+        'Zonas de trabajo colaborativo tipo open-space para equipos multidisciplinarios',
+        'Oficina de gerencia privada con sala de estar y terraza',
+        'Sala de juntas ejecutiva con conectividad audiovisual oculta',
+        'Cafetería y lounge social para colaboradores con iluminación biofílica',
+        'Aislamiento acústico de 42 dB en divisiones de cristal templado',
+        'Climatización zonificada de bajo consumo energético'
+      ],
+      materials: [
+        { name: 'Microcemento Pulido', category: 'Pisos', description: 'Acabado continuo mate de alta resistencia al tráfico peatonal.' },
+        { name: 'Roble Natural Acústico', category: 'Mobiliario & Paneles', description: 'Revestimiento fonoabsorbente en muros y cielorrasos técnicos.' },
+        { name: 'Vidrio Laminado Doble', category: 'Divisiones', description: 'Transparencia visual con atenuación sonora certificada.' },
+        { name: 'Acero Electroestático Negro', category: 'Estructura & Perfilería', description: 'Perfiles ultradelgados con acabado negro mate microtexturizado.' }
+      ],
+      spatialProgram: [
+        { zone: 'Área Operativa', spaces: ['Zona de Trabajo Abierta (24 puestos)', 'Estaciones de Diseño & Patronaje', 'Área de Importaciones'] },
+        { zone: 'Área Directiva', spaces: ['Gerencia General', 'Oficinas de Dirección', 'Sala de Juntas Ejecutiva'] },
+        { zone: 'Servicios & Bienestar', spaces: ['Cafetería Lounge', 'Baterías de Baños', 'Archivo Técnico'] }
+      ]
+    };
+  }
+
+  return {
+    areaBuilt: '480 m²',
+    lotArea: '850 m²',
+    levels: '2 Plantas + Terraza Spa',
+    typology: 'Residencia Unifamiliar Luxury',
+    location: 'Valle del Cauca, Colombia',
+    year: '2026',
+    architecturalStyle: 'Arquitectura Contemporánea Biofílica',
+    designConcept: 'Composición de volúmenes en voladizo que abrazan la luz natural y el paisaje circundante. La fluidez entre el interior y la terraza exterior crea una experiencia de bienestar donde el concreto aparente, la madera noble y el agua dialogan en armonía.',
+    keyFeatures: [
+      'Sala principal con ventanales de doble altura (5.80 m)',
+      'Cocina gourmet integrada con isla monolítica en mármol Calacatta',
+      'Piscina infinity de 62 m² orientada al poniente con deck flotante',
+      'Spa privado con baño turco revestido en piedra y domo cenital',
+      'Master Suite con vestidor walk-in y baño tipo resort con vista al jardín',
+      'Estrategia bioclimática pasiva con ventilación cruzada y aleros de sombra'
+    ],
+    materials: [
+      { name: 'Concreto Visto Arquitectónico', category: 'Estructura & Fachadas', description: 'Textura encofrada con sellado hidrófugo mate y juntas alineadas.' },
+      { name: 'Madera Tecnológica & Roble Europeo', category: 'Carpintería & Decks', description: 'Deck resistente al intemperismo y paneles acústicos interiores.' },
+      { name: 'Mármol Calacatta & Pizarra Natural', category: 'Revestimientos Nobles', description: 'Placas de gran formato en zonas sociales, baños y cocina.' },
+      { name: 'Ventanería de Control Solar', category: 'Envolvente', description: 'Cristal templado bajo emisivo con perfilería oculta en muro.' }
+    ],
+    spatialProgram: [
+      { zone: 'Zona Social (Nivel 1)', spaces: ['Hall de acceso en doble altura', 'Sala y Comedor integrados', 'Cocina gourmet abierta con alacena', 'Terraza apergolada con BBQ', 'Piscina infinity y solárium'] },
+      { zone: 'Zona Privada (Nivel 2)', spaces: ['Master Suite con vestidor y baño spa', '2 Suites auxiliares con baño privado', 'Estar de alcobas y televisión'] },
+      { zone: 'Bienestar & Relax', spaces: ['Baño Turco / Spa térmico', 'Terraza lounge en cubierta', 'Espejo de agua perimetral'] }
+    ]
+  };
 }

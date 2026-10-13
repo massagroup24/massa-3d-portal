@@ -15,18 +15,22 @@ import { Model3DViewer } from './components/portal/Model3DViewer';
 import { Tour360Section } from './components/portal/Tour360Section';
 import { ProgressTimeline } from './components/portal/ProgressTimeline';
 import { ArchitectContactModal } from './components/portal/ArchitectContactModal';
-import { getProjectPortalData, ProjectPortalData } from './services/portalService';
+import { GuestHome } from './components/portal/GuestHome';
+import { ProjectSpecs } from './components/portal/ProjectSpecs';
+import { getProjectPortalData, getProjectPublicSpecs, ProjectPortalData } from './services/portalService';
 import { NavTab } from './components/ui/Dock';
 import { projectsData, Project, normalizeProject } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
+import { Lock } from 'lucide-react';
 
 function MainPortal() {
-  // Estado de rol: 'portal' (muestra login), 'client' (portal cliente), 'architect' (panel arquitecto)
-  const [userRole, setUserRole] = useState<'portal' | 'client' | 'architect'>(() => {
+  // Estado de rol: 'portal' (muestra login), 'guest' (invitado portafolio público), 'client' (portal cliente), 'architect' (panel arquitecto)
+  const [userRole, setUserRole] = useState<'portal' | 'guest' | 'client' | 'architect'>(() => {
     try {
       const saved = sessionStorage.getItem('massa_3d_role');
       if (saved === 'editor') return 'architect';
       if (saved === 'visitor') return 'client';
+      if (saved === 'guest') return 'guest';
       return 'portal';
     } catch {
       return 'portal';
@@ -144,7 +148,7 @@ function MainPortal() {
     setActiveTab('home');
   };
 
-  const handleLoginSuccess = (role: 'client' | 'architect') => {
+  const handleLoginSuccess = (role: 'guest' | 'client' | 'architect') => {
     setUserRole(role);
     setActiveTab('home');
   };
@@ -220,7 +224,7 @@ function MainPortal() {
       <LoginScreen
         onLoginSuccess={handleLoginSuccess}
         onExplorePublicTours={() => {
-          setUserRole('client');
+          handleLoginSuccess('guest');
         }}
       />
     );
@@ -305,8 +309,13 @@ function MainPortal() {
     );
   }
 
-  // 5. Portal del Cliente con Sistema de Diseño visionOS (Fase 2)
+  // 5. Portal con Sistema de Diseño visionOS (Cliente & Invitado)
   const currentDisplayName = portalData?.name || currentProject?.name || 'Villa Serena';
+
+  const publicProjectsList = Object.keys(projects).map(key => ({
+    id: key,
+    name: projects[key].name || key
+  }));
 
   const handleSelectTab = (tab: NavTab) => {
     if (tab === 'contact') {
@@ -321,8 +330,10 @@ function MainPortal() {
       activeTab={activeTab}
       onSelectTab={handleSelectTab}
       projectName={currentDisplayName}
-      userRole="client"
+      userRole={userRole}
       onLogout={handleLogout}
+      publicProjects={publicProjectsList}
+      onSelectProject={handleSelectProject}
     >
       {syncError && (
         <div className="mb-4 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs px-3.5 py-1.5 rounded-full">
@@ -331,17 +342,39 @@ function MainPortal() {
         </div>
       )}
 
-      {/* SECCIÓN 0: HOME / DASHBOARD */}
+      {/* SECCIÓN 0: HOME / DASHBOARD (Diferenciado para Invitado vs Cliente) */}
       {activeTab === 'home' && (
-        <ClientHome
+        userRole === 'guest' ? (
+          <GuestHome
+            projectName={currentDisplayName}
+            specs={portalData?.publicSpecs || getProjectPublicSpecs(currentDisplayName)}
+            onNavigateSection={handleSelectTab}
+            onOpen360Tour={handleStart360Tour}
+            publicProjects={publicProjectsList}
+            activeProjectId={activeProjectId || undefined}
+            onSelectProject={handleSelectProject}
+            heroImage={portalData?.renders[0]?.storage_path}
+          />
+        ) : (
+          <ClientHome
+            projectName={currentDisplayName}
+            clientName={portalData?.clientName || 'Carlos'}
+            phase={portalData?.currentPhase || 'FASE 3'}
+            progressPercentage={portalData?.currentProgress ?? 68}
+            architect={portalData?.architect}
+            onContactArchitect={() => setIsContactModalOpen(true)}
+            onNavigateSection={handleSelectTab}
+            onOpen360Tour={handleStart360Tour}
+          />
+        )
+      )}
+
+      {/* SECCIÓN: ESPECIFICACIONES & MEMORIA TÉCNICA (Público & Cliente) */}
+      {activeTab === 'specs' && (
+        <ProjectSpecs
           projectName={currentDisplayName}
-          clientName={portalData?.clientName || 'Carlos'}
-          phase={portalData?.currentPhase || 'FASE 3'}
-          progressPercentage={portalData?.currentProgress ?? 68}
-          architect={portalData?.architect}
-          onContactArchitect={() => setIsContactModalOpen(true)}
-          onNavigateSection={handleSelectTab}
-          onOpen360Tour={handleStart360Tour}
+          specs={portalData?.publicSpecs || getProjectPublicSpecs(currentDisplayName)}
+          onContactCommercial={() => setIsContactModalOpen(true)}
         />
       )}
 
@@ -353,12 +386,35 @@ function MainPortal() {
         />
       )}
 
-      {/* SECCIÓN 2: PLANOS */}
+      {/* SECCIÓN 2: PLANOS (PROTEGIDO: Solo Propietario / Cliente) */}
       {activeTab === 'blueprints' && (
-        <BlueprintsViewer
-          blueprints={portalData?.blueprints || []}
-          projectName={currentDisplayName}
-        />
+        userRole === 'guest' ? (
+          <div className="flex flex-col items-center justify-center min-h-[440px] text-center p-8 bg-[#171717]/85 backdrop-blur-2xl rounded-3xl border border-white/10 max-w-lg mx-auto shadow-2xl">
+            <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-5 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+              <Lock className="w-8 h-8" />
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold mb-1">
+              DOCUMENTACIÓN TÉCNICA PROTEGIDA
+            </span>
+            <h3 className="text-2xl font-extrabold text-white mb-2 tracking-tight">
+              Acceso Restringido a Propietarios
+            </h3>
+            <p className="text-xs sm:text-sm text-[#A3A3A3] mb-6 leading-relaxed">
+              Los planos constructivos acotados, memorias técnicas ejecutivas y licencias de obra están protegidos bajo acuerdos de confidencialidad y reservados exclusivamente para el cliente propietario.
+            </p>
+            <button
+              onClick={() => setActiveTab('home')}
+              className="px-6 py-3 rounded-full bg-[#9CD01A] hover:bg-[#b0eb1e] text-black font-bold text-xs shadow-[0_0_20px_rgba(156,208,26,0.4)] transition cursor-pointer"
+            >
+              Volver al Portafolio Público
+            </button>
+          </div>
+        ) : (
+          <BlueprintsViewer
+            blueprints={portalData?.blueprints || []}
+            projectName={currentDisplayName}
+          />
+        )
       )}
 
       {/* SECCIÓN 3: MODELO 3D */}
@@ -381,15 +437,38 @@ function MainPortal() {
         />
       )}
 
-      {/* SECCIÓN 5: AVANCE DE OBRA */}
+      {/* SECCIÓN 5: AVANCE DE OBRA (PROTEGIDO: Solo Propietario / Cliente) */}
       {activeTab === 'progress' && (
-        <ProgressTimeline
-          progressUpdates={portalData?.progressUpdates || []}
-          currentPhase={portalData?.currentPhase || 'FASE 3'}
-          currentProgress={portalData?.currentProgress ?? 68}
-          projectName={currentDisplayName}
-          beforeAfterComparison={portalData?.beforeAfterComparison}
-        />
+        userRole === 'guest' ? (
+          <div className="flex flex-col items-center justify-center min-h-[440px] text-center p-8 bg-[#171717]/85 backdrop-blur-2xl rounded-3xl border border-white/10 max-w-lg mx-auto shadow-2xl">
+            <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-5 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+              <Lock className="w-8 h-8" />
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold mb-1">
+              SEGUIMIENTO DE OBRA CONFIDENCIAL
+            </span>
+            <h3 className="text-2xl font-extrabold text-white mb-2 tracking-tight">
+              Bitácora Privada de Construcción
+            </h3>
+            <p className="text-xs sm:text-sm text-[#A3A3A3] mb-6 leading-relaxed">
+              El cronograma detallado de hitos, avance porcentual y reportes fotográficos de obra son privados y de acceso restringido al propietario del proyecto.
+            </p>
+            <button
+              onClick={() => setActiveTab('home')}
+              className="px-6 py-3 rounded-full bg-[#9CD01A] hover:bg-[#b0eb1e] text-black font-bold text-xs shadow-[0_0_20px_rgba(156,208,26,0.4)] transition cursor-pointer"
+            >
+              Volver al Portafolio Público
+            </button>
+          </div>
+        ) : (
+          <ProgressTimeline
+            progressUpdates={portalData?.progressUpdates || []}
+            currentPhase={portalData?.currentPhase || 'FASE 3'}
+            currentProgress={portalData?.currentProgress ?? 68}
+            projectName={currentDisplayName}
+            beforeAfterComparison={portalData?.beforeAfterComparison}
+          />
+        )
       )}
 
       {/* MODAL DE CONTACTO CON EL ARQUITECTO */}

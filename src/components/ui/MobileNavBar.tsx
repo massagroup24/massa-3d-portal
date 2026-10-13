@@ -1,13 +1,14 @@
-import { Home, TrendingUp, Image as ImageIcon, Compass, Phone } from 'lucide-react';
+import { Home, TrendingUp, Image as ImageIcon, Compass, Phone, Rotate3d, FileText } from 'lucide-react';
 import { NavTab } from './Dock';
 
 interface MobileNavBarProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
+  userRole?: 'client' | 'architect' | 'guest';
   className?: string;
 }
 
-const NAV_ITEMS = [
+const CLIENT_NAV_ITEMS = [
   { id: 'home' as NavTab, label: 'Inicio', icon: Home },
   { id: 'progress' as NavTab, label: 'Avance', icon: TrendingUp },
   { id: 'renders' as NavTab, label: 'Renders', icon: ImageIcon },
@@ -15,7 +16,16 @@ const NAV_ITEMS = [
   { id: 'contact' as NavTab, label: 'Contacto', icon: Phone },
 ];
 
-export function MobileNavBar({ activeTab, onSelectTab, className = '' }: MobileNavBarProps) {
+const GUEST_NAV_ITEMS = [
+  { id: 'home' as NavTab, label: 'Inicio', icon: Home },
+  { id: 'renders' as NavTab, label: 'Renders', icon: ImageIcon },
+  { id: 'tour360' as NavTab, label: 'Tour 360°', icon: Rotate3d },
+  { id: 'specs' as NavTab, label: 'Ficha', icon: FileText },
+  { id: 'contact' as NavTab, label: 'Contacto', icon: Phone },
+];
+
+export function MobileNavBar({ activeTab, onSelectTab, userRole = 'client', className = '' }: MobileNavBarProps) {
+  const items = userRole === 'guest' ? GUEST_NAV_ITEMS : CLIENT_NAV_ITEMS;
   return (
     <nav
       aria-label="Navegación móvil inferior"
@@ -29,7 +39,7 @@ export function MobileNavBar({ activeTab, onSelectTab, className = '' }: MobileN
         ${className}
       `}
     >
-      {NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
 
