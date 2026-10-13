@@ -9,7 +9,13 @@ import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { LoginScreen } from './components/LoginScreen';
 import { PortalLayout } from './components/layout/PortalLayout';
 import { ClientHome } from './components/ClientHome';
-import { SectionPlaceholder } from './components/SectionPlaceholder';
+import { RendersGallery } from './components/portal/RendersGallery';
+import { BlueprintsViewer } from './components/portal/BlueprintsViewer';
+import { Model3DViewer } from './components/portal/Model3DViewer';
+import { Tour360Section } from './components/portal/Tour360Section';
+import { ProgressTimeline } from './components/portal/ProgressTimeline';
+import { ArchitectContactModal } from './components/portal/ArchitectContactModal';
+import { getProjectPortalData, ProjectPortalData } from './services/portalService';
 import { NavTab } from './components/ui/Dock';
 import { projectsData, Project, normalizeProject } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
@@ -44,6 +50,8 @@ function MainPortal() {
   const [tourStarted, setTourStarted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [portalData, setPortalData] = useState<ProjectPortalData | null>(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   // Cargar proyectos desde Supabase con normalización defensiva
   useEffect(() => {
@@ -90,6 +98,15 @@ function MainPortal() {
     }
     loadData();
   }, []);
+
+  // Cargar datos de proyecto extendidos (Renders, Planos, Avances) para el portal
+  useEffect(() => {
+    if (!activeProjectId) return;
+    const currentProj = projects[activeProjectId];
+    getProjectPortalData(activeProjectId, currentProj)
+      .then((data) => setPortalData(data))
+      .catch((err) => console.warn("Error cargando portal data:", err));
+  }, [activeProjectId, projects]);
 
   const handleSelectProject = (projectId: string) => {
     setActiveProjectId(projectId);
@@ -288,18 +305,22 @@ function MainPortal() {
     );
   }
 
-  // 5. Portal del Cliente con Sistema de Diseño visionOS (Fase 1)
+  // 5. Portal del Cliente con Sistema de Diseño visionOS (Fase 2)
+  const currentDisplayName = portalData?.name || currentProject?.name || 'Villa Serena';
+
+  const handleSelectTab = (tab: NavTab) => {
+    if (tab === 'contact') {
+      setIsContactModalOpen(true);
+      return;
+    }
+    setActiveTab(tab);
+  };
+
   return (
     <PortalLayout
       activeTab={activeTab}
-      onSelectTab={(tab) => {
-        if (tab === 'tour360') {
-          handleStart360Tour();
-        } else {
-          setActiveTab(tab);
-        }
-      }}
-      projectName={currentProject?.name || 'Villa Serena'}
+      onSelectTab={handleSelectTab}
+      projectName={currentDisplayName}
       userRole="client"
       onLogout={handleLogout}
     >
@@ -309,25 +330,75 @@ function MainPortal() {
           <span>{syncError}</span>
         </div>
       )}
-      {activeTab === 'home' ? (
+
+      {/* SECCIÓN 0: HOME / DASHBOARD */}
+      {activeTab === 'home' && (
         <ClientHome
-          projectName={currentProject?.name || 'Villa Serena'}
-          clientName="Carlos"
-          phase="FASE 3"
-          progressPercentage={68}
-          onNavigateSection={(tab) => {
-            if (tab === 'tour360') {
-              handleStart360Tour();
-            } else {
-              setActiveTab(tab);
-            }
-          }}
+          projectName={currentDisplayName}
+          clientName={portalData?.clientName || 'Carlos'}
+          phase={portalData?.currentPhase || 'FASE 3'}
+          progressPercentage={portalData?.currentProgress ?? 68}
+          architect={portalData?.architect}
+          onContactArchitect={() => setIsContactModalOpen(true)}
+          onNavigateSection={handleSelectTab}
           onOpen360Tour={handleStart360Tour}
         />
-      ) : (
-        <SectionPlaceholder
-          tab={activeTab}
-          onBackToHome={() => setActiveTab('home')}
+      )}
+
+      {/* SECCIÓN 1: RENDERS */}
+      {activeTab === 'renders' && (
+        <RendersGallery
+          renders={portalData?.renders || []}
+          projectName={currentDisplayName}
+        />
+      )}
+
+      {/* SECCIÓN 2: PLANOS */}
+      {activeTab === 'blueprints' && (
+        <BlueprintsViewer
+          blueprints={portalData?.blueprints || []}
+          projectName={currentDisplayName}
+        />
+      )}
+
+      {/* SECCIÓN 3: MODELO 3D */}
+      {activeTab === 'model3d' && (
+        <Model3DViewer
+          projectName={currentDisplayName}
+        />
+      )}
+
+      {/* SECCIÓN 4: RECORRIDO 360° */}
+      {activeTab === 'tour360' && (
+        <Tour360Section
+          projectName={currentDisplayName}
+          rooms={currentProject?.rooms || {}}
+          minimapImage={currentProject?.minimapImage || ''}
+          onLaunchTour={(roomId) => {
+            if (roomId) setCurrentRoomId(roomId);
+            setTourStarted(true);
+          }}
+        />
+      )}
+
+      {/* SECCIÓN 5: AVANCE DE OBRA */}
+      {activeTab === 'progress' && (
+        <ProgressTimeline
+          progressUpdates={portalData?.progressUpdates || []}
+          currentPhase={portalData?.currentPhase || 'FASE 3'}
+          currentProgress={portalData?.currentProgress ?? 68}
+          projectName={currentDisplayName}
+          beforeAfterComparison={portalData?.beforeAfterComparison}
+        />
+      )}
+
+      {/* MODAL DE CONTACTO CON EL ARQUITECTO */}
+      {portalData?.architect && (
+        <ArchitectContactModal
+          isOpen={isContactModalOpen}
+          onClose={() => setIsContactModalOpen(false)}
+          architect={portalData.architect}
+          projectName={currentDisplayName}
         />
       )}
     </PortalLayout>

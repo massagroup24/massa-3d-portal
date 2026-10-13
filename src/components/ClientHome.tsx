@@ -18,6 +18,14 @@ interface ClientHomeProps {
   phase?: string;
   progressPercentage?: number;
   onOpen360Tour?: () => void;
+  architect?: {
+    name: string;
+    role: string;
+    avatar: string;
+    phone: string;
+    whatsapp: string;
+  };
+  onContactArchitect?: () => void;
 }
 
 export function ClientHome({
@@ -27,6 +35,14 @@ export function ClientHome({
   phase = 'FASE 3',
   progressPercentage = 68,
   onOpen360Tour,
+  architect = {
+    name: 'Mateo Rossi',
+    role: 'Director de Proyecto MASSA',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+    phone: '+57 310 892 4410',
+    whatsapp: '573108924410'
+  },
+  onContactArchitect
 }: ClientHomeProps) {
   return (
     <div className="w-full flex flex-col gap-6 sm:gap-8 pb-10">
@@ -260,14 +276,18 @@ export function ClientHome({
       </div>
 
       {/* TARJETA DE CONTACTO: "TU ARQUITECTO" */}
-      <GlassCard className="p-5 sm:p-6 flex items-center justify-between gap-4 mt-2">
+      <GlassCard 
+        interactive
+        onClick={onContactArchitect}
+        className="p-5 sm:p-6 flex items-center justify-between gap-4 mt-2 cursor-pointer group"
+      >
         <div className="flex items-center gap-3.5 sm:gap-4">
           {/* Avatar con dot verde activo */}
           <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border border-white/15 bg-white/5 shrink-0">
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
-              alt="Mateo Rossi"
-              className="w-full h-full object-cover"
+              src={architect.avatar}
+              alt={architect.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
             />
             <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-[#9CD01A] border-2 border-[#171717]" />
           </div>
@@ -277,15 +297,18 @@ export function ClientHome({
               TU ARQUITECTO
             </span>
             <span className="text-base sm:text-lg font-bold text-[#F5F5F5]">
-              Mateo Rossi
+              {architect.name}
+            </span>
+            <span className="text-[11px] text-[#A3A3A3]">
+              {architect.role}
             </span>
           </div>
         </div>
 
         {/* Botones de Contacto: Mensaje / WhatsApp y Llamada */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
           <a
-            href="https://wa.me/573000000000"
+            href={`https://wa.me/${architect.whatsapp}?text=${encodeURIComponent(`Hola ${architect.name}, te escribo desde el portal VIEW de Massa Group sobre mi proyecto ${projectName}.`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/10 text-[#F5F5F5] flex items-center justify-center transition-all cursor-pointer"
@@ -295,7 +318,7 @@ export function ClientHome({
           </a>
 
           <a
-            href="tel:+573000000000"
+            href={`tel:${architect.phone.replace(/\s+/g, '')}`}
             className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#9CD01A] hover:bg-[#ABDE24] text-[#0D0D0E] font-bold flex items-center justify-center transition-all shadow-[0_0_20px_rgba(156,208,26,0.45)] cursor-pointer"
             title="Llamar al arquitecto"
           >

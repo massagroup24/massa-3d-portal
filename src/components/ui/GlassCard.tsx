@@ -6,6 +6,8 @@ interface GlassCardProps extends HTMLAttributes<HTMLDivElement> {
   spotlight?: boolean;
   interactive?: boolean;
   rounded?: '2xl' | '3xl' | '4xl';
+  variant?: 'card' | 'panel' | string;
+  glowColor?: string;
 }
 
 export function GlassCard({
@@ -14,6 +16,8 @@ export function GlassCard({
   spotlight = false,
   interactive = false,
   rounded = '3xl',
+  variant,
+  glowColor,
   onMouseMove,
   ...props
 }: GlassCardProps) {

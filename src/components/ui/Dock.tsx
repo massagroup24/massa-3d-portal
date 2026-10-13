@@ -1,5 +1,5 @@
 import { useRef, useState, type ComponentType, type MouseEvent } from 'react';
-import { Home, TrendingUp, Image as ImageIcon, Compass, Phone } from 'lucide-react';
+import { Home, TrendingUp, Image as ImageIcon, Compass, Phone, Box, Rotate3d } from 'lucide-react';
 
 export type NavTab = 'home' | 'progress' | 'renders' | 'blueprints' | 'contact' | 'tour360' | 'model3d';
 
@@ -17,9 +17,11 @@ interface DockItem {
 
 const DOCK_ITEMS: DockItem[] = [
   { id: 'home', label: 'Inicio', icon: Home },
-  { id: 'progress', label: 'Avance', icon: TrendingUp },
   { id: 'renders', label: 'Renders', icon: ImageIcon },
   { id: 'blueprints', label: 'Planos', icon: Compass },
+  { id: 'model3d', label: 'Modelo 3D', icon: Box },
+  { id: 'tour360', label: 'Tour 360°', icon: Rotate3d },
+  { id: 'progress', label: 'Avance', icon: TrendingUp },
   { id: 'contact', label: 'Contacto', icon: Phone },
 ];
 
