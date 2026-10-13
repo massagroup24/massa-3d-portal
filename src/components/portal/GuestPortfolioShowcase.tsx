@@ -76,6 +76,26 @@ export const PORTFOLIO_WORKS: PortfolioWork[] = [
     thumbnail: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=400&q=80',
     bgImage: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=2000&q=85',
   },
+  {
+    id: 'torre-horizonte',
+    name: 'TORRE HORIZONTE',
+    category: 'Sky Villas & Penthouse',
+    location: 'Cali / Peñón',
+    area: '780 m²',
+    year: '2026',
+    thumbnail: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
+    bgImage: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=2000&q=85',
+  },
+  {
+    id: 'casa-cantera',
+    name: 'CASA CANTERA',
+    category: 'Piedra Natural & Volúmenes Flotantes',
+    location: 'Valle del Cauca',
+    area: '560 m²',
+    year: '2025',
+    thumbnail: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=400&q=80',
+    bgImage: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=2000&q=85',
+  },
 ];
 
 interface GuestPortfolioShowcaseProps {
@@ -194,8 +214,8 @@ export function GuestPortfolioShowcase({
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12 max-w-7xl mx-auto w-full">
         
         {/* Tira Superior de Miniaturas (Inspirado en skiper6) */}
-        <div className="relative mb-8 sm:mb-14">
-          <div className="flex items-center gap-2 sm:gap-3 p-2 rounded-3xl bg-[#141416]/85 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-x-auto no-scrollbar max-w-full">
+        <div className="relative mb-8 sm:mb-14 max-w-full">
+          <div className="flex items-center justify-start md:justify-center gap-2 sm:gap-3.5 p-2 sm:p-2.5 rounded-3xl bg-[#141416]/85 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-x-auto no-scrollbar max-w-full">
             {PORTFOLIO_WORKS.map((work, idx) => {
               const isHovered = hoveredIndex === idx;
 
@@ -205,7 +225,7 @@ export function GuestPortfolioShowcase({
                   onMouseEnter={() => setHoveredIndex(idx)}
                   onMouseLeave={() => setHoveredIndex(null)}
                   onClick={() => onSelectProject(work.id)}
-                  className="relative group cursor-pointer"
+                  className="relative group cursor-pointer shrink-0"
                 >
                   {/* Contenedor de la miniatura con elevación y zoom */}
                   <m.div
@@ -216,10 +236,10 @@ export function GuestPortfolioShowcase({
                     }}
                     transition={{
                       type: 'spring',
-                      stiffness: 400,
+                      stiffness: 420,
                       damping: 24,
                     }}
-                    className={`relative w-13 h-13 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-colors duration-300 ${
+                    className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-colors duration-300 ${
                       isHovered
                         ? 'border-[#9CD01A] shadow-[0_15px_35px_rgba(156,208,26,0.45)]'
                         : 'border-white/15 hover:border-white/40'
@@ -241,9 +261,9 @@ export function GuestPortfolioShowcase({
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-                      className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-40 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#9CD01A] text-[#0D0D0E] flex items-center justify-center shadow-[0_0_16px_rgba(156,208,26,0.8)] pointer-events-none"
+                      className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 z-40 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#9CD01A] text-[#0D0D0E] flex items-center justify-center shadow-[0_0_18px_rgba(156,208,26,0.85)] pointer-events-none"
                     >
-                      <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.8]" />
+                      <ArrowUpRight className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[3]" />
                     </m.div>
                   )}
                 </div>

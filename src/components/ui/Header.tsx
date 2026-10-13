@@ -62,7 +62,11 @@ export function Header({
         <div className="flex items-center gap-3 sm:gap-4">
           
           {/* Tile VisionOS del Isotipo */}
-          <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#161618] border border-white/10 p-2 flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.6)] shrink-0 group hover:border-[#9CD01A]/40 transition-all duration-300">
+          <div 
+            onClick={userRole === 'guest' && onBackToPortfolio ? onBackToPortfolio : undefined}
+            className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#161618] border border-white/10 p-2 flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.6)] shrink-0 group hover:border-[#9CD01A]/40 transition-all duration-300 ${userRole === 'guest' && onBackToPortfolio ? 'cursor-pointer' : ''}`}
+            title={userRole === 'guest' && onBackToPortfolio ? "Volver al Portafolio de Obras" : undefined}
+          >
             <div className="absolute inset-0 rounded-2xl bg-[#9CD01A]/10 opacity-0 group-hover:opacity-100 blur-sm transition-opacity" />
             <img
               src="/massa-cube-transparent.png"
