@@ -70,7 +70,7 @@ export function RolePortalScreen({ onSelectVisitor, onLoginEditor }: RolePortalS
         <div className="flex items-center gap-2.5 sm:gap-3.5">
           <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-2xl bg-white/5 border border-white/10 p-1.5 flex items-center justify-center shadow-xl shrink-0">
             <img 
-              src="/MASSA_REBRANDING_PROFILE_REDES_ENTREGABLE_2023_003.png" 
+              src="/massa-cube-transparent.png" 
               alt="Massa Logo" 
               className="h-full w-full object-contain"
             />

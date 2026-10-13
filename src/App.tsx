@@ -334,6 +334,7 @@ function MainPortal() {
       onLogout={handleLogout}
       publicProjects={publicProjectsList}
       onSelectProject={handleSelectProject}
+      onContact={() => setIsContactModalOpen(true)}
     >
       {syncError && (
         <div className="mb-4 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs px-3.5 py-1.5 rounded-full">
@@ -375,6 +376,7 @@ function MainPortal() {
           projectName={currentDisplayName}
           specs={portalData?.publicSpecs || getProjectPublicSpecs(currentDisplayName)}
           onContactCommercial={() => setIsContactModalOpen(true)}
+          onOpen360Tour={handleStart360Tour}
         />
       )}
 

@@ -82,7 +82,7 @@ export function PWAInstallBanner() {
         <div className="bg-[#0b140d]/95 border border-[#99cc33]/40 p-4 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.85)] flex items-center justify-between gap-3 backdrop-blur-xl">
           <div className="flex items-center gap-3 min-w-0">
             <img
-              src="/MASSA_REBRANDING_PROFILE_REDES_ENTREGABLE_2023_003.png"
+              src="/massa-cube-transparent.png"
               alt="Massa 3D Logo"
               className="h-11 w-11 rounded-xl object-contain bg-white/5 p-1 border border-white/10 shrink-0 shadow-sm"
             />
@@ -135,7 +135,7 @@ export function PWAInstallBanner() {
 
             <div className="flex items-center gap-3 bg-black/40 p-3 rounded-xl border border-white/10">
               <img
-                src="/MASSA_REBRANDING_PROFILE_REDES_ENTREGABLE_2023_003.png"
+                src="/massa-cube-transparent.png"
                 alt="Logo App"
                 className="w-12 h-12 rounded-lg object-contain bg-white/5 p-1"
               />

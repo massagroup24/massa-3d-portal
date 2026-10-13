@@ -14,6 +14,7 @@ interface PortalLayoutProps {
   hideNav?: boolean;
   publicProjects?: { id: string; name: string }[];
   onSelectProject?: (id: string) => void;
+  onContact?: () => void;
 }
 
 export function PortalLayout({
@@ -26,6 +27,7 @@ export function PortalLayout({
   hideNav = false,
   publicProjects,
   onSelectProject,
+  onContact,
 }: PortalLayoutProps) {
   return (
     <div className="relative min-h-screen w-full bg-[#0D0D0E] text-[#F5F5F5] flex flex-col overflow-x-hidden selection:bg-[#9CD01A] selection:text-[#0D0D0E]">
@@ -39,10 +41,11 @@ export function PortalLayout({
         onLogout={onLogout}
         publicProjects={publicProjects}
         onSelectProject={onSelectProject}
+        onContact={onContact}
       />
 
       {/* Área Principal de Contenido con Espaciado para el Dock / Barra Móvil */}
-      <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-28 md:pb-24">
+      <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-36 sm:pb-40">
         {children}
       </main>
 

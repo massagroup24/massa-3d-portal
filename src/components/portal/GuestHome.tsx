@@ -35,7 +35,7 @@ export function GuestHome({
   const whatsappUrl = `https://wa.me/573108924410?text=${encodeURIComponent(`Hola Massa Group, estuve viendo el proyecto ${projectName} en su portal público VIEW y me gustaría cotizar un diseño.`)}`;
 
   return (
-    <div className="w-full flex flex-col gap-6 sm:gap-8 pb-10">
+    <div className="w-full flex flex-col gap-6 sm:gap-8 pb-36">
       
       {/* Header Público con Selector de Proyectos */}
       <div className="flex flex-col gap-3">
@@ -265,9 +265,9 @@ export function GuestHome({
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-[#171717] border border-white/15 p-2.5 flex items-center justify-center shrink-0 shadow-lg">
             <img
-              src="/MASSA_REBRANDING_PROFILE_REDES_ENTREGABLE_2023_003.png"
+              src="/massa-cube-transparent.png"
               alt="Massa Logo"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(156,208,26,0.3)]"
             />
           </div>
 

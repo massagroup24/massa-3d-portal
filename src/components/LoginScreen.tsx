@@ -73,9 +73,9 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         {/* Isotipo Massa en caja redondeada con resplandor */}
         <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-[#171717] border border-white/10 p-4 mb-5 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(156,208,26,0.15)] flex items-center justify-center animate-levitate">
           <img
-            src="/MASSA_REBRANDING_PROFILE_REDES_ENTREGABLE_2023_003.png"
+            src="/massa-cube-transparent.png"
             alt="Massa Logo"
-            className="w-full h-full object-contain drop-shadow-md"
+            className="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(156,208,26,0.4)]"
           />
         </div>
 
