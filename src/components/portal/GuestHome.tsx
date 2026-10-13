@@ -20,6 +20,7 @@ interface GuestHomeProps {
   activeProjectId?: string;
   onSelectProject?: (id: string) => void;
   heroImage?: string;
+  onBackToPortfolio?: () => void;
 }
 
 export function GuestHome({
@@ -30,7 +31,8 @@ export function GuestHome({
   publicProjects = [],
   activeProjectId,
   onSelectProject,
-  heroImage = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop'
+  heroImage = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop',
+  onBackToPortfolio,
 }: GuestHomeProps) {
   const whatsappUrl = `https://wa.me/573108924410?text=${encodeURIComponent(`Hola Massa Group, estuve viendo el proyecto ${projectName} en su portal público VIEW y me gustaría cotizar un diseño.`)}`;
 
@@ -40,11 +42,22 @@ export function GuestHome({
       {/* Header Público con Selector de Proyectos */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_8px_#9CD01A] animate-pulse" />
-            <span className="text-xs sm:text-sm font-semibold text-[#9CD01A] tracking-wider uppercase">
-              Portafolio Público • MASSA GROUP
-            </span>
+          <div className="flex items-center gap-3">
+            {onBackToPortfolio && (
+              <button
+                type="button"
+                onClick={onBackToPortfolio}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.08] hover:bg-[#9CD01A] text-xs font-bold text-white hover:text-[#0D0D0E] border border-white/10 hover:border-[#9CD01A] transition cursor-pointer shadow-md active:scale-95"
+              >
+                <span>← Portafolio</span>
+              </button>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_8px_#9CD01A] animate-pulse" />
+              <span className="text-xs sm:text-sm font-semibold text-[#9CD01A] tracking-wider uppercase">
+                Portafolio Público • MASSA GROUP
+              </span>
+            </div>
           </div>
 
           {/* Selector de Proyectos Públicos si hay varios */}

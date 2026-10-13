@@ -16,6 +16,7 @@ import { Tour360Section } from './components/portal/Tour360Section';
 import { ProgressTimeline } from './components/portal/ProgressTimeline';
 import { ArchitectContactModal } from './components/portal/ArchitectContactModal';
 import { GuestHome } from './components/portal/GuestHome';
+import { GuestPortfolioShowcase } from './components/portal/GuestPortfolioShowcase';
 import { ProjectSpecs } from './components/portal/ProjectSpecs';
 import { getProjectPortalData, getProjectPublicSpecs, ProjectPortalData } from './services/portalService';
 import { NavTab } from './components/ui/Dock';
@@ -52,6 +53,7 @@ function MainPortal() {
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
   const [configuringProjectId, setConfiguringProjectId] = useState<string | null>(null);
   const [tourStarted, setTourStarted] = useState(false);
+  const [guestView, setGuestView] = useState<'showcase' | 'project'>('showcase');
   const [loading, setLoading] = useState(true);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [portalData, setPortalData] = useState<ProjectPortalData | null>(null);
@@ -120,6 +122,12 @@ function MainPortal() {
       const firstRoomId = proj.rooms ? Object.keys(proj.rooms)[0] : null;
       const validRoomId = (proj.rooms && proj.rooms[proj.initialRoomId]) ? proj.initialRoomId : firstRoomId;
       setCurrentRoomId(validRoomId || null);
+    } else {
+      const fallback = projects[Object.keys(projects)[0]];
+      if (fallback) {
+        const firstRoomId = fallback.rooms ? Object.keys(fallback.rooms)[0] : null;
+        setCurrentRoomId(firstRoomId || null);
+      }
     }
   };
 
@@ -144,12 +152,16 @@ function MainPortal() {
     sessionStorage.removeItem('massa_3d_role');
     sessionStorage.removeItem('massa_client_email');
     setUserRole('portal');
+    setGuestView('showcase');
     setTourStarted(false);
     setActiveTab('home');
   };
 
   const handleLoginSuccess = (role: 'guest' | 'client' | 'architect') => {
     setUserRole(role);
+    if (role === 'guest') {
+      setGuestView('showcase');
+    }
     setActiveTab('home');
   };
 
@@ -309,8 +321,36 @@ function MainPortal() {
     );
   }
 
-  // 5. Portal con Sistema de Diseño visionOS (Cliente & Invitado)
   const currentDisplayName = portalData?.name || currentProject?.name || 'Villa Serena';
+
+  // 5. Pantalla de Bienvenida y Portafolio Monumental para Invitados (Estilo Skiper6)
+  if (userRole === 'guest' && guestView === 'showcase') {
+    return (
+      <>
+        <GuestPortfolioShowcase
+          onSelectProject={(projectId) => {
+            handleSelectProject(projectId);
+            setGuestView('project');
+            setActiveTab('home');
+          }}
+          onOpenLogin={() => {
+            setUserRole('portal');
+          }}
+          onContactCommercial={() => setIsContactModalOpen(true)}
+        />
+        {portalData?.architect && (
+          <ArchitectContactModal
+            isOpen={isContactModalOpen}
+            onClose={() => setIsContactModalOpen(false)}
+            architect={portalData.architect}
+            projectName={currentDisplayName}
+          />
+        )}
+      </>
+    );
+  }
+
+  // 6. Portal con Sistema de Diseño visionOS (Cliente & Invitado en Obra Activa)
 
   const publicProjectsList = Object.keys(projects).map(key => ({
     id: key,
@@ -335,6 +375,7 @@ function MainPortal() {
       publicProjects={publicProjectsList}
       onSelectProject={handleSelectProject}
       onContact={() => setIsContactModalOpen(true)}
+      onBackToPortfolio={() => setGuestView('showcase')}
     >
       {syncError && (
         <div className="mb-4 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs px-3.5 py-1.5 rounded-full">
@@ -355,6 +396,7 @@ function MainPortal() {
             activeProjectId={activeProjectId || undefined}
             onSelectProject={handleSelectProject}
             heroImage={portalData?.renders[0]?.storage_path}
+            onBackToPortfolio={() => setGuestView('showcase')}
           />
         ) : (
           <ClientHome

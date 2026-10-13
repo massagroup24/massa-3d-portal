@@ -15,6 +15,7 @@ interface PortalLayoutProps {
   publicProjects?: { id: string; name: string }[];
   onSelectProject?: (id: string) => void;
   onContact?: () => void;
+  onBackToPortfolio?: () => void;
 }
 
 export function PortalLayout({
@@ -28,6 +29,7 @@ export function PortalLayout({
   publicProjects,
   onSelectProject,
   onContact,
+  onBackToPortfolio,
 }: PortalLayoutProps) {
   return (
     <div className="relative min-h-screen w-full bg-[#0D0D0E] text-[#F5F5F5] flex flex-col overflow-x-hidden selection:bg-[#9CD01A] selection:text-[#0D0D0E]">
@@ -42,6 +44,7 @@ export function PortalLayout({
         publicProjects={publicProjects}
         onSelectProject={onSelectProject}
         onContact={onContact}
+        onBackToPortfolio={onBackToPortfolio}
       />
 
       {/* Área Principal de Contenido con Espaciado para el Dock / Barra Móvil */}

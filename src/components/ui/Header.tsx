@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, LogOut, ChevronDown, Check, MessageSquare } from 'lucide-react';
+import { Bell, LogOut, ChevronDown, Check, MessageSquare, Sparkles } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
   publicProjects?: { id: string; name: string }[];
   onSelectProject?: (id: string) => void;
   onContact?: () => void;
+  onBackToPortfolio?: () => void;
   className?: string;
 }
 
@@ -19,6 +20,7 @@ export function Header({
   publicProjects = [],
   onSelectProject,
   onContact,
+  onBackToPortfolio,
   className = '',
 }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -144,17 +146,29 @@ export function Header({
           </div>
         </div>
 
-        {/* Centro / Badge de Perfil visionOS */}
-        <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-medium text-white/80 shadow-inner">
-          <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_8px_rgba(156,208,26,0.9)] animate-pulse" />
-          <span>
-            {userRole === 'guest' 
-              ? 'Portafolio Público' 
-              : userRole === 'architect' 
-              ? 'Panel Arquitecto' 
-              : 'Portal Propietario'}
-          </span>
-        </div>
+        {/* Centro / Badge de Perfil visionOS o Botón Volver a Portafolio */}
+        {userRole === 'guest' && onBackToPortfolio ? (
+          <button
+            type="button"
+            onClick={onBackToPortfolio}
+            className="hidden sm:inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] hover:bg-[#9CD01A]/20 border border-white/10 hover:border-[#9CD01A]/40 text-xs font-bold text-white hover:text-[#9CD01A] shadow-inner transition cursor-pointer hover:scale-103 active:scale-97"
+            title="Ver todas las obras disponibles"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#9CD01A]" />
+            <span>Ver Portafolio de Obras ↗</span>
+          </button>
+        ) : (
+          <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-medium text-white/80 shadow-inner">
+            <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_8px_rgba(156,208,26,0.9)] animate-pulse" />
+            <span>
+              {userRole === 'guest' 
+                ? 'Portafolio Público' 
+                : userRole === 'architect' 
+                ? 'Panel Arquitecto' 
+                : 'Portal Propietario'}
+            </span>
+          </div>
+        )}
 
         {/* Lado Derecho: Acciones (Contacto Comercial + Notificaciones + Salir) */}
         <div className="flex items-center gap-2 sm:gap-3">
