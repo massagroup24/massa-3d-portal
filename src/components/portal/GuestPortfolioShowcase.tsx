@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowUpRight, Sparkles, MapPin, Maximize, Rotate3d, MessageSquare, LogIn } from 'lucide-react';
 import { MassaLogo } from '../ui/MassaLogo';
 
@@ -113,6 +113,32 @@ function getTitleFontSize(title: string): string {
   return 'text-4xl sm:text-6xl md:text-7xl lg:text-[7.6vw] xl:text-[8vw]';
 }
 
+// Variantes de animación en escalera (stagger wave) para cada letra
+const letterVariants: Variants = {
+  hidden: {
+    y: '105%',
+    opacity: 0,
+  },
+  visible: (i: number) => ({
+    y: '0%',
+    opacity: 1,
+    transition: {
+      duration: 0.38,
+      ease: [0.16, 1, 0.3, 1], // easeOutQuint rápido y elástico
+      delay: i * 0.022, // Efecto cascada/escalera de entrada
+    },
+  }),
+  exit: (i: number) => ({
+    y: '-105%',
+    opacity: 0,
+    transition: {
+      duration: 0.28,
+      ease: [0.16, 1, 0.3, 1],
+      delay: i * 0.016, // Efecto cascada/escalera de salida
+    },
+  }),
+};
+
 interface GuestPortfolioShowcaseProps {
   onSelectProject: (projectId: string) => void;
   onOpenLogin: () => void;
@@ -127,6 +153,9 @@ export function GuestPortfolioShowcase({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const activeWork = hoveredIndex !== null ? PORTFOLIO_WORKS[hoveredIndex] : null;
+  const currentTitle = activeWork ? activeWork.name : 'PORTAFOLIO';
+  const isAccent = !!activeWork;
+  const currentFontSize = getTitleFontSize(currentTitle);
 
   const handleCommercial = () => {
     if (onContactCommercial) {
@@ -294,30 +323,36 @@ export function GuestPortfolioShowcase({
         >
           {/* Caja con altura fija reservada para garantizar CLS = 0 (cero saltos visuales) */}
           <div className="relative h-[110px] sm:h-[150px] md:h-[190px] lg:h-[230px] flex items-center justify-center w-full px-2 overflow-hidden">
-            <AnimatePresence mode="wait">
-              {activeWork ? (
-                <m.h1
-                  key={activeWork.id}
-                  initial={{ opacity: 0, y: 35, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -35, scale: 0.95 }}
-                  transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-                  className={`font-monumental ${getTitleFontSize(activeWork.name)} font-black text-[#9CD01A] tracking-tight text-center leading-none filter drop-shadow-[0_10px_35px_rgba(156,208,26,0.35)] whitespace-nowrap select-none group-hover:scale-102 transition-transform`}
-                >
-                  {activeWork.name}
-                </m.h1>
-              ) : (
-                <m.h1
-                  key="default-portfolio"
-                  initial={{ opacity: 0, y: 30, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -30, scale: 0.96 }}
-                  transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="font-monumental text-6xl sm:text-8xl md:text-9xl lg:text-[11.5vw] font-black text-white/95 tracking-tight text-center leading-none filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] whitespace-nowrap select-none"
-                >
-                  PORTAFOLIO
-                </m.h1>
-              )}
+            <AnimatePresence>
+              <m.div
+                key={currentTitle}
+                className="absolute inset-0 flex items-center justify-center whitespace-nowrap select-none overflow-hidden"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <h1 className={`font-monumental ${currentFontSize} font-black tracking-tight text-center leading-none flex items-center justify-center group-hover:scale-102 transition-transform ${
+                  isAccent 
+                    ? 'text-[#9CD01A] filter drop-shadow-[0_10px_35px_rgba(156,208,26,0.35)]' 
+                    : 'text-white/95 filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]'
+                }`}>
+                  {currentTitle.split('').map((char, i) => (
+                    char === ' ' ? (
+                      <span key={i} className="inline-block w-[0.26em]">&nbsp;</span>
+                    ) : (
+                      <span key={i} className="inline-block overflow-hidden py-1">
+                        <m.span
+                          custom={i}
+                          variants={letterVariants}
+                          className="inline-block"
+                        >
+                          {char}
+                        </m.span>
+                      </span>
+                    )
+                  ))}
+                </h1>
+              </m.div>
             </AnimatePresence>
           </div>
 
