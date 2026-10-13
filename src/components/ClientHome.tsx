@@ -205,72 +205,66 @@ export function ClientHome({
             </div>
           </GlassCard>
 
-          {/* Tarjeta 4: Recorrido 360° (Motor Reutilizado) */}
-          <GlassCard
-            interactive
-            spotlight
+          {/* Tarjeta 4: Recorrido 360° (Full-bleed edge-to-edge) */}
+          <div
             onClick={onOpen360Tour || (() => onNavigateSection('tour360'))}
-            className="md:col-span-2 group min-h-[180px] sm:min-h-[200px] p-6 sm:p-8 flex flex-col justify-end"
+            className="md:col-span-2 group relative min-h-[190px] sm:min-h-[210px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
           >
-            <div className="absolute inset-0 z-0">
-              <img
-                src="https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=1200&auto=format&fit=crop"
-                alt="Recorrido 360"
-                className="w-full h-full object-cover opacity-35 group-hover:opacity-50 transition-opacity duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#171717] via-[#171717]/60 to-transparent" />
-            </div>
+            <img
+              src="https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=1200&auto=format&fit=crop"
+              alt="Recorrido 360"
+              className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-65 group-hover:scale-108 transition-all duration-700 ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0E] via-[#0D0D0E]/60 to-black/20" />
+            <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/[0.04]" />
 
-            <div className="relative z-10 flex items-end justify-between gap-4">
+            <div className="relative z-10 p-6 sm:p-8 flex items-end justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-1">
+                <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-2">
                   <Sparkles className="w-3 h-3" /> Inmersión 360°
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-[#F5F5F5] mb-1">
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#F5F5F5] mb-1 group-hover:text-[#9CD01A] transition-colors">
                   Recorrido 360°
                 </h3>
                 <p className="text-xs sm:text-sm text-[#A3A3A3]">
-                  Inmersión espacial completa
+                  Inmersión espacial completa en todas las estancias
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-[#9CD01A] text-[#0D0D0E] border border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-[0_0_25px_rgba(156,208,26,0.5)] shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-[#9CD01A] text-[#0D0D0E] border border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-[0_0_25px_rgba(156,208,26,0.5)] shrink-0 group-hover:scale-110">
                 <Rotate3d className="w-6 h-6 animate-pulse" />
               </div>
             </div>
-          </GlassCard>
+          </div>
 
-          {/* Tarjeta 5: Avance de obra */}
-          <GlassCard
-            interactive
-            spotlight
+          {/* Tarjeta 5: Avance de obra (Full-bleed edge-to-edge) */}
+          <div
             onClick={() => onNavigateSection('progress')}
-            className="md:col-span-2 group min-h-[170px] sm:min-h-[190px] p-6 sm:p-8 flex flex-col justify-end"
+            className="md:col-span-2 group relative min-h-[190px] sm:min-h-[210px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
           >
-            <div className="absolute inset-0 z-0">
-              <img
-                src="https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?q=80&w=1200&auto=format&fit=crop"
-                alt="Avance de obra"
-                className="w-full h-full object-cover opacity-35 group-hover:opacity-50 transition-opacity duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#171717] via-[#171717]/60 to-transparent" />
-            </div>
+            <img
+              src="https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?q=80&w=1200&auto=format&fit=crop"
+              alt="Avance de obra"
+              className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-65 group-hover:scale-108 transition-all duration-700 ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0E] via-[#0D0D0E]/60 to-black/20" />
+            <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/[0.04]" />
 
-            <div className="relative z-10 flex items-end justify-between gap-4">
+            <div className="relative z-10 p-6 sm:p-8 flex items-end justify-between gap-4">
               <div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-[#F5F5F5] mb-1">
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#F5F5F5] mb-1 group-hover:text-[#9CD01A] transition-colors">
                   Avance de obra
                 </h3>
                 <p className="text-xs sm:text-sm text-[#A3A3A3]">
-                  Seguimiento fotográfico semanal
+                  Seguimiento fotográfico semanal y bitácora técnica
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-[#0D0D0E] text-[#F5F5F5] border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-[#0D0D0E] text-[#F5F5F5] border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0 group-hover:scale-110">
                 <Camera className="w-5 h-5" />
               </div>
             </div>
-          </GlassCard>
+          </div>
 
         </div>
       </div>
