@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { m, AnimatePresence, Variants } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, Sparkles, MapPin, Maximize, Rotate3d, MessageSquare, LogIn } from 'lucide-react';
 import { MassaLogo } from '../ui/MassaLogo';
 
@@ -25,6 +25,16 @@ export const PORTFOLIO_WORKS: PortfolioWork[] = [
     year: '2026',
     thumbnail: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80',
     bgImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=85',
+  },
+  {
+    id: 'marquimoda',
+    name: 'MARQUIMODA',
+    category: 'Sede Corporativa & Oficinas',
+    location: 'Valle del Cauca',
+    area: '620 m²',
+    year: '2026',
+    thumbnail: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80',
+    bgImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=2000&q=85',
   },
   {
     id: 'edinson-jejen',
@@ -115,31 +125,6 @@ function getTitleFontSize(title: string): string {
   return 'text-2xl sm:text-4xl md:text-5xl lg:text-[4.8vw] xl:text-[5.5vw]';
 }
 
-// Variantes de animación en escalera (stagger wave) para cada letra
-const letterVariants: Variants = {
-  hidden: {
-    y: '105%',
-    opacity: 0,
-  },
-  visible: (i: number) => ({
-    y: '0%',
-    opacity: 1,
-    transition: {
-      duration: 0.38,
-      ease: [0.16, 1, 0.3, 1], // easeOutQuint rápido y elástico
-      delay: i * 0.022, // Efecto cascada/escalera de entrada
-    },
-  }),
-  exit: (i: number) => ({
-    y: '-105%',
-    opacity: 0,
-    transition: {
-      duration: 0.28,
-      ease: [0.16, 1, 0.3, 1],
-      delay: i * 0.016, // Efecto cascada/escalera de salida
-    },
-  }),
-};
 
 interface GuestPortfolioShowcaseProps {
   onSelectProject: (projectId: string) => void;
@@ -261,7 +246,10 @@ export function GuestPortfolioShowcase({
         
         {/* Tira Superior de Miniaturas (Inamovible: anclada en la parte superior sin desplazamientos) */}
         <div className="relative mb-3 sm:mb-6 max-w-full shrink-0 z-20">
-          <div className="flex items-center justify-start md:justify-center gap-2 sm:gap-3.5 p-2 sm:p-2.5 rounded-3xl bg-[#141416]/85 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-x-auto no-scrollbar max-w-full">
+          <div 
+            onMouseLeave={() => setHoveredIndex(null)}
+            className="flex items-center justify-start md:justify-center gap-2 sm:gap-3.5 p-2 sm:p-2.5 rounded-3xl bg-[#141416]/85 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-x-auto no-scrollbar max-w-full"
+          >
             {PORTFOLIO_WORKS.map((work, idx) => {
               const isHovered = hoveredIndex === idx;
 
@@ -269,7 +257,6 @@ export function GuestPortfolioShowcase({
                 <div
                   key={work.id}
                   onMouseEnter={() => setHoveredIndex(idx)}
-                  onMouseLeave={() => setHoveredIndex(null)}
                   onClick={() => onSelectProject(work.id)}
                   className="relative group cursor-pointer shrink-0"
                 >
@@ -325,34 +312,21 @@ export function GuestPortfolioShowcase({
         >
           {/* Caja con altura fija reservada para garantizar CLS = 0 (cero saltos visuales) */}
           <div className="relative h-[90px] sm:h-[130px] md:h-[160px] lg:h-[195px] flex items-center justify-center w-full px-4 overflow-hidden">
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               <m.div
                 key={currentTitle}
-                className="absolute inset-0 flex items-center justify-center whitespace-nowrap select-none overflow-hidden"
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                className="absolute inset-0 flex items-center justify-center whitespace-nowrap select-none"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               >
                 <h1 className={`font-monumental ${currentFontSize} tracking-wide text-center leading-none flex items-center justify-center group-hover:scale-102 transition-transform uppercase ${
                   isAccent 
                     ? 'text-[#9CD01A] filter drop-shadow-[0_10px_35px_rgba(156,208,26,0.35)]' 
                     : 'text-white/95 filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]'
                 }`}>
-                  {currentTitle.split('').map((char, i) => (
-                    char === ' ' ? (
-                      <span key={i} className="inline-block w-[0.25em]">&nbsp;</span>
-                    ) : (
-                      <span key={i} className="inline-block overflow-hidden py-1 sm:py-2">
-                        <m.span
-                          custom={i}
-                          variants={letterVariants}
-                          className="inline-block"
-                        >
-                          {char}
-                        </m.span>
-                      </span>
-                    )
-                  ))}
+                  {currentTitle}
                 </h1>
               </m.div>
             </AnimatePresence>

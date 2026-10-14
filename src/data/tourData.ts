@@ -27,6 +27,24 @@ export interface Project {
 }
 
 export const projectsData: Record<string, Project> = {
+  'marquimoda': {
+    id: 'marquimoda',
+    name: 'MARQUIMODA',
+    description: 'Sede corporativa y oficinas de diseño con espacios diáfanos, áreas directivas y arquitectura biofílica.',
+    thumbnail: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
+    minimapImage: '/PLANO.jpg',
+    initialRoomId: 'sede_corporativa',
+    rooms: {
+      sede_corporativa: {
+        id: 'sede_corporativa',
+        name: 'Sede Corporativa & Open Space',
+        description: 'Planta abierta de diseño y trabajo colaborativo.',
+        imageUrl: '/3ER PISO 360.png',
+        minimapPosition: { x: 50, y: 50 },
+        hotspots: []
+      }
+    }
+  },
   'edinson-jejen': {
     id: 'edinson-jejen',
     name: 'EDINSON JEJEN',
