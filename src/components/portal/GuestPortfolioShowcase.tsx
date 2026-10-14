@@ -101,16 +101,18 @@ export const PORTFOLIO_WORKS: PortfolioWork[] = [
 function getTitleFontSize(title: string): string {
   const len = title.length;
   if (len <= 8) {
-    return 'text-7xl sm:text-9xl md:text-[10rem] lg:text-[13vw]';
+    return 'text-5xl sm:text-7xl md:text-8xl lg:text-[8.5vw] xl:text-[9.5vw]';
   }
   if (len <= 11) {
-    return 'text-6xl sm:text-8xl md:text-9xl lg:text-[11vw]';
+    // "PORTAFOLIO", "CASA ANDES" (10-11 caracteres)
+    return 'text-4xl sm:text-6xl md:text-7xl lg:text-[7.2vw] xl:text-[8vw]';
   }
-  if (len <= 13) {
-    return 'text-5xl sm:text-7xl md:text-8xl lg:text-[9.2vw]';
+  if (len <= 14) {
+    // "VILLA SERENA" (12 caracteres)
+    return 'text-3xl sm:text-5xl md:text-6xl lg:text-[6vw] xl:text-[6.8vw]';
   }
-  // Títulos largos (14+ caracteres como "RESIDENCIA BAMBÚ", "PENTHOUSE MASSA", etc.)
-  return 'text-4xl sm:text-6xl md:text-7xl lg:text-[7.6vw] xl:text-[8vw]';
+  // Títulos largos (15+ caracteres como "RESIDENCIA BAMBÚ", "PENTHOUSE MASSA", etc.)
+  return 'text-2xl sm:text-4xl md:text-5xl lg:text-[4.8vw] xl:text-[5.5vw]';
 }
 
 // Variantes de animación en escalera (stagger wave) para cada letra
@@ -258,7 +260,7 @@ export function GuestPortfolioShowcase({
       <main className="relative z-10 flex-1 flex flex-col items-center justify-start px-4 sm:px-6 pt-4 sm:pt-6 pb-6 max-w-7xl mx-auto w-full">
         
         {/* Tira Superior de Miniaturas (Inamovible: anclada en la parte superior sin desplazamientos) */}
-        <div className="relative mb-6 sm:mb-10 max-w-full shrink-0 z-20">
+        <div className="relative mb-3 sm:mb-6 max-w-full shrink-0 z-20">
           <div className="flex items-center justify-start md:justify-center gap-2 sm:gap-3.5 p-2 sm:p-2.5 rounded-3xl bg-[#141416]/85 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-x-auto no-scrollbar max-w-full">
             {PORTFOLIO_WORKS.map((work, idx) => {
               const isHovered = hoveredIndex === idx;
@@ -322,7 +324,7 @@ export function GuestPortfolioShowcase({
           className={`flex-1 w-full flex flex-col items-center justify-center select-none ${activeWork ? 'cursor-pointer group' : ''}`}
         >
           {/* Caja con altura fija reservada para garantizar CLS = 0 (cero saltos visuales) */}
-          <div className="relative h-[110px] sm:h-[150px] md:h-[190px] lg:h-[230px] flex items-center justify-center w-full px-2 overflow-hidden">
+          <div className="relative h-[90px] sm:h-[130px] md:h-[160px] lg:h-[195px] flex items-center justify-center w-full px-4 overflow-hidden">
             <AnimatePresence>
               <m.div
                 key={currentTitle}
@@ -331,16 +333,16 @@ export function GuestPortfolioShowcase({
                 animate="visible"
                 exit="exit"
               >
-                <h1 className={`font-monumental ${currentFontSize} font-black tracking-tight text-center leading-none flex items-center justify-center group-hover:scale-102 transition-transform ${
+                <h1 className={`font-monumental ${currentFontSize} tracking-wide text-center leading-none flex items-center justify-center group-hover:scale-102 transition-transform uppercase ${
                   isAccent 
                     ? 'text-[#9CD01A] filter drop-shadow-[0_10px_35px_rgba(156,208,26,0.35)]' 
                     : 'text-white/95 filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]'
                 }`}>
                   {currentTitle.split('').map((char, i) => (
                     char === ' ' ? (
-                      <span key={i} className="inline-block w-[0.26em]">&nbsp;</span>
+                      <span key={i} className="inline-block w-[0.25em]">&nbsp;</span>
                     ) : (
-                      <span key={i} className="inline-block overflow-hidden py-1">
+                      <span key={i} className="inline-block overflow-hidden py-1 sm:py-2">
                         <m.span
                           custom={i}
                           variants={letterVariants}
@@ -357,7 +359,7 @@ export function GuestPortfolioShowcase({
           </div>
 
           {/* Subtítulo Dinámico Interactivo con altura reservada para que no cause saltos */}
-          <div className="mt-3 sm:mt-5 h-[48px] flex items-center justify-center">
+          <div className="mt-2 sm:mt-3 h-[44px] flex items-center justify-center">
             <AnimatePresence mode="wait">
               {activeWork ? (
                 <m.div

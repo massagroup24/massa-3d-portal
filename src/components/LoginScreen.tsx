@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { OrbBackground } from './ui/OrbBackground';
+import { ArchitecturalCadBackground } from './ui/ArchitecturalCadBackground';
 import { Button } from './ui/Button';
 import { Eye, EyeOff, ArrowRight, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 import { verifyEditorLogin } from '../supabase';
@@ -63,9 +63,9 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-[#0D0D0E]">
-      {/* Orbes de luz ambiental de fondo */}
-      <OrbBackground />
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-[#08080A]">
+      {/* Fondo de Retícula Paramétrica Arquitectónica (Opción 2: Blueprint CAD Ultra Ligero) */}
+      <ArchitecturalCadBackground />
 
       {/* Contenedor Principal de Login */}
       <div className="relative z-10 w-full max-w-[430px] flex flex-col items-center">
