@@ -83,13 +83,26 @@ function MainPortal() {
           });
           setProjects(normalized);
         } else {
-          const loadedProjects: Record<string, Project> = {};
+          // Merge defensivo: conservamos todos los proyectos de projectsData (incluyendo marquimoda)
+          // y los enriquecemos / sobreescribimos con los que existan en Supabase
+          const mergedProjects: Record<string, Project> = {};
+          Object.keys(projectsData).forEach(key => {
+            mergedProjects[key] = normalizeProject(projectsData[key]);
+          });
           fbProjects.forEach(p => {
             if (p && p.id) {
-              loadedProjects[p.id] = normalizeProject(p);
+              mergedProjects[p.id] = normalizeProject(p);
             }
           });
-          setProjects(loadedProjects);
+          setProjects(mergedProjects);
+
+          // Si marquimoda no estaba en Supabase aún, guardarlo en segundo plano
+          if (!fbProjects.some(p => p.id === 'marquimoda') && projectsData['marquimoda']) {
+            saveProjectToSupabase(projectsData['marquimoda']).catch(err => 
+              console.warn("Sincronización inicial de marquimoda en Supabase:", err)
+            );
+          }
+
           if (!activeProjectId && fbProjects[0]?.id) {
             setActiveProjectId(fbProjects[0].id);
           }
@@ -108,7 +121,7 @@ function MainPortal() {
   // Cargar datos de proyecto extendidos (Renders, Planos, Avances) para el portal
   useEffect(() => {
     if (!activeProjectId) return;
-    const currentProj = projects[activeProjectId];
+    const currentProj = projects[activeProjectId] || projectsData[activeProjectId];
     getProjectPortalData(activeProjectId, currentProj)
       .then((data) => setPortalData(data))
       .catch((err) => console.warn("Error cargando portal data:", err));
@@ -117,13 +130,13 @@ function MainPortal() {
   const handleSelectProject = (projectId: string) => {
     setActiveProjectId(projectId);
     setTourStarted(false);
-    const proj = projects[projectId];
+    const proj = projects[projectId] || projectsData[projectId];
     if (proj) {
       const firstRoomId = proj.rooms ? Object.keys(proj.rooms)[0] : null;
       const validRoomId = (proj.rooms && proj.rooms[proj.initialRoomId]) ? proj.initialRoomId : firstRoomId;
       setCurrentRoomId(validRoomId || null);
     } else {
-      const fallback = projects[Object.keys(projects)[0]];
+      const fallback = projects[Object.keys(projects)[0]] || projectsData[Object.keys(projectsData)[0]];
       if (fallback) {
         const firstRoomId = fallback.rooms ? Object.keys(fallback.rooms)[0] : null;
         setCurrentRoomId(firstRoomId || null);
@@ -263,7 +276,9 @@ function MainPortal() {
   }
 
   // 3. Recorrido 360° en pantalla completa (Reutilizando motor Three.js existente)
-  const currentProject = (activeProjectId && projects[activeProjectId]) ? projects[activeProjectId] : Object.values(projects)[0];
+  const currentProject = (activeProjectId && (projects[activeProjectId] || projectsData[activeProjectId])) 
+    ? (projects[activeProjectId] || projectsData[activeProjectId]) 
+    : (Object.values(projects)[0] || Object.values(projectsData)[0]);
   const firstAvailableRoomId = currentProject?.rooms ? Object.keys(currentProject.rooms)[0] : null;
   const currentRoom = currentProject?.rooms 
     ? (currentRoomId && currentProject.rooms[currentRoomId] ? currentProject.rooms[currentRoomId] : (firstAvailableRoomId ? currentProject.rooms[firstAvailableRoomId] : undefined)) 
@@ -321,7 +336,7 @@ function MainPortal() {
     );
   }
 
-  const currentDisplayName = portalData?.name || currentProject?.name || 'Villa Serena';
+  const currentDisplayName = portalData?.name || currentProject?.name || (activeProjectId && (projects[activeProjectId]?.name || projectsData[activeProjectId]?.name)) || 'Villa Serena';
 
   // 5. Pantalla de Bienvenida y Portafolio Monumental para Invitados (Estilo Skiper6)
   if (userRole === 'guest' && guestView === 'showcase') {
@@ -352,10 +367,19 @@ function MainPortal() {
 
   // 6. Portal con Sistema de Diseño visionOS (Cliente & Invitado en Obra Activa)
 
-  const publicProjectsList = Object.keys(projects).map(key => ({
-    id: key,
-    name: projects[key].name || key
-  }));
+  const publicProjectsList = (() => {
+    const seenNames = new Set<string>();
+    const list: { id: string; name: string }[] = [];
+    Object.keys(projects).forEach(key => {
+      const name = projects[key]?.name || key;
+      const cleanName = name.toLowerCase().trim();
+      if (!seenNames.has(cleanName)) {
+        seenNames.add(cleanName);
+        list.push({ id: key, name });
+      }
+    });
+    return list;
+  })();
 
   const handleSelectTab = (tab: NavTab) => {
     if (tab === 'contact') {

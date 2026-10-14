@@ -161,6 +161,53 @@ const DEFAULT_RENDERS: ProjectMediaItem[] = [
   }
 ];
 
+const MARQUIMODA_RENDERS: ProjectMediaItem[] = [
+  {
+    id: 'mq-1',
+    project_id: 'marquimoda',
+    type: 'render',
+    title: 'Fachada Corporativa & Acceso Principal',
+    storage_path: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=2000&q=85',
+    thumbnail_path: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80',
+    category: 'Fachada',
+    order_index: 1,
+    metadata: { resolution: '4K Ultra HD', description: 'Fachada vanguardista acristalada con atrio bioclimático y recepción corporativa.' }
+  },
+  {
+    id: 'mq-2',
+    project_id: 'marquimoda',
+    type: 'render',
+    title: 'Planta de Diseño Abierta & Coworking',
+    storage_path: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=2000&q=85',
+    thumbnail_path: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=600&q=80',
+    category: 'Interiores',
+    order_index: 2,
+    metadata: { resolution: '4K Ultra HD', description: 'Espacio diáfano colaborativo con cielorrasos técnicos y paneles fonoabsorbentes.' }
+  },
+  {
+    id: 'mq-3',
+    project_id: 'marquimoda',
+    type: 'render',
+    title: 'Sala de Juntas Directiva',
+    storage_path: 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=2000&q=85',
+    thumbnail_path: 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=600&q=80',
+    category: 'Área Directiva',
+    order_index: 3,
+    metadata: { resolution: '4K Ultra HD', description: 'Sala ejecutiva con integración tecnológica de punta y muros de roble.' }
+  },
+  {
+    id: 'mq-4',
+    project_id: 'marquimoda',
+    type: 'render',
+    title: 'Gerencia General & Terraza Privada',
+    storage_path: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=2000&q=85',
+    thumbnail_path: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=600&q=80',
+    category: 'Área Directiva',
+    order_index: 4,
+    metadata: { resolution: '4K Ultra HD', description: 'Despacho directivo con salón lounge y acabados de lujo sostenible.' }
+  }
+];
+
 const DEFAULT_BLUEPRINTS: ProjectMediaItem[] = [
   {
     id: 'bp-1',
@@ -295,14 +342,15 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       .order('update_date', { ascending: false });
 
     const rawData = projRow?.data || fallbackProject || {};
-    const projectName = rawData.name || fallbackProject?.name || 'Villa Serena';
-    const clientName = (rawData as any).clientName || 'Carlos';
+    const projectName = rawData.name || fallbackProject?.name || (projectId === 'marquimoda' ? 'MARQUIMODA' : 'Villa Serena');
+    const isMq = projectId === 'marquimoda' || projectName.toLowerCase().includes('marquimoda');
+    const clientName = isMq ? 'Marquimoda S.A.S.' : ((rawData as any).clientName || 'Carlos');
 
     // Renders
     let renders = (mediaRows || []).filter(m => m.type === 'render');
     if (renders.length === 0) {
       // Usar renders por defecto enriquecidos con las fotos del proyecto si existen
-      renders = DEFAULT_RENDERS;
+      renders = isMq ? MARQUIMODA_RENDERS : DEFAULT_RENDERS;
     }
 
     // Planos
@@ -340,8 +388,8 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       id: projectId,
       name: projectName,
       clientName,
-      currentPhase: projRow?.current_phase || 'FASE 3: ACABADOS DE LUJO',
-      currentProgress: projRow?.current_progress ?? 68,
+      currentPhase: projRow?.current_phase || (isMq ? 'FASE 4: HABILITACIÓN ARQUITECTÓNICA' : 'FASE 3: ACABADOS DE LUJO'),
+      currentProgress: projRow?.current_progress ?? (isMq ? 82 : 68),
       isPublic: projRow?.published_for_client ?? true,
       architect: {
         name: projRow?.architect_name || 'Mateo Rossi',
@@ -354,7 +402,12 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       blueprints,
       progressUpdates,
       publicSpecs,
-      beforeAfterComparison: {
+      beforeAfterComparison: isMq ? {
+        beforeImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80',
+        beforeLabel: 'Enero 2026 • Estado Inicial de Planta Libre',
+        afterImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=85',
+        afterLabel: 'Estado Actual • Habilitación Arquitectónica 82%'
+      } : {
         beforeImage: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1600&q=80',
         beforeLabel: 'Mayo 2026 • Terreno y Cimentación',
         afterImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=85',
@@ -363,13 +416,14 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
     };
   } catch (err) {
     console.warn('Error cargando portal data, retornando fallback seguro:', err);
-    const fallbackName = fallbackProject?.name || 'Villa Serena';
+    const isMqFallback = projectId === 'marquimoda' || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('marquimoda'));
+    const fallbackName = isMqFallback ? 'MARQUIMODA' : (fallbackProject?.name || 'Villa Serena');
     return {
       id: projectId,
       name: fallbackName,
-      clientName: 'Carlos',
-      currentPhase: 'FASE 3: ACABADOS DE LUJO',
-      currentProgress: 68,
+      clientName: isMqFallback ? 'Marquimoda S.A.S.' : 'Carlos',
+      currentPhase: isMqFallback ? 'FASE 4: HABILITACIÓN ARQUITECTÓNICA' : 'FASE 3: ACABADOS DE LUJO',
+      currentProgress: isMqFallback ? 82 : 68,
       isPublic: true,
       architect: {
         name: 'Mateo Rossi',
@@ -378,11 +432,16 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
         phone: '+57 310 892 4410',
         whatsapp: '573108924410'
       },
-      renders: DEFAULT_RENDERS,
+      renders: isMqFallback ? MARQUIMODA_RENDERS : DEFAULT_RENDERS,
       blueprints: DEFAULT_BLUEPRINTS,
       progressUpdates: DEFAULT_PROGRESS,
       publicSpecs: getProjectPublicSpecs(fallbackName),
-      beforeAfterComparison: {
+      beforeAfterComparison: isMqFallback ? {
+        beforeImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80',
+        beforeLabel: 'Enero 2026 • Estado Inicial de Planta Libre',
+        afterImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=85',
+        afterLabel: 'Estado Actual • Habilitación Arquitectónica 82%'
+      } : {
         beforeImage: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1600&q=80',
         beforeLabel: 'Mayo 2026 • Terreno y Cimentación',
         afterImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=85',
