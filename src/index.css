@@ -44,9 +44,9 @@
 @layer components {
   /* Tipografía Monumental Ultra Gruesa y Condensada (Poster Headline Style) */
   .font-monumental {
-    font-family: 'Anton', 'Oswald', 'Impact', sans-serif;
+    font-family: 'Bebas Neue', 'Anton', 'Oswald', 'Montserrat', sans-serif;
     font-weight: 400;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.03em;
   }
 
   /* Panel de vidrio base visionOS */

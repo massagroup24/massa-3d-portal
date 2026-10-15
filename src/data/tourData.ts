@@ -24,6 +24,10 @@ export interface Project {
   initialRoomId: string;
   rooms: Record<string, Room>;
   pin?: string; // PIN de seguridad para acceder al Creador Visual
+  status?: 'in_progress' | 'completed'; // Estado: en proceso o terminado
+  clientName?: string; // Nombre del cliente propietario
+  phase?: string; // Fase actual del proyecto
+  progress?: number; // Porcentaje de avance de obra (0 a 100)
 }
 
 export const projectsData: Record<string, Project> = {
@@ -34,6 +38,10 @@ export const projectsData: Record<string, Project> = {
     thumbnail: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
     minimapImage: '/PLANO.jpg',
     initialRoomId: 'sede_corporativa',
+    status: 'in_progress',
+    clientName: 'MarquiModa S.A.',
+    phase: 'Fase 3: Mobiliario & Biofilia',
+    progress: 78,
     rooms: {
       sede_corporativa: {
         id: 'sede_corporativa',
@@ -52,6 +60,10 @@ export const projectsData: Record<string, Project> = {
     thumbnail: '/3ER PISO 360.png', // Usamos la primera toma como portada del proyecto
     minimapImage: '/PLANO.jpg', 
     initialRoomId: 'tercer_piso',
+    status: 'in_progress',
+    clientName: 'Edinson Jején',
+    phase: 'Fase 4: Acabados & Iluminación',
+    progress: 92,
     rooms: {
       tercer_piso: {
         id: 'tercer_piso',
@@ -221,7 +233,11 @@ export function normalizeProject(raw: any): Project {
     minimapImage,
     initialRoomId,
     rooms,
-    pin: raw.pin
+    pin: raw.pin,
+    status: raw.status || 'in_progress',
+    clientName: raw.clientName || '',
+    phase: raw.phase || 'Fase 3: Ejecución',
+    progress: typeof raw.progress === 'number' ? raw.progress : 75
   };
 }
 

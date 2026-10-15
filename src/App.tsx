@@ -23,12 +23,14 @@ import { NavTab } from './components/ui/Dock';
 import { projectsData, Project, normalizeProject } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 import { Lock } from 'lucide-react';
+import { UsersManagementPortal } from './components/UsersManagementPortal';
+import { ProjectsManagementPortal } from './components/ProjectsManagementPortal';
 
-function MainPortal() {
+function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usuarios' }) {
   // Estado de rol: 'portal' (muestra login), 'guest' (invitado portafolio público), 'client' (portal cliente), 'architect' (panel arquitecto)
   const [userRole, setUserRole] = useState<'portal' | 'guest' | 'client' | 'architect'>(() => {
     try {
-      const saved = sessionStorage.getItem('massa_3d_role');
+      const saved = sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role');
       if (saved === 'editor') return 'architect';
       if (saved === 'visitor') return 'client';
       if (saved === 'guest') return 'guest';
@@ -36,6 +38,40 @@ function MainPortal() {
     } catch {
       return 'portal';
     }
+  });
+
+  // Mantener sincronizado localStorage para nuevas pestañas
+  useEffect(() => {
+    try {
+      const currentRole = sessionStorage.getItem('massa_3d_role');
+      if (currentRole) {
+        localStorage.setItem('massa_3d_role', currentRole);
+        const name = sessionStorage.getItem('massa_3d_name');
+        if (name) localStorage.setItem('massa_3d_name', name);
+        const username = sessionStorage.getItem('massa_3d_username');
+        if (username) localStorage.setItem('massa_3d_username', username);
+        const level = sessionStorage.getItem('massa_3d_user_level');
+        if (level) localStorage.setItem('massa_3d_user_level', level);
+      }
+    } catch {
+      // ignore
+    }
+  }, [userRole]);
+
+  const [architectTab, setArchitectTab] = useState<'inicio' | 'proyectos' | 'usuarios'>(() => {
+    if (initialTab) return initialTab;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') === 'usuarios' || window.location.pathname.includes('/admin/usuarios')) {
+        return 'usuarios';
+      }
+      if (params.get('tab') === 'proyectos' || window.location.pathname.includes('/admin/proyectos')) {
+        return 'proyectos';
+      }
+    } catch {
+      // ignore
+    }
+    return 'inicio';
   });
 
   const [activeTab, setActiveTab] = useState<NavTab>('home');
@@ -74,37 +110,24 @@ function MainPortal() {
         ]);
         
         if (fbProjects.length === 0) {
-          for (const key of Object.keys(projectsData)) {
-            await saveProjectToSupabase(projectsData[key]);
-          }
           const normalized: Record<string, Project> = {};
           Object.keys(projectsData).forEach(key => {
             normalized[key] = normalizeProject(projectsData[key]);
           });
           setProjects(normalized);
         } else {
-          // Merge defensivo: conservamos todos los proyectos de projectsData (incluyendo marquimoda)
-          // y los enriquecemos / sobreescribimos con los que existan en Supabase
-          const mergedProjects: Record<string, Project> = {};
-          Object.keys(projectsData).forEach(key => {
-            mergedProjects[key] = normalizeProject(projectsData[key]);
-          });
+          // Usar estrictamente los proyectos reales creados y guardados en Supabase
+          const loadedProjects: Record<string, Project> = {};
           fbProjects.forEach(p => {
             if (p && p.id) {
-              mergedProjects[p.id] = normalizeProject(p);
+              loadedProjects[p.id] = normalizeProject(p);
             }
           });
-          setProjects(mergedProjects);
+          setProjects(loadedProjects);
 
-          // Si marquimoda no estaba en Supabase aún, guardarlo en segundo plano
-          if (!fbProjects.some(p => p.id === 'marquimoda') && projectsData['marquimoda']) {
-            saveProjectToSupabase(projectsData['marquimoda']).catch(err => 
-              console.warn("Sincronización inicial de marquimoda en Supabase:", err)
-            );
-          }
-
-          if (!activeProjectId && fbProjects[0]?.id) {
-            setActiveProjectId(fbProjects[0].id);
+          if (!activeProjectId || !loadedProjects[activeProjectId]) {
+            const firstId = Object.keys(loadedProjects)[0];
+            if (firstId) setActiveProjectId(firstId);
           }
         }
         setSyncError(null);
@@ -164,6 +187,20 @@ function MainPortal() {
   const handleLogout = () => {
     sessionStorage.removeItem('massa_3d_role');
     sessionStorage.removeItem('massa_client_email');
+    sessionStorage.removeItem('massa_3d_username');
+    sessionStorage.removeItem('massa_3d_name');
+    sessionStorage.removeItem('massa_3d_user_level');
+
+    try {
+      localStorage.removeItem('massa_3d_role');
+      localStorage.removeItem('massa_client_email');
+      localStorage.removeItem('massa_3d_username');
+      localStorage.removeItem('massa_3d_name');
+      localStorage.removeItem('massa_3d_user_level');
+    } catch {
+      // ignore
+    }
+
     setUserRole('portal');
     setGuestView('showcase');
     setTourStarted(false);
@@ -298,39 +335,60 @@ function MainPortal() {
 
   // 4. Panel de Administrador / Arquitecto (si seleccionó rol Arquitecto)
   if (userRole === 'architect') {
-    return (
-      <div className="relative w-full min-h-screen bg-[#0D0D0E] text-white">
-        {/* Banner de barra superior para alternar a vista de cliente */}
-        <div className="bg-[#171717]/90 border-b border-white/10 px-4 py-2.5 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#9CD01A]" />
-            <span className="font-bold text-[#F5F5F5]">Modo Arquitecto MASSA</span>
-          </div>
+    if (architectTab === 'usuarios') {
+      return (
+        <UsersManagementPortal
+          onBackToHome={() => setArchitectTab('inicio')}
+          onNavigateToProjects={() => setArchitectTab('proyectos')}
+          onLogout={handleLogout}
+          currentUserName={sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name') || undefined}
+          totalProjects={Object.keys(projects).length}
+          onCreateProject={handleCreateNewProject}
+        />
+      );
+    }
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setUserRole('client')}
-              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#F5F5F5] font-semibold transition"
-            >
-              Ver Portal como Cliente
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 font-semibold transition"
-            >
-              Salir
-            </button>
-          </div>
-        </div>
-
-        <Home
+    if (architectTab === 'proyectos') {
+      return (
+        <ProjectsManagementPortal
           projects={projects}
           onSelectProject={handleSelectProject}
+          onStart360Tour={(projId) => {
+            handleSelectProject(projId);
+            handleStart360Tour();
+          }}
           onConfigureProject={setConfiguringProjectId}
           onCreateProject={handleCreateNewProject}
           onDeleteProject={handleDeleteProject}
+          onUpdateProjectStatus={(projId, newStatus) => {
+            setProjects(prev => {
+              const current = prev[projId];
+              if (!current) return prev;
+              const updated = { ...current, status: newStatus };
+              saveProjectToSupabase(updated).catch(err => console.warn("Error actualizando estado en Supabase:", err));
+              return { ...prev, [projId]: updated };
+            });
+          }}
+          onBackToHome={() => setArchitectTab('inicio')}
+          onNavigateToUsers={() => setArchitectTab('usuarios')}
+          onLogout={handleLogout}
+          currentUserName={sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name') || undefined}
+        />
+      );
+    }
+
+    return (
+      <div className="relative w-full min-h-screen bg-[#0D0D0E] text-white">
+        <Home
+          projects={projects}
+          onCreateProject={handleCreateNewProject}
           userRole="editor"
+          userName={sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name') || undefined}
           onSwitchRole={() => setUserRole('portal')}
+          onSwitchToClient={() => setUserRole('client')}
+          onLogout={handleLogout}
+          onNavigateToProjects={() => setArchitectTab('proyectos')}
+          onNavigateToUsers={() => setArchitectTab('usuarios')}
         />
       </div>
     );
@@ -558,6 +616,8 @@ export default function App() {
       <PWAInstallBanner />
       <Routes>
         <Route path="/" element={<MainPortal />} />
+        <Route path="/admin/proyectos" element={<MainPortal initialTab="proyectos" />} />
+        <Route path="/admin/usuarios" element={<MainPortal initialTab="usuarios" />} />
         <Route path="/tour/:id" element={<ClientViewer />} />
       </Routes>
     </LazyMotion>

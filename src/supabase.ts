@@ -127,12 +127,16 @@ export async function deleteImageFromSupabase(urlOrPath: string): Promise<void> 
 // GESTIÓN Y AUTENTICACIÓN DE USUARIOS MASSA
 // ==========================================
 
+export type UserRole = 'architect' | 'client' | 'admin' | 'editor';
+export type AllowedProfile = 'architect' | 'client' | 'both';
+
 export interface MassaUser {
   id: string;
   username: string;
   password?: string;
   name: string;
-  role: 'editor' | 'admin';
+  role: UserRole;
+  allowed_profile?: AllowedProfile;
   active: boolean;
   created_at?: string;
 }
@@ -140,11 +144,23 @@ export interface MassaUser {
 const USERS_TABLE = 'massa_3d_users';
 
 /**
- * Verifica credenciales del editor contra Supabase o fallback local
+ * Normaliza el perfil de ingreso según el rol asignado
  */
-export async function verifyEditorLogin(
+export function resolveAllowedProfile(role: UserRole, explicitProfile?: AllowedProfile): AllowedProfile {
+  if (explicitProfile) return explicitProfile;
+  if (role === 'client') return 'client';
+  if (role === 'admin') return 'both';
+  return 'architect';
+}
+
+/**
+ * Verifica credenciales y permisos estrictos del usuario contra Supabase
+ * Impide que un usuario de tipo 'cliente' ingrese por el perfil 'architect'
+ */
+export async function verifyUserLogin(
   username: string, 
-  password: string
+  password: string,
+  targetProfile: 'architect' | 'client'
 ): Promise<{ success: boolean; user?: MassaUser; error?: string }> {
   const cleanUsername = username.trim().toLowerCase();
   const cleanPassword = password.trim();
@@ -160,50 +176,108 @@ export async function verifyEditorLogin(
       .maybeSingle();
 
     if (!error && data) {
+      const user = data as MassaUser;
+      const effectiveProfile = resolveAllowedProfile(user.role, user.allowed_profile);
+
+      // Verificación estricta: Si es cliente, no puede ingresar como arquitecto
+      if (targetProfile === 'architect') {
+        if (effectiveProfile === 'client' || user.role === 'client') {
+          return {
+            success: false,
+            error: `Acceso Denegado: La cuenta "${user.name || user.username}" está registrada como CLIENTE y no tiene permisos para el Portal de Arquitecto.`
+          };
+        }
+      }
+
+      // Si es arquitecto exclusivo, no puede ingresar como cliente directo
+      if (targetProfile === 'client') {
+        if (effectiveProfile === 'architect' && user.role !== 'admin') {
+          return {
+            success: false,
+            error: `Acceso Restringido: La cuenta "${user.name || user.username}" está registrada como ARQUITECTO. Ingresa por la pestaña Arquitecto.`
+          };
+        }
+      }
+
       return {
         success: true,
-        user: data as MassaUser
+        user: {
+          ...user,
+          allowed_profile: effectiveProfile
+        }
       };
     }
   } catch (err) {
     console.warn("Error consultando tabla en Supabase, usando respaldo local:", err);
   }
 
-  // 2. Respaldo por defecto por si la tabla aún no se ha ejecutado en Supabase
-  const validUsers = ['editor', 'admin', 'juan', 'admin@massagroup.com', 'massa'];
-  const validPass = ['massa2026', 'massa', '1234', 'admin123'];
+  // 2. Respaldo por defecto local por si la base de datos está offline
+  const fallbackUsers: MassaUser[] = [
+    { id: 'local-juan', username: 'juan', password: 'massa2026', name: 'Juan David', role: 'admin', allowed_profile: 'both', active: true },
+    { id: 'local-admin', username: 'admin', password: 'massa2026', name: 'Administrador MASSA', role: 'admin', allowed_profile: 'both', active: true },
+    { id: 'local-editor', username: 'editor', password: 'massa2026', name: 'Editor Arquitectura', role: 'architect', allowed_profile: 'architect', active: true },
+    { id: 'local-cliente', username: 'cliente', password: 'massa2026', name: 'Cliente Propietario', role: 'client', allowed_profile: 'client', active: true }
+  ];
 
-  if (validUsers.includes(cleanUsername) && validPass.includes(cleanPassword)) {
+  const matchedUser = fallbackUsers.find(
+    u => u.username === cleanUsername && (u.password === cleanPassword || ['massa2026', '1234', 'massa'].includes(cleanPassword))
+  );
+
+  if (matchedUser) {
+    const effectiveProfile = resolveAllowedProfile(matchedUser.role, matchedUser.allowed_profile);
+
+    if (targetProfile === 'architect' && (effectiveProfile === 'client' || matchedUser.role === 'client')) {
+      return {
+        success: false,
+        error: `Acceso Denegado: La cuenta "${matchedUser.name}" está registrada como CLIENTE y no tiene permisos para el Portal de Arquitecto.`
+      };
+    }
+
+    if (targetProfile === 'client' && effectiveProfile === 'architect' && matchedUser.role !== 'admin') {
+      return {
+        success: false,
+        error: `Acceso Restringido: La cuenta "${matchedUser.name}" está registrada como ARQUITECTO. Ingresa por la pestaña Arquitecto.`
+      };
+    }
+
     return {
       success: true,
-      user: {
-        id: 'local-admin',
-        username: cleanUsername,
-        name: cleanUsername === 'juan' ? 'Juan David - Dirección MASSA' : 'Editor Principal MASSA',
-        role: 'admin',
-        active: true
-      }
+      user: matchedUser
     };
   }
 
   return {
     success: false,
-    error: 'Usuario o contraseña incorrectos o cuenta inactiva.'
+    error: 'Usuario o contraseña incorrectos o la cuenta se encuentra inactiva.'
   };
 }
 
 /**
- * Obtiene la lista de usuarios autorizados
+ * Wrapper de compatibilidad para verifyEditorLogin
+ */
+export async function verifyEditorLogin(
+  username: string, 
+  password: string
+): Promise<{ success: boolean; user?: MassaUser; error?: string }> {
+  return verifyUserLogin(username, password, 'architect');
+}
+
+/**
+ * Obtiene la lista completa de usuarios autorizados
  */
 export async function getMassaUsers(): Promise<MassaUser[]> {
   try {
     const { data, error } = await supabase
       .from(USERS_TABLE)
-      .select('id, username, password, name, role, active, created_at')
+      .select('*')
       .order('created_at', { ascending: true });
 
     if (!error && data && data.length > 0) {
-      return data as MassaUser[];
+      return data.map((u: any) => ({
+        ...u,
+        role: u.role || 'architect',
+        allowed_profile: resolveAllowedProfile(u.role, u.allowed_profile)
+      })) as MassaUser[];
     }
   } catch (err) {
     console.warn("No se pudo obtener usuarios de Supabase:", err);
@@ -211,24 +285,35 @@ export async function getMassaUsers(): Promise<MassaUser[]> {
 
   // Lista inicial por defecto si la tabla no está creada
   return [
-    { id: '1', username: 'editor', password: '•••', name: 'Editor Principal MASSA', role: 'editor', active: true },
-    { id: '2', username: 'admin', password: '•••', name: 'Administrador MASSA Group', role: 'admin', active: true },
-    { id: '3', username: 'juan', password: '•••', name: 'Juan David - Dirección MASSA 3D', role: 'admin', active: true }
+    { id: '1', username: 'juan', password: '•••', name: 'Juan David', role: 'admin', allowed_profile: 'both', active: true },
+    { id: '2', username: 'admin', password: '•••', name: 'Administrador MASSA Group', role: 'admin', allowed_profile: 'both', active: true },
+    { id: '3', username: 'editor', password: '•••', name: 'Editor Arquitecto MASSA', role: 'architect', allowed_profile: 'architect', active: true },
+    { id: '4', username: 'cliente', password: '•••', name: 'Cliente Propietario', role: 'client', allowed_profile: 'client', active: true }
   ];
 }
 
 /**
- * Crea o actualiza un usuario en Supabase
+ * Crea o actualiza un usuario en Supabase (soporta creación y modificación completa)
  */
-export async function saveMassaUser(user: Omit<MassaUser, 'id'> & { id?: string }): Promise<MassaUser> {
-  const payload = {
-    ...(user.id ? { id: user.id } : {}),
+export async function saveMassaUser(user: Partial<MassaUser> & { username: string; name: string }): Promise<MassaUser> {
+  const role = user.role || 'architect';
+  const allowed_profile = resolveAllowedProfile(role, user.allowed_profile);
+
+  const payload: any = {
     username: user.username.trim().toLowerCase(),
-    password: user.password,
     name: user.name.trim(),
-    role: user.role || 'editor',
+    role,
+    allowed_profile,
     active: user.active ?? true
   };
+
+  if (user.id && user.id.length > 10) {
+    payload.id = user.id;
+  }
+
+  if (user.password && user.password.trim().length > 0 && user.password !== '•••') {
+    payload.password = user.password.trim();
+  }
 
   const { data, error } = await supabase
     .from(USERS_TABLE)
@@ -237,6 +322,13 @@ export async function saveMassaUser(user: Omit<MassaUser, 'id'> & { id?: string 
     .single();
 
   if (error) {
+    // Si la columna allowed_profile aún no se ha agregado en Supabase, reintentar sin ella
+    if (error.message && error.message.includes('allowed_profile')) {
+      delete payload.allowed_profile;
+      const retry = await supabase.from(USERS_TABLE).upsert(payload).select().single();
+      if (retry.error) throw new Error(retry.error.message);
+      return retry.data as MassaUser;
+    }
     throw new Error(error.message);
   }
   return data as MassaUser;

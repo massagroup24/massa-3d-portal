@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArchitecturalCadBackground } from './ui/ArchitecturalCadBackground';
 import { Button } from './ui/Button';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { verifyEditorLogin } from '../supabase';
+import { verifyUserLogin } from '../supabase';
 
 interface LoginScreenProps {
   onLoginSuccess: (role: 'client' | 'architect' | 'guest', userEmail?: string) => void;
@@ -24,30 +24,57 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
     try {
       if (role === 'architect') {
-        const result = await verifyEditorLogin(email, password);
-        if (result.success) {
+        const result = await verifyUserLogin(email, password, 'architect');
+        if (result.success && result.user) {
           sessionStorage.setItem('massa_3d_role', 'editor');
-          onLoginSuccess('architect', email);
-        } else {
-          // Fallback conveniente de acceso
-          if (email === 'admin@massagroup.com' || email === 'editor' || email === 'juan') {
-            sessionStorage.setItem('massa_3d_role', 'editor');
-            onLoginSuccess('architect', email);
-          } else {
-            setErrorMessage(result.error || 'Credenciales de arquitecto incorrectas.');
+          sessionStorage.setItem('massa_3d_username', result.user.username);
+          sessionStorage.setItem('massa_3d_name', result.user.name);
+          sessionStorage.setItem('massa_3d_user_level', result.user.role);
+
+          try {
+            localStorage.setItem('massa_3d_role', 'editor');
+            localStorage.setItem('massa_3d_username', result.user.username);
+            localStorage.setItem('massa_3d_name', result.user.name);
+            localStorage.setItem('massa_3d_user_level', result.user.role);
+          } catch {
+            // ignore
           }
+
+          onLoginSuccess('architect', result.user.name);
+        } else {
+          setErrorMessage(result.error || 'Credenciales de arquitecto incorrectas.');
         }
       } else if (role === 'client') {
-        if (email.trim().length > 0) {
+        const result = await verifyUserLogin(email, password, 'client');
+        if (result.success && result.user) {
           sessionStorage.setItem('massa_3d_role', 'visitor');
-          sessionStorage.setItem('massa_client_email', email);
-          onLoginSuccess('client', email);
+          sessionStorage.setItem('massa_client_email', result.user.username);
+          sessionStorage.setItem('massa_3d_username', result.user.username);
+          sessionStorage.setItem('massa_3d_name', result.user.name);
+          sessionStorage.setItem('massa_3d_user_level', 'client');
+
+          try {
+            localStorage.setItem('massa_3d_role', 'visitor');
+            localStorage.setItem('massa_client_email', result.user.username);
+            localStorage.setItem('massa_3d_username', result.user.username);
+            localStorage.setItem('massa_3d_name', result.user.name);
+            localStorage.setItem('massa_3d_user_level', 'client');
+          } catch {
+            // ignore
+          }
+
+          onLoginSuccess('client', result.user.name);
         } else {
-          setErrorMessage('Por favor ingresa tu correo electrónico de cliente.');
+          setErrorMessage(result.error || 'Credenciales de cliente incorrectas.');
         }
       } else {
         // Invitado
         sessionStorage.setItem('massa_3d_role', 'guest');
+        try {
+          localStorage.setItem('massa_3d_role', 'guest');
+        } catch {
+          // ignore
+        }
         onLoginSuccess('guest');
       }
     } catch (err: any) {
@@ -71,19 +98,19 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <div className="relative z-10 w-full max-w-[440px] flex flex-col items-center">
         
         {/* Isotipo Massa en caja redondeada con resplandor */}
-        <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-[#141416]/80 border border-white/10 p-3.5 mb-4 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(156,208,26,0.15)] flex items-center justify-center animate-levitate backdrop-blur-xl">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-[#141416]/80 border border-white/10 p-2.5 sm:p-3 mb-3 sm:mb-4 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(156,208,26,0.15)] flex items-center justify-center animate-levitate backdrop-blur-xl shrink-0">
           <img
             src="/massa-cube-transparent.png"
             alt="Massa Logo"
-            className="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(156,208,26,0.4)]"
+            className="w-full h-full max-w-[48px] max-h-[48px] sm:max-w-[54px] sm:max-h-[54px] object-contain filter drop-shadow-[0_4px_12px_rgba(156,208,26,0.4)]"
           />
         </div>
 
         {/* Título y Marca con tipografía monumental */}
-        <h1 className="font-monumental text-5xl sm:text-6xl tracking-wide text-white uppercase mb-1 text-center">
+        <h1 className="font-monumental text-4xl sm:text-6xl tracking-wide text-white uppercase mb-1 text-center">
           VIEW
         </h1>
-        <p className="text-[11px] sm:text-xs text-[#A3A3A3] font-light tracking-[0.25em] uppercase mb-6 text-center">
+        <p className="text-[10px] sm:text-xs text-[#A3A3A3] font-light tracking-[0.25em] uppercase mb-4 sm:mb-6 text-center">
           MASSA GROUP • PORTAL 360°
         </p>
 
@@ -139,7 +166,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         </div>
 
         {/* Tarjeta de Vidrio visionOS Ultra Minimalista */}
-        <div className="w-full rounded-3xl sm:rounded-[32px] bg-[#111113]/85 backdrop-blur-2xl border border-white/10 p-7 sm:p-9 shadow-[0_25px_60px_rgba(0,0,0,0.95)]">
+        <div className="w-full rounded-3xl bg-[#111113]/85 backdrop-blur-2xl border border-white/10 p-5 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95)]">
           {role === 'guest' ? (
             /* Vista Específica para Perfil INVITADO: Minimalismo Puro, Letras Monumentales, Cero Cuadros Pesados */
             <div className="flex flex-col items-center text-center py-2">

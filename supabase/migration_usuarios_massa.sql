@@ -8,15 +8,20 @@ CREATE TABLE IF NOT EXISTS public.massa_3d_users (
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     name TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'editor', -- 'editor' | 'admin'
+    role TEXT NOT NULL DEFAULT 'architect', -- 'architect' | 'client' | 'admin'
+    allowed_profile TEXT NOT NULL DEFAULT 'architect', -- 'architect' | 'client' | 'both'
     active BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. Habilitar Row Level Security (RLS)
+-- 2. Asegurar columnas si la tabla ya existía previamente
+ALTER TABLE public.massa_3d_users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'architect';
+ALTER TABLE public.massa_3d_users ADD COLUMN IF NOT EXISTS allowed_profile TEXT NOT NULL DEFAULT 'architect';
+
+-- 3. Habilitar Row Level Security (RLS)
 ALTER TABLE public.massa_3d_users ENABLE ROW LEVEL SECURITY;
 
--- 3. Políticas de acceso (Permitir lectura y gestión al cliente web)
+-- 4. Políticas de acceso (Permitir lectura y gestión al cliente web)
 DROP POLICY IF EXISTS "Allow public read access to massa_3d_users" ON public.massa_3d_users;
 CREATE POLICY "Allow public read access to massa_3d_users"
     ON public.massa_3d_users FOR SELECT
@@ -28,14 +33,17 @@ CREATE POLICY "Allow all modifications on massa_3d_users"
     USING (true)
     WITH CHECK (true);
 
--- 4. Insertar usuarios iniciales por defecto
-INSERT INTO public.massa_3d_users (username, password, name, role, active)
+-- 5. Insertar o actualizar usuarios iniciales
+INSERT INTO public.massa_3d_users (username, password, name, role, allowed_profile, active)
 VALUES 
-    ('editor', 'massa2026', 'Editor Principal MASSA', 'editor', true),
-    ('admin', 'massa2026', 'Administrador General MASSA', 'admin', true),
-    ('juan', 'massa2026', 'Juan David - Dirección MASSA 3D', 'admin', true)
+    ('juan', 'massa2026', 'Juan David', 'admin', 'both', true),
+    ('admin', 'massa2026', 'Administrador General MASSA', 'admin', 'both', true),
+    ('editor', 'massa2026', 'Editor Arquitectónico', 'architect', 'architect', true),
+    ('cliente', 'massa2026', 'Cliente Propietario', 'client', 'client', true)
 ON CONFLICT (username) 
 DO UPDATE SET 
     password = EXCLUDED.password,
     name = EXCLUDED.name,
+    role = EXCLUDED.role,
+    allowed_profile = EXCLUDED.allowed_profile,
     active = true;
