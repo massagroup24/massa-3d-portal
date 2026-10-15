@@ -263,87 +263,178 @@ export async function verifyEditorLogin(
 }
 
 /**
- * Obtiene la lista completa de usuarios autorizados
+ * Obtiene la lista completa de usuarios autorizados desde user_profiles (o massa_3d_users como fallback de transición).
+ * NUNCA expone contraseñas en texto plano.
  */
 export async function getMassaUsers(): Promise<MassaUser[]> {
   try {
+    // 1. Intentar consultar la tabla endurecida user_profiles
+    const { data: profiles, error: profileErr } = await supabase
+      .from('user_profiles')
+      .select('id, email, name, role, phone, created_at')
+      .order('created_at', { ascending: true });
+
+    if (!profileErr && profiles && profiles.length > 0) {
+      return profiles.map((u: any) => ({
+        id: u.id,
+        username: u.email,
+        name: u.name,
+        role: u.role || 'client',
+        allowed_profile: u.role === 'architect' ? 'architect' : 'client',
+        active: true,
+        created_at: u.created_at,
+        password: '••••••••',
+      })) as MassaUser[];
+    }
+  } catch (err) {
+    console.warn("Aviso al consultar user_profiles:", err);
+  }
+
+  try {
+    // 2. Fallback de transición: tabla massa_3d_users sanitizando contraseñas
     const { data, error } = await supabase
       .from(USERS_TABLE)
-      .select('*')
+      .select('id, username, name, role, allowed_profile, active, created_at')
       .order('created_at', { ascending: true });
 
     if (!error && data && data.length > 0) {
       return data.map((u: any) => ({
         ...u,
         role: u.role || 'architect',
-        allowed_profile: resolveAllowedProfile(u.role, u.allowed_profile)
+        allowed_profile: resolveAllowedProfile(u.role, u.allowed_profile),
+        password: '••••••••', // Cero exposición de contraseñas
       })) as MassaUser[];
     }
   } catch (err) {
     console.warn("No se pudo obtener usuarios de Supabase:", err);
   }
 
-  // Lista inicial por defecto si la tabla no está creada
+  // Lista inicial por defecto si la base de datos está offline
   return [
-    { id: '1', username: 'juan', password: '•••', name: 'Juan David', role: 'admin', allowed_profile: 'both', active: true },
-    { id: '2', username: 'admin', password: '•••', name: 'Administrador MASSA Group', role: 'admin', allowed_profile: 'both', active: true },
-    { id: '3', username: 'editor', password: '•••', name: 'Editor Arquitecto MASSA', role: 'architect', allowed_profile: 'architect', active: true },
-    { id: '4', username: 'cliente', password: '•••', name: 'Cliente Propietario', role: 'client', allowed_profile: 'client', active: true }
+    { id: '1', username: 'mateo@massagroup.co', password: '••••••••', name: 'Mateo Rossi', role: 'architect', allowed_profile: 'architect', active: true },
+    { id: '2', username: 'juan@massagroup.co', password: '••••••••', name: 'Juan David', role: 'admin', allowed_profile: 'both', active: true },
+    { id: '3', username: 'cliente@gmail.com', password: '••••••••', name: 'Cliente Propietario', role: 'client', allowed_profile: 'client', active: true }
   ];
 }
 
 /**
- * Crea o actualiza un usuario en Supabase (soporta creación y modificación completa)
+ * Crea o actualiza un usuario directamente en Supabase Auth y sincroniza user_profiles desde la web
  */
 export async function saveMassaUser(user: Partial<MassaUser> & { username: string; name: string }): Promise<MassaUser> {
   const role = user.role || 'architect';
+  const mappedRole = role === 'admin' ? 'architect' : role;
   const allowed_profile = resolveAllowedProfile(role, user.allowed_profile);
+  let cleanEmail = user.username.trim().toLowerCase();
+  if (!cleanEmail.includes('@')) {
+    cleanEmail = `${cleanEmail}@massagroup.co`;
+  }
 
-  const payload: any = {
-    username: user.username.trim().toLowerCase(),
+  // Comprobar si es actualización de usuario existente por su UUID
+  const isUuid = user.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
+
+  if (isUuid) {
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .upsert({
+        id: user.id,
+        email: cleanEmail,
+        name: user.name.trim(),
+        role: mappedRole,
+      });
+
+    if (profileError) {
+      throw new Error(`Error actualizando perfil: ${profileError.message}`);
+    }
+
+    return {
+      id: user.id as string,
+      username: cleanEmail,
+      name: user.name.trim(),
+      role,
+      allowed_profile,
+      active: user.active ?? true,
+      password: '••••••••'
+    };
+  }
+
+  // Creación de NUEVO usuario directamente en Supabase Auth desde la Web:
+  // Se utiliza un cliente temporal con persistSession: false para no desloguear al arquitecto
+  if (!user.password || user.password.trim().length < 6) {
+    throw new Error('La contraseña debe tener al menos 6 caracteres.');
+  }
+
+  const authCreator = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    }
+  });
+
+  const { data: signUpData, error: signUpError } = await authCreator.auth.signUp({
+    email: cleanEmail,
+    password: user.password.trim(),
+    options: {
+      data: {
+        name: user.name.trim(),
+        role: mappedRole
+      }
+    }
+  });
+
+  if (signUpError) {
+    throw new Error(`Error en Supabase Auth: ${signUpError.message}`);
+  }
+
+  const newUserId = signUpData.user?.id;
+  if (!newUserId) {
+    throw new Error('No se pudo registrar la cuenta en Supabase Auth.');
+  }
+
+  // Asegurar registro de perfil corporativo en user_profiles
+  const { error: profileError } = await supabase
+    .from('user_profiles')
+    .upsert({
+      id: newUserId,
+      email: cleanEmail,
+      name: user.name.trim(),
+      role: mappedRole,
+    });
+
+  if (profileError) {
+    console.warn("Aviso al guardar user_profiles:", profileError.message);
+  }
+
+  return {
+    id: newUserId,
+    username: cleanEmail,
     name: user.name.trim(),
     role,
     allowed_profile,
-    active: user.active ?? true
+    active: true,
+    password: '••••••••'
   };
-
-  if (user.id && user.id.length > 10) {
-    payload.id = user.id;
-  }
-
-  if (user.password && user.password.trim().length > 0 && user.password !== '•••') {
-    payload.password = user.password.trim();
-  }
-
-  const { data, error } = await supabase
-    .from(USERS_TABLE)
-    .upsert(payload)
-    .select()
-    .single();
-
-  if (error) {
-    // Si la columna allowed_profile aún no se ha agregado en Supabase, reintentar sin ella
-    if (error.message && error.message.includes('allowed_profile')) {
-      delete payload.allowed_profile;
-      const retry = await supabase.from(USERS_TABLE).upsert(payload).select().single();
-      if (retry.error) throw new Error(retry.error.message);
-      return retry.data as MassaUser;
-    }
-    throw new Error(error.message);
-  }
-  return data as MassaUser;
 }
 
 /**
  * Elimina un usuario en Supabase
  */
 export async function deleteMassaUser(id: string): Promise<void> {
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  if (isUuid) {
+    const { error } = await supabase.from('user_profiles').delete().eq('id', id);
+    if (error) {
+      throw new Error(`Error al eliminar usuario: ${error.message}`);
+    }
+    return;
+  }
+
   const { error } = await supabase
     .from(USERS_TABLE)
     .delete()
     .eq('id', id);
 
-  if (error) {
+  if (error && !isUuid) {
     throw new Error(error.message);
   }
 }

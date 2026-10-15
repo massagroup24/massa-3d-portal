@@ -230,10 +230,9 @@ CREATE POLICY "projects_client_select"
     )
   );
 
-DROP POLICY IF EXISTS "projects_anon_tour_select" ON public.projects;
-CREATE POLICY "projects_anon_tour_select"
-  ON public.projects FOR SELECT
-  USING (true);
+-- Nota: Se elimina projects_anon_tour_select para que la tabla base `projects`
+-- no quede expuesta directamente a usuarios anónimos. La lectura pública de tours
+-- 360° se realiza exclusivamente mediante la vista sanitizada `public.public_tours_360`.
 
 -- POLÍTICAS: project_members
 DROP POLICY IF EXISTS "project_members_architect_all" ON public.project_members;
@@ -317,6 +316,9 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('project-vault', 'project-vault', false)
 ON CONFLICT (id) DO UPDATE SET public = false;
 
+-- Habilitar Row Level Security en storage.objects
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
 -- Políticas de Storage para project-vault
 DROP POLICY IF EXISTS "project_vault_architect_all" ON storage.objects;
 CREATE POLICY "project_vault_architect_all"
@@ -335,3 +337,10 @@ CREATE POLICY "project_vault_client_select"
       )
     )
   );
+
+-- Políticas de Storage para tour-images (público)
+DROP POLICY IF EXISTS "tour_images_public_read" ON storage.objects;
+CREATE POLICY "tour_images_public_read"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'tour-images');
+

@@ -17,6 +17,7 @@ export interface ArchitectAction {
   enabled: boolean;
   badge?: string;
   description?: string;
+  image: string;
 }
 
 /**
@@ -31,7 +32,8 @@ export const ARCHITECT_ACTIONS: ArchitectAction[] = [
     icon: Building2,
     actionKey: 'projects',
     enabled: true,
-    description: 'Gestiona proyectos en proceso y terminados'
+    description: 'Gestiona proyectos en proceso y terminados',
+    image: '/images/cards/card_projects.jpg'
   },
   {
     id: 'nuevo-recorrido',
@@ -40,7 +42,8 @@ export const ARCHITECT_ACTIONS: ArchitectAction[] = [
     icon: Compass,
     actionKey: 'new_tour',
     enabled: true,
-    description: 'Inicia y configura un nuevo recorrido virtual'
+    description: 'Inicia y configura un nuevo recorrido virtual',
+    image: '/images/cards/card_tour_360.jpg'
   },
   {
     id: 'usuarios',
@@ -49,7 +52,8 @@ export const ARCHITECT_ACTIONS: ArchitectAction[] = [
     icon: Users,
     actionKey: 'users',
     enabled: true,
-    description: 'Base de datos de clientes y arquitectos'
+    description: 'Base de datos de clientes y arquitectos',
+    image: '/images/cards/card_users.jpg'
   },
   {
     id: 'subir-avance',
@@ -59,6 +63,7 @@ export const ARCHITECT_ACTIONS: ArchitectAction[] = [
     actionKey: 'upload_progress',
     enabled: false,
     badge: 'Próximamente',
-    description: 'Subida directa de avances fotográficos'
+    description: 'Subida directa de avances fotográficos',
+    image: '/images/cards/card_progress.jpg'
   }
 ];

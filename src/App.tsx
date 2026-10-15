@@ -25,6 +25,7 @@ import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 import { Lock } from 'lucide-react';
 import { UsersManagementPortal } from './components/UsersManagementPortal';
 import { ProjectsManagementPortal } from './components/ProjectsManagementPortal';
+import { authService } from './lib/authService';
 
 function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usuarios' }) {
   // Estado de rol: 'portal' (muestra login), 'guest' (invitado portafolio público), 'client' (portal cliente), 'architect' (panel arquitecto)
@@ -39,6 +40,37 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
       return 'portal';
     }
   });
+
+  // Validar y sincronizar sesión activa de Supabase Auth
+  useEffect(() => {
+    let isMounted = true;
+    authService.getCurrentUser().then(user => {
+      if (!isMounted || !user) return;
+      if (user.role === 'architect') {
+        setUserRole('architect');
+      } else if (user.role === 'client') {
+        setUserRole('client');
+      }
+    }).catch(() => {
+      // ignore
+    });
+
+    const { data: authListener } = authService.onAuthStateChange(user => {
+      if (!isMounted) return;
+      if (!user) {
+        setUserRole(prev => (prev === 'guest' ? 'guest' : 'portal'));
+      } else if (user.role === 'architect') {
+        setUserRole('architect');
+      } else if (user.role === 'client') {
+        setUserRole('client');
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
 
   // Mantener sincronizado localStorage para nuevas pestañas
   useEffect(() => {
@@ -184,23 +216,8 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
     setActiveTab('home');
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('massa_3d_role');
-    sessionStorage.removeItem('massa_client_email');
-    sessionStorage.removeItem('massa_3d_username');
-    sessionStorage.removeItem('massa_3d_name');
-    sessionStorage.removeItem('massa_3d_user_level');
-
-    try {
-      localStorage.removeItem('massa_3d_role');
-      localStorage.removeItem('massa_client_email');
-      localStorage.removeItem('massa_3d_username');
-      localStorage.removeItem('massa_3d_name');
-      localStorage.removeItem('massa_3d_user_level');
-    } catch {
-      // ignore
-    }
-
+  const handleLogout = async () => {
+    await authService.signOut();
     setUserRole('portal');
     setGuestView('showcase');
     setTourStarted(false);

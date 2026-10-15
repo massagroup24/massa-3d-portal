@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ArchitecturalCadBackground } from './ui/ArchitecturalCadBackground';
 import { Button } from './ui/Button';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { verifyUserLogin } from '../supabase';
+import { Eye, EyeOff, ArrowRight, Mail, KeyRound, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { authService } from '../lib/authService';
 
 interface LoginScreenProps {
   onLoginSuccess: (role: 'client' | 'architect' | 'guest', userEmail?: string) => void;
@@ -17,58 +17,19 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Estado para recuperación de contraseña
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState('');
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [recoveryStatus, setRecoveryStatus] = useState<{ success: boolean; message: string } | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsLoading(true);
 
     try {
-      if (role === 'architect') {
-        const result = await verifyUserLogin(email, password, 'architect');
-        if (result.success && result.user) {
-          sessionStorage.setItem('massa_3d_role', 'editor');
-          sessionStorage.setItem('massa_3d_username', result.user.username);
-          sessionStorage.setItem('massa_3d_name', result.user.name);
-          sessionStorage.setItem('massa_3d_user_level', result.user.role);
-
-          try {
-            localStorage.setItem('massa_3d_role', 'editor');
-            localStorage.setItem('massa_3d_username', result.user.username);
-            localStorage.setItem('massa_3d_name', result.user.name);
-            localStorage.setItem('massa_3d_user_level', result.user.role);
-          } catch {
-            // ignore
-          }
-
-          onLoginSuccess('architect', result.user.name);
-        } else {
-          setErrorMessage(result.error || 'Credenciales de arquitecto incorrectas.');
-        }
-      } else if (role === 'client') {
-        const result = await verifyUserLogin(email, password, 'client');
-        if (result.success && result.user) {
-          sessionStorage.setItem('massa_3d_role', 'visitor');
-          sessionStorage.setItem('massa_client_email', result.user.username);
-          sessionStorage.setItem('massa_3d_username', result.user.username);
-          sessionStorage.setItem('massa_3d_name', result.user.name);
-          sessionStorage.setItem('massa_3d_user_level', 'client');
-
-          try {
-            localStorage.setItem('massa_3d_role', 'visitor');
-            localStorage.setItem('massa_client_email', result.user.username);
-            localStorage.setItem('massa_3d_username', result.user.username);
-            localStorage.setItem('massa_3d_name', result.user.name);
-            localStorage.setItem('massa_3d_user_level', 'client');
-          } catch {
-            // ignore
-          }
-
-          onLoginSuccess('client', result.user.name);
-        } else {
-          setErrorMessage(result.error || 'Credenciales de cliente incorrectas.');
-        }
-      } else {
-        // Invitado
+      if (role === 'guest') {
         sessionStorage.setItem('massa_3d_role', 'guest');
         try {
           localStorage.setItem('massa_3d_role', 'guest');
@@ -76,7 +37,21 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           // ignore
         }
         onLoginSuccess('guest');
+        return;
       }
+
+      // Autenticación oficial directa mediante Supabase Auth
+      const authResult = await authService.signIn(email, password, role);
+
+      if (authResult.success && authResult.user) {
+        onLoginSuccess(role, authResult.user.name);
+        return;
+      }
+
+      // Mostrar error seguro devuelto por Supabase Auth
+      setErrorMessage(
+        authResult.error || 'Credenciales incorrectas o la cuenta no se encuentra activa en Supabase Auth.'
+      );
     } catch (err: any) {
       setErrorMessage(err.message || 'Error al iniciar sesión.');
     } finally {
@@ -87,6 +62,24 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const handleGuestEnter = () => {
     sessionStorage.setItem('massa_3d_role', 'guest');
     onLoginSuccess('guest');
+  };
+
+  const handlePasswordRecovery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRecoveryStatus(null);
+    setRecoveryLoading(true);
+
+    try {
+      const result = await authService.resetPassword(recoveryEmail);
+      setRecoveryStatus(result);
+    } catch (err: any) {
+      setRecoveryStatus({
+        success: false,
+        message: err.message || 'Error enviando solicitud de recuperación.',
+      });
+    } finally {
+      setRecoveryLoading(false);
+    }
   };
 
   return (
@@ -114,60 +107,134 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           MASSA GROUP • PORTAL 360°
         </p>
 
-        {/* Selector de Perfiles (3 Píldoras: Invitado / Cliente / Arquitecto) */}
-        <div className="inline-flex items-center p-1.5 rounded-full bg-[#121214]/80 backdrop-blur-xl border border-white/10 mb-6 shadow-xl max-w-full overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => { setRole('guest'); setErrorMessage(null); }}
-            className={`
-              flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap
-              ${role === 'guest' 
-                ? 'bg-white/10 text-[#F5F5F5] shadow-md border border-white/10' 
-                : 'text-[#A3A3A3] hover:text-[#F5F5F5]'}
-            `}
-          >
-            {role === 'guest' && (
-              <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_10px_#9CD01A]" />
-            )}
-            <span>Invitado</span>
-          </button>
+        {!showForgotPassword && (
+          /* Selector de Perfiles (3 Píldoras: Invitado / Cliente / Arquitecto) */
+          <div className="inline-flex items-center p-1.5 rounded-full bg-[#121214]/80 backdrop-blur-xl border border-white/10 mb-6 shadow-xl max-w-full overflow-x-auto">
+            <button
+              type="button"
+              onClick={() => { setRole('guest'); setErrorMessage(null); }}
+              className={`
+                flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap
+                ${role === 'guest' 
+                  ? 'bg-white/10 text-[#F5F5F5] shadow-md border border-white/10' 
+                  : 'text-[#A3A3A3] hover:text-[#F5F5F5]'}
+              `}
+            >
+              {role === 'guest' && (
+                <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_10px_#9CD01A]" />
+              )}
+              <span>Invitado</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => { setRole('client'); setErrorMessage(null); }}
-            className={`
-              flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap
-              ${role === 'client' 
-                ? 'bg-white/10 text-[#F5F5F5] shadow-md border border-white/10' 
-                : 'text-[#A3A3A3] hover:text-[#F5F5F5]'}
-            `}
-          >
-            {role === 'client' && (
-              <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_10px_#9CD01A]" />
-            )}
-            <span>Cliente</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => { setRole('client'); setErrorMessage(null); }}
+              className={`
+                flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap
+                ${role === 'client' 
+                  ? 'bg-white/10 text-[#F5F5F5] shadow-md border border-white/10' 
+                  : 'text-[#A3A3A3] hover:text-[#F5F5F5]'}
+              `}
+            >
+              {role === 'client' && (
+                <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_10px_#9CD01A]" />
+              )}
+              <span>Cliente</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => { setRole('architect'); setErrorMessage(null); }}
-            className={`
-              flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap
-              ${role === 'architect' 
-                ? 'bg-white/10 text-[#F5F5F5] shadow-md border border-white/10' 
-                : 'text-[#A3A3A3] hover:text-[#F5F5F5]'}
-            `}
-          >
-            {role === 'architect' && (
-              <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_10px_#9CD01A]" />
-            )}
-            <span>Arquitecto</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => { setRole('architect'); setErrorMessage(null); }}
+              className={`
+                flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap
+                ${role === 'architect' 
+                  ? 'bg-white/10 text-[#F5F5F5] shadow-md border border-white/10' 
+                  : 'text-[#A3A3A3] hover:text-[#F5F5F5]'}
+              `}
+            >
+              {role === 'architect' && (
+                <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_10px_#9CD01A]" />
+              )}
+              <span>Arquitecto</span>
+            </button>
+          </div>
+        )}
 
         {/* Tarjeta de Vidrio visionOS Ultra Minimalista */}
         <div className="w-full rounded-3xl bg-[#111113]/85 backdrop-blur-2xl border border-white/10 p-5 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95)]">
-          {role === 'guest' ? (
+          {showForgotPassword ? (
+            /* Vista de Recuperación de Contraseña */
+            <form onSubmit={handlePasswordRecovery} className="flex flex-col gap-4">
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowForgotPassword(false); setRecoveryStatus(null); }}
+                  className="p-1.5 text-white/50 hover:text-white rounded-lg bg-white/5 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/20">
+                  <KeyRound className="w-3.5 h-3.5 text-[#9CD01A]" />
+                  <span className="text-[10px] font-mono tracking-[0.2em] text-[#9CD01A] uppercase">
+                    SEGURIDAD SUPABASE
+                  </span>
+                </div>
+              </div>
+
+              <h2 className="font-monumental text-2xl sm:text-3xl tracking-wide text-white uppercase">
+                RECUPERAR ACCESO
+              </h2>
+
+              <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                Ingresa el correo registrado con tu cuenta corporativa. Recibirás un enlace seguro para restablecer tu contraseña.
+              </p>
+
+              <div className="flex flex-col gap-1.5 mt-1">
+                <label className="text-xs font-medium text-[#A3A3A3] ml-1">
+                  Correo Electrónico
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={recoveryEmail}
+                    onChange={(e) => setRecoveryEmail(e.target.value)}
+                    placeholder="ej. carlos@cliente.com"
+                    required
+                    className="w-full bg-[#0D0D0E]/80 border border-white/10 rounded-2xl px-4 py-3 text-sm text-[#F5F5F5] placeholder-[#737373] focus:outline-none focus:border-[#9CD01A] focus:ring-1 focus:ring-[#9CD01A] transition-all"
+                  />
+                </div>
+              </div>
+
+              {recoveryStatus && (
+                <div className={`text-xs px-3.5 py-2.5 rounded-xl border flex items-start gap-2 ${
+                  recoveryStatus.success
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : 'bg-red-500/10 border-red-500/30 text-red-300'
+                }`}>
+                  {recoveryStatus.success ? <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" /> : <Mail className="w-4 h-4 shrink-0 mt-0.5" />}
+                  <span>{recoveryStatus.message}</span>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                disabled={recoveryLoading || (recoveryStatus?.success ?? false)}
+                className="w-full mt-2 font-bold tracking-wider"
+              >
+                {recoveryLoading ? 'Enviando...' : 'ENVIAR ENLACE DE RECUPERACIÓN'}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => { setShowForgotPassword(false); setRecoveryStatus(null); }}
+                className="text-xs text-[#A3A3A3] hover:text-[#F5F5F5] transition-colors text-center mt-1"
+              >
+                Volver al inicio de sesión
+              </button>
+            </form>
+          ) : role === 'guest' ? (
             /* Vista Específica para Perfil INVITADO: Minimalismo Puro, Letras Monumentales, Cero Cuadros Pesados */
             <div className="flex flex-col items-center text-center py-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/20 mb-3">
@@ -216,14 +283,14 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               {/* Campo Correo electrónico */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-[#A3A3A3] ml-1">
-                  {role === 'architect' ? 'Usuario o correo' : 'Correo electrónico del cliente'}
+                  {role === 'architect' ? 'Correo corporativo' : 'Correo electrónico del cliente'}
                 </label>
                 <div className="relative">
                   <input
                     type={role === 'architect' ? 'text' : 'email'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={role === 'architect' ? 'ej. editor o admin' : 'carlos@cliente.com'}
+                    placeholder={role === 'architect' ? 'mateo@massagroup.co' : 'carlos@cliente.com'}
                     required
                     className="w-full bg-[#0D0D0E]/80 border border-white/10 rounded-2xl px-4 py-3 text-sm text-[#F5F5F5] placeholder-[#737373] focus:outline-none focus:border-[#9CD01A] focus:ring-1 focus:ring-[#9CD01A] transition-all"
                   />
@@ -277,7 +344,10 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               <div className="text-center mt-1">
                 <button
                   type="button"
-                  onClick={() => alert('Por favor contacta a tu arquitecto de Massa Group para asistencia con tus credenciales.')}
+                  onClick={() => {
+                    setRecoveryEmail(email);
+                    setShowForgotPassword(true);
+                  }}
                   className="text-xs text-[#A3A3A3] hover:text-[#F5F5F5] transition-colors cursor-pointer"
                 >
                   ¿Olvidaste tu contraseña?
@@ -288,7 +358,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         </div>
 
         {/* Acceso directo inferior a modo invitado si está en pestaña cliente/arquitecto */}
-        {role !== 'guest' && (
+        {!showForgotPassword && role !== 'guest' && (
           <button
             type="button"
             onClick={handleGuestEnter}
