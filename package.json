@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "backup": "node scripts/backup.mjs",
     "backup:verify": "node scripts/verify-backup.mjs",
-    "backup:restore": "node scripts/restore.mjs"
+    "backup:restore": "node scripts/restore.mjs",
+    "seed:test": "node scripts/seed-test-env.mjs",
+    "verify:test-env": "node scripts/verify-test-env.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",
