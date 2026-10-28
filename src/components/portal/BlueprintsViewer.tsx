@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { ProjectMediaItem } from '../../services/portalService';
 import { GlassCard } from '../ui/GlassCard';
+import { EmptyState } from '../ui/EmptyState';
 
 interface BlueprintsViewerProps {
   blueprints: ProjectMediaItem[];
@@ -72,6 +73,27 @@ export function BlueprintsViewer({ blueprints, projectName }: BlueprintsViewerPr
     setIsDragging(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      const touch = e.touches[0];
+      setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    setPosition({
+      x: touch.clientX - dragStart.x,
+      y: touch.clientY - dragStart.y
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
@@ -86,6 +108,34 @@ export function BlueprintsViewer({ blueprints, projectName }: BlueprintsViewerPr
   const activeMarkers = SAMPLE_MARKERS.filter(
     m => m.levelId === activeBlueprint?.id || activeBlueprint?.order_index === 1
   );
+
+  if (!blueprints || blueprints.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A]" />
+            <span className="text-xs uppercase tracking-widest font-semibold text-[#9CD01A]">
+              Documentación Técnica
+            </span>
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-[#F5F5F5]">
+            Planos Arquitectónicos
+          </h2>
+          <p className="text-sm text-[#A3A3A3]">
+            Planos constructivos acotados y zonificación espacial para <span className="text-[#F5F5F5] font-medium">{projectName}</span>
+          </p>
+        </div>
+
+        <EmptyState
+          variant="blueprints"
+          title="Planos Técnicos en Digitalización"
+          description={`Los esquemas técnicos y planos constructivos acotados de ${projectName} se encuentran en proceso de revisión ejecutiva y escaneo vectorial.`}
+          badge="FASE DE PROYECTO"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -132,25 +182,25 @@ export function BlueprintsViewer({ blueprints, projectName }: BlueprintsViewerPr
       <GlassCard
         variant="card"
         glowColor="#9CD01A"
-        className="p-0 overflow-hidden border-white/10 relative h-[650px] flex flex-col bg-[#0F0F10]"
+        className="p-0 overflow-hidden border-white/10 relative h-[420px] sm:h-[520px] md:h-[650px] flex flex-col bg-[#0F0F10]"
       >
         {/* Floating Toolbar on Top */}
-        <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+        <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 z-20 flex items-center justify-between gap-2 pointer-events-none">
           {/* Blueprint Title badge */}
-          <div className="pointer-events-auto bg-black/70 backdrop-blur-xl border border-white/15 px-4 py-2 rounded-2xl flex items-center gap-3 text-xs text-white">
-            <div className="flex items-center gap-2 font-semibold">
-              <Compass className="w-4 h-4 text-[#9CD01A]" />
-              <span>{activeBlueprint?.title}</span>
+          <div className="pointer-events-auto bg-black/80 backdrop-blur-xl border border-white/15 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-2 text-xs text-white max-w-[62%] sm:max-w-none">
+            <div className="flex items-center gap-1.5 sm:gap-2 font-semibold truncate">
+              <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9CD01A] shrink-0" />
+              <span className="truncate">{activeBlueprint?.title}</span>
             </div>
             {activeBlueprint?.metadata?.area && (
-              <span className="text-white/50 border-l border-white/15 pl-3 font-mono">
+              <span className="text-white/50 border-l border-white/15 pl-2 sm:pl-3 font-mono text-[11px] sm:text-xs shrink-0 hidden xs:inline">
                 {activeBlueprint.metadata.area}
               </span>
             )}
           </div>
 
           {/* Canvas Controls */}
-          <div className="pointer-events-auto flex items-center gap-2 bg-black/70 backdrop-blur-xl border border-white/15 p-1.5 rounded-2xl shadow-xl">
+          <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 bg-black/80 backdrop-blur-xl border border-white/15 p-1 sm:p-1.5 rounded-2xl shadow-xl shrink-0">
             <button
               onClick={() => setScale((s) => Math.min(s + 0.25, 3.5))}
               className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-white transition"
@@ -210,6 +260,9 @@ export function BlueprintsViewer({ blueprints, projectName }: BlueprintsViewerPr
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           onWheel={handleWheel}
           className={`w-full h-full relative overflow-hidden flex items-center justify-center select-none ${
             isDragging ? 'cursor-grabbing' : 'cursor-grab'

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getProjectVisits, VisitRecord } from '../supabase';
 import { RefreshCw, Activity, X, Smartphone, Monitor } from 'lucide-react';
+import { EmptyState } from './ui/EmptyState';
 
 interface VisitsDashboardProps {
   onClose: () => void;
@@ -45,21 +46,21 @@ export function VisitsDashboard({ onClose }: VisitsDashboardProps) {
                 Registro de Visitas
               </h3>
               <p className="text-xs text-gray-400">
-                Historial de apertura de los recorridos 360°
+                Historial de apertura y métricas de los recorridos 360°
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={fetchVisits}
-              className="p-2.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-colors"
+              className="p-2.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-all cursor-pointer active:scale-95"
               title="Actualizar lista"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={onClose}
-              className="p-2.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-colors"
+              className="p-2.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-all cursor-pointer active:scale-95"
             >
               <X className="w-4 h-4" />
             </button>
@@ -69,14 +70,24 @@ export function VisitsDashboard({ onClose }: VisitsDashboardProps) {
         <div className="flex-1 overflow-y-auto mt-4 pr-2">
           <div className="border border-white/10 rounded-2xl bg-black/40 min-h-[200px]">
             {loading ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-3 text-gray-400">
-                <RefreshCw className="w-6 h-6 animate-spin text-[#99cc33]" />
-                <span className="text-xs">Cargando métricas...</span>
+              <div className="py-16 flex flex-col items-center justify-center gap-3 text-gray-400">
+                <RefreshCw className="w-7 h-7 animate-spin text-[#9CD01A]" />
+                <span className="text-xs font-mono">Sincronizando telemetría de recorridos...</span>
               </div>
             ) : visits.length === 0 ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-3 text-gray-400">
-                <Activity className="w-8 h-8 text-white/20" />
-                <span className="text-sm">Aún no hay visitas registradas.</span>
+              <div className="p-6">
+                <EmptyState
+                  variant="visits"
+                  title="Aún no se registran aperturas"
+                  description="Las métricas de interacción, aperturas de gemelos digitales y dispositivos de los clientes se registrarán automáticamente aquí."
+                  badge="TELEMETRÍA EN ESPERA"
+                  compact={true}
+                  primaryAction={{
+                    label: 'Actualizar Registro',
+                    onClick: fetchVisits,
+                    icon: <RefreshCw className="w-3.5 h-3.5" />
+                  }}
+                />
               </div>
             ) : (
               <table className="w-full text-left border-collapse">

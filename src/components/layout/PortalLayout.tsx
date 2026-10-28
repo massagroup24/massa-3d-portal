@@ -22,7 +22,7 @@ export function PortalLayout({
   children,
   activeTab,
   onSelectTab,
-  projectName = 'Villa Serena',
+  projectName = 'RESIDENCIA JEJÉN',
   userRole = 'client',
   onLogout,
   hideNav = false,

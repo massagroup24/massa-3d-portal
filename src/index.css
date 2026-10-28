@@ -17,11 +17,30 @@
 }
 
 @layer base {
-  html, body, #root {
-    @apply w-full h-full m-0 p-0 overflow-x-hidden bg-[#0D0D0E] text-[#F5F5F5] font-sans;
+  html {
+    @apply w-full m-0 p-0 bg-[#0D0D0E] text-[#F5F5F5] font-sans;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    @apply w-full m-0 p-0 bg-[#0D0D0E] text-[#F5F5F5] font-sans;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    @apply w-full m-0 p-0 bg-[#0D0D0E] text-[#F5F5F5] font-sans;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   ::selection {
@@ -35,6 +54,27 @@
     -webkit-touch-callout: none;
     user-select: none;
   }
+}
+
+/* Animación física de shake para errores de autenticación */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-6px); }
+  30%, 60%, 90% { transform: translateX(6px); }
+}
+
+.animate-shake {
+  animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Pulso suave de resplandor esmeralda/lime para badges y focos activos */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(156, 208, 26, 0.25); }
+  50% { box-shadow: 0 0 30px rgba(156, 208, 26, 0.55), 0 0 10px rgba(156, 208, 26, 0.8); }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s infinite ease-in-out;
 }
 
 /* =========================================================================
@@ -232,3 +272,37 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.18) #0D0D0E;
 }
+
+/* =========================================================================
+   ANIMACIÓN MARQUEE INFINITO (Carrusel Continuo Suave de Logos)
+   ========================================================================= */
+
+@keyframes marquee-scroll-left {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-scroll-right {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll-left 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll-right 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-right:hover {
+  animation-play-state: paused;
+}
+

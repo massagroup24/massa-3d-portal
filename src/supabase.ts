@@ -268,30 +268,64 @@ export async function verifyEditorLogin(
  */
 export async function getMassaUsers(): Promise<MassaUser[]> {
   try {
-    // 1. Intentar consultar la tabla endurecida user_profiles
+    // 1. Intentar consultar RPC de administración (lee auth.users + user_profiles en tiempo real)
+    const { data: rpcUsers, error: rpcErr } = await supabase.rpc('get_all_users_for_admin');
+
+    if (!rpcErr && rpcUsers && Array.isArray(rpcUsers)) {
+      return rpcUsers.map((u: any) => {
+        const rawRole = (u.role || '').toLowerCase();
+        const isAdmin = rawRole === 'admin' || 
+          u.email?.toLowerCase() === 'juandavidfigueroa4@gmail.com' || 
+          (u.email && (u.email.toLowerCase().startsWith('admin@') || u.email.toLowerCase() === 'admin'));
+        const effectiveRole: UserRole = isAdmin ? 'admin' : (rawRole === 'client' ? 'client' : 'architect');
+        return {
+          id: u.id,
+          username: u.email,
+          name: u.name || u.email?.split('@')[0] || 'Usuario MASSA',
+          role: effectiveRole,
+          allowed_profile: resolveAllowedProfile(effectiveRole, effectiveRole === 'client' ? 'client' : (effectiveRole === 'admin' ? 'both' : 'architect')),
+          active: u.active ?? true,
+          created_at: u.created_at,
+          password: '••••••••',
+        };
+      }) as MassaUser[];
+    }
+  } catch (rpcEx) {
+    console.warn("Aviso al consultar RPC get_all_users_for_admin:", rpcEx);
+  }
+
+  try {
+    // 2. Consultar directamente user_profiles
     const { data: profiles, error: profileErr } = await supabase
       .from('user_profiles')
       .select('id, email, name, role, phone, created_at')
       .order('created_at', { ascending: true });
 
-    if (!profileErr && profiles && profiles.length > 0) {
-      return profiles.map((u: any) => ({
-        id: u.id,
-        username: u.email,
-        name: u.name,
-        role: u.role || 'client',
-        allowed_profile: u.role === 'architect' ? 'architect' : 'client',
-        active: true,
-        created_at: u.created_at,
-        password: '••••••••',
-      })) as MassaUser[];
+    if (!profileErr && profiles) {
+      return profiles.map((u: any) => {
+        const rawRole = (u.role || '').toLowerCase();
+        const isAdmin = rawRole === 'admin' || 
+          u.email?.toLowerCase() === 'juandavidfigueroa4@gmail.com' || 
+          (u.email && (u.email.toLowerCase().startsWith('admin@') || u.email.toLowerCase() === 'admin'));
+        const effectiveRole: UserRole = isAdmin ? 'admin' : (rawRole === 'client' ? 'client' : 'architect');
+        return {
+          id: u.id,
+          username: u.email,
+          name: u.name,
+          role: effectiveRole,
+          allowed_profile: resolveAllowedProfile(effectiveRole, effectiveRole === 'client' ? 'client' : (effectiveRole === 'admin' ? 'both' : 'architect')),
+          active: true,
+          created_at: u.created_at,
+          password: '••••••••',
+        };
+      }) as MassaUser[];
     }
   } catch (err) {
     console.warn("Aviso al consultar user_profiles:", err);
   }
 
   try {
-    // 2. Fallback de transición: tabla massa_3d_users sanitizando contraseñas
+    // 3. Fallback de transición: tabla massa_3d_users sanitizando contraseñas
     const { data, error } = await supabase
       .from(USERS_TABLE)
       .select('id, username, name, role, allowed_profile, active, created_at')
@@ -302,19 +336,15 @@ export async function getMassaUsers(): Promise<MassaUser[]> {
         ...u,
         role: u.role || 'architect',
         allowed_profile: resolveAllowedProfile(u.role, u.allowed_profile),
-        password: '••••••••', // Cero exposición de contraseñas
+        password: '••••••••',
       })) as MassaUser[];
     }
   } catch (err) {
     console.warn("No se pudo obtener usuarios de Supabase:", err);
   }
 
-  // Lista inicial por defecto si la base de datos está offline
-  return [
-    { id: '1', username: 'mateo@massagroup.co', password: '••••••••', name: 'Mateo Rossi', role: 'architect', allowed_profile: 'architect', active: true },
-    { id: '2', username: 'juan@massagroup.co', password: '••••••••', name: 'Juan David', role: 'admin', allowed_profile: 'both', active: true },
-    { id: '3', username: 'cliente@gmail.com', password: '••••••••', name: 'Cliente Propietario', role: 'client', allowed_profile: 'client', active: true }
-  ];
+  // Si no hay usuarios en la base de datos o fallaron las consultas, retornar arreglo vacío (cero mock data engañosa)
+  return [];
 }
 
 /**
@@ -322,7 +352,6 @@ export async function getMassaUsers(): Promise<MassaUser[]> {
  */
 export async function saveMassaUser(user: Partial<MassaUser> & { username: string; name: string }): Promise<MassaUser> {
   const role = user.role || 'architect';
-  const mappedRole = role === 'admin' ? 'architect' : role;
   const allowed_profile = resolveAllowedProfile(role, user.allowed_profile);
   let cleanEmail = user.username.trim().toLowerCase();
   if (!cleanEmail.includes('@')) {
@@ -333,13 +362,40 @@ export async function saveMassaUser(user: Partial<MassaUser> & { username: strin
   const isUuid = user.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
 
   if (isUuid) {
+    // 1. Intentar actualización atómica vía RPC (modifica auth.users Y public.user_profiles)
+    try {
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc('admin_update_user', {
+        target_user_id: user.id,
+        new_email: cleanEmail,
+        new_name: user.name.trim(),
+        new_role: role,
+        new_password: user.password && user.password !== '••••••••' ? user.password.trim() : null,
+        new_active: user.active ?? true,
+      });
+
+      if (!rpcErr && rpcRes) {
+        return {
+          id: user.id as string,
+          username: cleanEmail,
+          name: user.name.trim(),
+          role,
+          allowed_profile,
+          active: user.active ?? true,
+          password: '••••••••',
+        };
+      }
+    } catch (err) {
+      console.warn("Aviso al invocar RPC admin_update_user:", err);
+    }
+
+    // 2. Fallback de actualización directa en user_profiles
     const { error: profileError } = await supabase
       .from('user_profiles')
       .upsert({
         id: user.id,
         email: cleanEmail,
         name: user.name.trim(),
-        role: mappedRole,
+        role: role,
       });
 
     if (profileError) {
@@ -358,11 +414,35 @@ export async function saveMassaUser(user: Partial<MassaUser> & { username: strin
   }
 
   // Creación de NUEVO usuario directamente en Supabase Auth desde la Web:
-  // Se utiliza un cliente temporal con persistSession: false para no desloguear al arquitecto
   if (!user.password || user.password.trim().length < 6) {
     throw new Error('La contraseña debe tener al menos 6 caracteres.');
   }
 
+  // 1. Intentar creación atómica instantánea vía RPC (crea en auth.users con correo confirmado)
+  try {
+    const { data: rpcCreate, error: rpcCreateErr } = await supabase.rpc('admin_create_user', {
+      new_email: cleanEmail,
+      new_password: user.password.trim(),
+      new_name: user.name.trim(),
+      new_role: role,
+    });
+
+    if (!rpcCreateErr && rpcCreate?.id) {
+      return {
+        id: rpcCreate.id,
+        username: cleanEmail,
+        name: user.name.trim(),
+        role,
+        allowed_profile,
+        active: true,
+        password: '••••••••',
+      };
+    }
+  } catch (createErr) {
+    console.warn("Aviso al invocar RPC admin_create_user:", createErr);
+  }
+
+  // 2. Fallback estándar vía auth.signUp sin desloguear la sesión actual
   const authCreator = createClient(supabaseUrl, supabaseKey, {
     auth: {
       persistSession: false,
@@ -377,7 +457,7 @@ export async function saveMassaUser(user: Partial<MassaUser> & { username: strin
     options: {
       data: {
         name: user.name.trim(),
-        role: mappedRole
+        role: role
       }
     }
   });
@@ -398,7 +478,7 @@ export async function saveMassaUser(user: Partial<MassaUser> & { username: strin
       id: newUserId,
       email: cleanEmail,
       name: user.name.trim(),
-      role: mappedRole,
+      role: role,
     });
 
   if (profileError) {
@@ -417,11 +497,25 @@ export async function saveMassaUser(user: Partial<MassaUser> & { username: strin
 }
 
 /**
- * Elimina un usuario en Supabase
+ * Elimina un usuario en Supabase (sincronizando Auth y Perfiles)
  */
 export async function deleteMassaUser(id: string): Promise<void> {
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   if (isUuid) {
+    // 1. Intentar eliminación completa vía RPC (elimina en auth.users y en cascada)
+    try {
+      const { data: rpcDel, error: rpcDelErr } = await supabase.rpc('admin_delete_user', {
+        target_user_id: id,
+      });
+
+      if (!rpcDelErr && rpcDel) {
+        return;
+      }
+    } catch (rpcErr) {
+      console.warn("Aviso al invocar RPC admin_delete_user:", rpcErr);
+    }
+
+    // 2. Fallback: eliminar directamente de user_profiles
     const { error } = await supabase.from('user_profiles').delete().eq('id', id);
     if (error) {
       throw new Error(`Error al eliminar usuario: ${error.message}`);

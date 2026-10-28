@@ -30,8 +30,8 @@ interface ClientHomeProps {
 
 export function ClientHome({
   onNavigateSection,
-  projectName = 'Villa Serena',
-  clientName = 'Carlos',
+  projectName = 'RESIDENCIA JEJÉN',
+  clientName = 'Edinson Jején',
   phase = 'FASE 3',
   progressPercentage = 68,
   onOpen360Tour,

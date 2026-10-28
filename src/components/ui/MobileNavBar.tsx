@@ -18,6 +18,7 @@ const CLIENT_NAV_ITEMS = [
 
 const GUEST_NAV_ITEMS = [
   { id: 'home' as NavTab, label: 'Inicio', icon: Home },
+  { id: 'blueprints' as NavTab, label: 'Planos', icon: Compass },
   { id: 'renders' as NavTab, label: 'Renders', icon: ImageIcon },
   { id: 'tour360' as NavTab, label: 'Tour 360°', icon: Rotate3d },
   { id: 'specs' as NavTab, label: 'Ficha', icon: FileText },
@@ -30,12 +31,12 @@ export function MobileNavBar({ activeTab, onSelectTab, userRole = 'client', clas
     <nav
       aria-label="Navegación móvil inferior"
       className={`
-        md:hidden fixed bottom-3 left-3 right-3 z-40
-        bg-[#141416]/90 backdrop-blur-2xl
+        md:hidden fixed bottom-2.5 left-2.5 right-2.5 z-40
+        bg-[#141416]/92 backdrop-blur-2xl
         border border-white/[0.12] rounded-3xl
-        shadow-[0_-5px_30px_rgba(0,0,0,0.8),0_15px_35px_rgba(0,0,0,0.6)]
-        px-2 py-1.5 pb-[max(0.45rem,env(safe-area-inset-bottom))]
-        flex items-center justify-around
+        shadow-[0_-5px_30px_rgba(0,0,0,0.85),0_15px_35px_rgba(0,0,0,0.7)]
+        px-1 sm:px-2 py-1.5 pb-[max(0.65rem,env(safe-area-inset-bottom))]
+        flex items-center justify-around gap-0.5
         ${className}
       `}
     >
@@ -46,25 +47,26 @@ export function MobileNavBar({ activeTab, onSelectTab, userRole = 'client', clas
         return (
           <button
             key={item.id}
+            type="button"
             onClick={() => onSelectTab(item.id)}
             className={`
-              relative flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl
-              transition-all duration-200 cursor-pointer select-none
+              relative flex flex-col items-center justify-center py-1 px-1 sm:px-2 rounded-2xl
+              min-w-[48px] min-h-[44px] transition-all duration-200 cursor-pointer select-none active:scale-95
               ${isActive ? 'text-[#9CD01A]' : 'text-[#8E8E93] hover:text-[#F5F5F5]'}
             `}
           >
             {/* Fondo activo sutil */}
             {isActive && (
-              <span className="absolute inset-0 bg-[#9CD01A]/10 rounded-2xl border border-[#9CD01A]/20" />
+              <span className="absolute inset-0 bg-[#9CD01A]/12 rounded-2xl border border-[#9CD01A]/25 shadow-[0_0_12px_rgba(156,208,26,0.2)]" />
             )}
 
             {/* Ícono */}
             <div className="relative">
-              <Icon className={`w-5 h-5 transition-transform duration-200 ${isActive ? 'scale-110 stroke-[2.3]' : 'stroke-[1.8]'}`} />
+              <Icon className={`w-4.5 h-4.5 sm:w-5 sm:h-5 transition-transform duration-200 ${isActive ? 'scale-110 stroke-[2.3]' : 'stroke-[1.8]'}`} />
             </div>
 
             {/* Etiqueta */}
-            <span className={`text-[10px] mt-0.5 tracking-tight font-medium ${isActive ? 'font-bold text-[#9CD01A]' : ''}`}>
+            <span className={`text-[9px] sm:text-[10px] mt-0.5 tracking-tight font-medium whitespace-nowrap leading-none ${isActive ? 'font-bold text-[#9CD01A]' : ''}`}>
               {item.label}
             </span>
           </button>

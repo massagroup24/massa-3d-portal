@@ -28,9 +28,10 @@ const DOCK_ITEMS: DockItem[] = [
 
 const GUEST_DOCK_ITEMS: DockItem[] = [
   { id: 'home', label: 'Inicio', icon: Home },
+  { id: 'blueprints', label: 'Planos', icon: Compass },
   { id: 'renders', label: 'Renders', icon: ImageIcon },
   { id: 'tour360', label: 'Tour 360°', icon: Rotate3d },
-  { id: 'specs', label: 'Ficha Técnica', icon: FileText },
+  { id: 'specs', label: 'Ficha & Acabados', icon: FileText },
   { id: 'contact', label: 'Contacto', icon: Phone },
 ];
 

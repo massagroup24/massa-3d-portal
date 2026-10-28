@@ -10,10 +10,12 @@ interface ConfiguratorProps {
   initialProject: Project;
   onClose: () => void;
   onSave?: (project: Project) => void;
+  isNewProject?: boolean;
 }
 
-export function ProjectConfigurator({ initialProject, onClose, onSave }: ConfiguratorProps) {
+export function ProjectConfigurator({ initialProject, onClose, onSave, isNewProject = false }: ConfiguratorProps) {
   const [project, setProject] = useState<Project>(initialProject);
+  const [hasSaved, setHasSaved] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(initialProject.initialRoomId);
   const [activeTab, setActiveTab] = useState<'settings' | '360' | 'map'>('settings');
   const [copied, setCopied] = useState(false);
@@ -52,11 +54,36 @@ export function ProjectConfigurator({ initialProject, onClose, onSave }: Configu
       if (onSave) onSave(project);
       
       setSavingState('saved');
+      setHasSaved(true);
       setTimeout(() => setSavingState('idle'), 3000);
     } catch (err: any) {
       console.error("Error al guardar en Supabase:", err);
       setSavingState('error');
     }
+  };
+
+  const handleClose = () => {
+    // Si es un nuevo proyecto y aún no ha sido guardado
+    if (isNewProject && !hasSaved) {
+      const hasChanges = JSON.stringify(project) !== JSON.stringify(initialProject);
+      if (hasChanges) {
+        const confirmExit = window.confirm("Tienes cambios sin guardar en este nuevo proyecto. ¿Estás seguro de que deseas salir sin guardar? El proyecto no se creará.");
+        if (!confirmExit) return;
+      }
+      onClose();
+      return;
+    }
+
+    // Si es un proyecto existente con cambios sin guardar
+    if (!isNewProject && !hasSaved) {
+      const hasChanges = JSON.stringify(project) !== JSON.stringify(initialProject);
+      if (hasChanges) {
+        const confirmExit = window.confirm("Tienes cambios sin guardar en este proyecto. ¿Deseas salir sin guardar los cambios?");
+        if (!confirmExit) return;
+      }
+    }
+
+    onClose();
   };
 
   const generateId = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Math.floor(Math.random() * 1000);
@@ -342,7 +369,7 @@ export const projectsData: Record<string, Project> = {
       <header className="flex flex-wrap sm:flex-nowrap items-center justify-between p-3 sm:p-4 border-b border-white/10 bg-black/70 backdrop-blur-xl gap-3 shrink-0">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <button 
-            onClick={onClose} 
+            onClick={handleClose} 
             className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors font-semibold text-xs sm:text-sm border border-white/15 shrink-0 shadow-lg"
             title="Volver al Portafolio de Proyectos / Menú"
           >
@@ -351,7 +378,9 @@ export const projectsData: Record<string, Project> = {
           </button>
           <div className="flex items-center gap-2 text-lime-400 min-w-0">
             <Settings className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-            <h1 className="font-semibold tracking-wide text-xs sm:text-base truncate">Configurador: {project.name}</h1>
+            <h1 className="font-semibold tracking-wide text-xs sm:text-base truncate">
+              {isNewProject ? `Crear Proyecto: ${project.name}` : `Configurador: ${project.name}`}
+            </h1>
           </div>
         </div>
         
@@ -366,10 +395,10 @@ export const projectsData: Record<string, Project> = {
               'bg-lime-500 text-black hover:bg-lime-400'
             }`}
           >
-            {savingState === 'saving' ? 'Guardando...' :
-             savingState === 'saved' ? '¡Sincronizado!' :
+            {savingState === 'saving' ? (isNewProject ? 'Creando...' : 'Guardando...') :
+             savingState === 'saved' ? (isNewProject ? '¡Proyecto Creado!' : '¡Sincronizado!') :
              savingState === 'error' ? 'Reintentar Guardado' :
-             'Guardar en Nube'}
+             isNewProject ? 'Crear Proyecto' : 'Guardar en Nube'}
           </button>
 
           <button 

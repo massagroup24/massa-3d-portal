@@ -77,8 +77,26 @@ export function Tour360Section({
                   className="w-full h-full object-cover transform duration-700 group-hover:scale-105 filter brightness-90"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white/40">
-                  Sin imagen equirectangular
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center select-none bg-gradient-to-br from-[#121319] via-[#0b0c10] to-black relative">
+                  <div
+                    className="absolute inset-0 opacity-[0.14] pointer-events-none"
+                    style={{
+                      backgroundImage: `linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)`,
+                      backgroundSize: '24px 24px'
+                    }}
+                  />
+                  <div className="w-16 h-16 rounded-3xl bg-[#9CD01A]/10 border border-[#9CD01A]/30 flex items-center justify-center text-[#9CD01A] mb-3 shadow-[0_0_25px_rgba(156,208,26,0.25)] relative z-10">
+                    <Compass className="w-8 h-8 animate-spin" style={{ animationDuration: '20s' }} />
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#9CD01A] font-bold relative z-10">
+                    ESPACIO LISTO PARA ESFERA 360°
+                  </span>
+                  <h4 className="text-xl font-bold text-white mt-1 relative z-10">
+                    {activeRoom?.name || 'Ambiente Arquitectónico'}
+                  </h4>
+                  <p className="text-xs text-white/50 max-w-sm mt-1 relative z-10">
+                    {activeRoom?.description || 'Ambiente listo para recibir la foto equirectangular'}
+                  </p>
                 </div>
               )}
 

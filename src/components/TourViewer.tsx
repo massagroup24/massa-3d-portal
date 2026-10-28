@@ -108,8 +108,20 @@ export function TourViewer({ room, onNavigate, isTransitioning, targetPosition, 
           <RoomSphere room={room} onNavigate={onNavigate} />
         ) : (
           <Html center>
-            <div className="text-white text-base md:text-xl font-medium whitespace-nowrap bg-black/80 px-6 py-3 rounded-full backdrop-blur-md border border-red-500/50 shadow-2xl">
-              Esta habitación no tiene imagen 360 aún.
+            <div className="flex flex-col items-center text-center p-6 sm:p-8 rounded-3xl bg-[#0D0D0E]/90 backdrop-blur-2xl border border-[#9CD01A]/40 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(156,208,26,0.2)] max-w-sm sm:max-w-md pointer-events-none select-none">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#9CD01A] shadow-[0_0_10px_#9CD01A] animate-ping mb-3" />
+              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#9CD01A] font-bold mb-1">
+                MASSA HOME • VISTA 360°
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-2">
+                {room.name || 'Ambiente Arquitectónico'}
+              </h3>
+              <p className="text-xs text-white/70 leading-relaxed mb-3">
+                {room.description || 'Espacio preparado y listo para recibir la imagen equirectangular 360°.'}
+              </p>
+              <span className="px-3 py-1 rounded-full bg-white/10 text-[11px] font-mono text-white/60 border border-white/10">
+                Pega la URL de la esfera 360 en tourData.ts
+              </span>
             </div>
           </Html>
         )}

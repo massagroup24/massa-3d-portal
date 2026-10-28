@@ -53,7 +53,6 @@ export function ArchitectHeader({
   onCreateProject,
   onLogout,
   onSwitchRole,
-  onSwitchToClient,
   isAdmin = false,
   onOpenVisits
 }: ArchitectHeaderProps) {
@@ -176,7 +175,7 @@ export function ArchitectHeader({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-              className="relative z-10 w-80 sm:w-96 h-[100dvh] max-h-screen bg-[#0D0D0E]/98 backdrop-blur-2xl border-r border-white/10 shadow-[20px_0_60px_rgba(0,0,0,0.95)] flex flex-col justify-between overflow-hidden"
+              className="relative z-10 w-[84vw] max-w-xs sm:w-96 h-[100dvh] max-h-screen bg-[#0D0D0E]/98 backdrop-blur-2xl border-r border-white/10 shadow-[20px_0_60px_rgba(0,0,0,0.95)] flex flex-col justify-between overflow-hidden"
             >
               {/* Header del drawer */}
               <div className="p-5 sm:p-6 pb-4 flex items-center justify-between border-b border-white/[0.06] shrink-0">
@@ -194,7 +193,7 @@ export function ArchitectHeader({
                     MASSA GROUP
                   </span>
                   <span className="text-[9px] font-mono text-white/40 tracking-wider">
-                    PANEL ARQUITECTO // CONTROL
+                    PANEL ADMINISTRADOR // CONTROL
                   </span>
                 </div>
               </div>
@@ -367,25 +366,6 @@ export function ArchitectHeader({
                     </button>
                   )}
 
-                  {onSwitchToClient && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsSidebarOpen(false);
-                        onSwitchToClient();
-                      }}
-                      className="w-full group flex items-center text-left py-2 px-2 rounded-xl text-white/50 hover:text-white/90 hover:bg-white/[0.03] transition-all cursor-pointer"
-                    >
-                      <div className="w-10 shrink-0 flex items-center justify-start pr-2">
-                        <div className="w-3 h-[1px] bg-white/20 group-hover:w-5 group-hover:bg-white/60 transition-all" />
-                      </div>
-                      <div className="flex items-center justify-between flex-1 min-w-0">
-                        <span className="text-xs font-medium tracking-wide">Ver Portal como Cliente</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white/50 font-mono">Vista</span>
-                      </div>
-                    </button>
-                  )}
-
                   {onSwitchRole && (
                     <button
                       type="button"
@@ -393,14 +373,14 @@ export function ArchitectHeader({
                         setIsSidebarOpen(false);
                         onSwitchRole();
                       }}
-                      className="w-full group flex items-center text-left py-2 px-2 rounded-xl text-white/50 hover:text-white/90 hover:bg-white/[0.03] transition-all cursor-pointer"
+                      className="w-full group flex items-center text-left py-2 px-2 rounded-xl text-[#9CD01A] hover:bg-[#9CD01A]/10 transition-all cursor-pointer"
                     >
                       <div className="w-10 shrink-0 flex items-center justify-start pr-2">
-                        <div className="w-3 h-[1px] bg-white/20 group-hover:w-5 group-hover:bg-white/60 transition-all" />
+                        <div className="w-3 h-[1px] bg-[#9CD01A]/40 group-hover:w-5 group-hover:bg-[#9CD01A] transition-all" />
                       </div>
                       <div className="flex items-center justify-between flex-1 min-w-0">
-                        <span className="text-xs font-medium tracking-wide">Volver a Selección de Rol</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white/50 font-mono">Portal</span>
+                        <span className="text-xs font-semibold tracking-wide">Ver Catálogo Público en Venta</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#9CD01A]/20 text-[#9CD01A] font-mono">EN VIVO</span>
                       </div>
                     </button>
                   )}
@@ -410,7 +390,7 @@ export function ArchitectHeader({
               {/* Footer con atajo para salir */}
               <div className="p-4 sm:p-5 border-t border-white/[0.06] bg-[#0A0A0B] flex items-center justify-between text-[10px] font-mono text-white/40">
                 <span>ESC para cerrar</span>
-                <span className="text-[#9CD01A]">PANEL ARQUITECTO V2.0</span>
+                <span className="text-[#9CD01A]">PANEL ADMINISTRADOR MASSA</span>
               </div>
             </m.aside>
           </div>

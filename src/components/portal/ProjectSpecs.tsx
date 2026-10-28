@@ -17,7 +17,10 @@ import {
   Wind,
   Droplets,
   VolumeX,
-  Sliders
+  Sliders,
+  CreditCard,
+  FileText,
+  CheckCircle2
 } from 'lucide-react';
 import { ProjectPublicSpecs } from '../../services/portalService';
 import { Button } from '../ui/Button';
@@ -29,7 +32,7 @@ interface ProjectSpecsProps {
   onOpen360Tour?: () => void;
 }
 
-type SpecsTab = 'concept' | 'materials' | 'spaces' | 'bioclimatic';
+type SpecsTab = 'concept' | 'materials' | 'finishes' | 'spaces' | 'location' | 'financials' | 'bioclimatic';
 
 // Photographic textures of genuine luxury architectural materials
 const MATERIAL_SWATCHES = [
@@ -333,6 +336,45 @@ export function ProjectSpecs({
         >
           <Building2 className="w-3.5 h-3.5" />
           <span>Zonificación & Recintos</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('finishes')}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 cursor-pointer shrink-0 ${
+            activeTab === 'finishes'
+              ? 'bg-[#9CD01A] text-black shadow-[0_0_20px_rgba(156,208,26,0.35)] scale-102 font-bold'
+              : 'text-[#A3A3A3] hover:text-white hover:bg-white/[0.06]'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>Ficha de Acabados</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('location')}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 cursor-pointer shrink-0 ${
+            activeTab === 'location'
+              ? 'bg-[#9CD01A] text-black shadow-[0_0_20px_rgba(156,208,26,0.35)] scale-102 font-bold'
+              : 'text-[#A3A3A3] hover:text-white hover:bg-white/[0.06]'
+          }`}
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          <span>Ubicación & Lote</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('financials')}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 cursor-pointer shrink-0 ${
+            activeTab === 'financials'
+              ? 'bg-[#9CD01A] text-black shadow-[0_0_20px_rgba(156,208,26,0.35)] scale-102 font-bold'
+              : 'text-[#A3A3A3] hover:text-white hover:bg-white/[0.06]'
+          }`}
+        >
+          <CreditCard className="w-3.5 h-3.5" />
+          <span>Valor & Forma de Pago</span>
         </button>
 
         <button
@@ -692,6 +734,240 @@ export function ProjectSpecs({
                 </div>
               </div>
 
+            </div>
+          </m.div>
+        )}
+
+        {/* ==============================================================
+            PESTAÑA: FICHA DE ACABADOS & CARPINTERÍA
+            ============================================================== */}
+        {activeTab === 'finishes' && (
+          <m.div
+            key="finishes"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25 }}
+            className="space-y-6"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-3xl bg-[#141416]/90 border border-white/10 backdrop-blur-xl">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#9CD01A] font-bold">
+                  ESPECIFICACIÓN DE MATERIALES & TERMINACIONES
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Cuadro de Acabados de Autor
+                </h3>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30 text-xs font-mono font-bold text-[#9CD01A] self-start sm:self-auto">
+                CALIDAD PREMIUM
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div onMouseMove={handleSpotlight} className="group relative p-5 rounded-2xl bg-[#141416]/80 border border-white/10 hover:border-[#9CD01A]/40 transition-all shadow-lg overflow-hidden">
+                <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">01 • Pisos & Revestimientos</span>
+                <h4 className="text-base font-bold text-white mb-2">Pisos y Porcelanatos</h4>
+                <p className="text-xs text-white/70 leading-relaxed font-normal">
+                  {specs.finishes?.flooring || 'Porcelanato rectificado de ultra gran formato y mármol apomazado en zonas húmedas.'}
+                </p>
+              </div>
+
+              <div onMouseMove={handleSpotlight} className="group relative p-5 rounded-2xl bg-[#141416]/80 border border-white/10 hover:border-[#9CD01A]/40 transition-all shadow-lg overflow-hidden">
+                <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">02 • Carpintería & Puertas</span>
+                <h4 className="text-base font-bold text-white mb-2">Maderas Nobles</h4>
+                <p className="text-xs text-white/70 leading-relaxed font-normal">
+                  {specs.finishes?.carpentry || 'Puertas piso a techo en roble natural con cerraduras magnéticas y closets modulares.'}
+                </p>
+              </div>
+
+              <div onMouseMove={handleSpotlight} className="group relative p-5 rounded-2xl bg-[#141416]/80 border border-white/10 hover:border-[#9CD01A]/40 transition-all shadow-lg overflow-hidden">
+                <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">03 • Cocina Gourmet</span>
+                <h4 className="text-base font-bold text-white mb-2">Muebles & Mesones</h4>
+                <p className="text-xs text-white/70 leading-relaxed font-normal">
+                  {specs.finishes?.kitchen || 'Mesón monolítico en cuarzo / Neolith, herrajes de cierre suave y campana oculta.'}
+                </p>
+              </div>
+
+              <div onMouseMove={handleSpotlight} className="group relative p-5 rounded-2xl bg-[#141416]/80 border border-white/10 hover:border-[#9CD01A]/40 transition-all shadow-lg overflow-hidden">
+                <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">04 • Baños & Spa</span>
+                <h4 className="text-base font-bold text-white mb-2">Aparatos & Grifería</h4>
+                <p className="text-xs text-white/70 leading-relaxed font-normal">
+                  {specs.finishes?.bathrooms || 'Sanitarios suspendidos, griferías monocontrol en negro mate y duchas termostáticas.'}
+                </p>
+              </div>
+
+              <div onMouseMove={handleSpotlight} className="group relative p-5 rounded-2xl bg-[#141416]/80 border border-white/10 hover:border-[#9CD01A]/40 transition-all shadow-lg overflow-hidden">
+                <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">05 • Envolvente & Fachada</span>
+                <h4 className="text-base font-bold text-white mb-2">Textura & Vidrio</h4>
+                <p className="text-xs text-white/70 leading-relaxed font-normal">
+                  {specs.finishes?.facade || 'Concreto visto arquitectónico, lamas bioclimáticas y ventanería con cristal de control térmico.'}
+                </p>
+              </div>
+
+              <div onMouseMove={handleSpotlight} className="group relative p-5 rounded-2xl bg-[#141416]/80 border border-white/10 hover:border-[#9CD01A]/40 transition-all shadow-lg overflow-hidden">
+                <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">06 • Domótica & Redes</span>
+                <h4 className="text-base font-bold text-white mb-2">Automatización Smart</h4>
+                <p className="text-xs text-white/70 leading-relaxed font-normal">
+                  {specs.finishes?.automation || 'Puntos para control inteligente de iluminación, escenas de relax, cortinas y sonido multizona.'}
+                </p>
+              </div>
+            </div>
+          </m.div>
+        )}
+
+        {/* ==============================================================
+            PESTAÑA: UBICACIÓN DEL CONJUNTO & LOTE
+            ============================================================== */}
+        {activeTab === 'location' && (
+          <m.div
+            key="location"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25 }}
+            className="space-y-6"
+          >
+            <div className="rounded-3xl bg-[#141416]/90 border border-white/10 p-6 sm:p-8 backdrop-blur-2xl shadow-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/[0.08]">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-[#9CD01A]/10 border border-[#9CD01A]/30 flex items-center justify-center text-[#9CD01A] shrink-0">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#9CD01A] font-bold">
+                      LOCALIZACIÓN DEL PROYECTO
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                      Ubicación del Conjunto & Lote
+                    </h3>
+                  </div>
+                </div>
+                <span className="px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-white/70 self-start sm:self-auto">
+                  {specs.locationDetails?.city || specs.location}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                  <span className="text-[10px] font-mono text-white/40 uppercase block mb-1">Sector o Condominio</span>
+                  <div className="text-lg font-black text-white">
+                    {specs.locationDetails?.neighborhood || specs.location}
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                  <span className="text-[10px] font-mono text-white/40 uppercase block mb-1">Identificación del Terreno</span>
+                  <div className="text-lg font-black text-[#9CD01A]">
+                    {specs.locationDetails?.lotNumber || specs.lotArea || 'Lote Privado'}
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                  <span className="text-[10px] font-mono text-white/40 uppercase block mb-1">Área y Tipología</span>
+                  <div className="text-lg font-black text-white">
+                    {specs.areaBuilt} • {specs.typology}
+                  </div>
+                </div>
+              </div>
+
+              {specs.locationDetails?.environment && (
+                <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+                  <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider font-bold block mb-1">
+                    Entorno, Seguridad y Plusvalía
+                  </span>
+                  <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-normal">
+                    {specs.locationDetails.environment}
+                  </p>
+                </div>
+              )}
+            </div>
+          </m.div>
+        )}
+
+        {/* ==============================================================
+            PESTAÑA: VALOR DEL PROYECTO & FORMA DE PAGO
+            ============================================================== */}
+        {activeTab === 'financials' && (
+          <m.div
+            key="financials"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25 }}
+            className="space-y-6"
+          >
+            <div className="rounded-3xl bg-gradient-to-br from-[#161720] via-[#111217] to-[#0c0d11] border border-[#9CD01A]/30 p-6 sm:p-8 shadow-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/[0.08]">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-[#9CD01A] text-black flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(156,208,26,0.35)]">
+                    <CreditCard className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#9CD01A] font-bold">
+                      ESTRUCTURA DE INVERSIÓN
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                      Valor del Proyecto & Forma de Pago
+                    </h3>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-3.5 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30 text-xs font-mono font-bold text-[#9CD01A]">
+                    {specs.financials?.priceCOP || 'A Consultar'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10">
+                  <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">
+                    01 • Separación & Inicial
+                  </span>
+                  <div className="text-lg font-black text-white mb-1">
+                    {specs.financials?.downPayment || '30% Durante Planeación'}
+                  </div>
+                  <p className="text-xs text-white/50 leading-relaxed">
+                    Firma de promesa de compraventa, estudios técnicos y radicación de licencias.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10">
+                  <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">
+                    02 • Durante Construcción
+                  </span>
+                  <div className="text-lg font-black text-white mb-1">
+                    {specs.financials?.milestones || '50% en Hitos de Obra'}
+                  </div>
+                  <p className="text-xs text-white/50 leading-relaxed">
+                    Desembolsos contra actas de interventoría y avance estructural verificado.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10">
+                  <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">
+                    03 • Entrega de Llaves
+                  </span>
+                  <div className="text-lg font-black text-white mb-1">
+                    {specs.financials?.delivery || '20% Contra Entrega'}
+                  </div>
+                  <p className="text-xs text-white/50 leading-relaxed">
+                    Recibo a satisfacción, entrega de manuales de garantías y escrituración formal.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08]">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#9CD01A] shrink-0" />
+                  <div className="text-xs text-white/80">
+                    <strong className="text-white">Garantía Llave en Mano MASSA:</strong> Presupuesto cerrado sin imprevistos. Acompañamiento fiduciario y bancario integral.
+                  </div>
+                </div>
+                <Button variant="primary" onClick={handleAction} className="shrink-0">
+                  Solicitar Cotización Personalizada
+                </Button>
+              </div>
             </div>
           </m.div>
         )}

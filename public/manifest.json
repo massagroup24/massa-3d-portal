@@ -1,7 +1,7 @@
 {
-  "name": "Massa Group | Recorridos Virtuales 360°",
-  "short_name": "Massa 3D",
-  "description": "Portal interactivo de visualización arquitectónica 3D y recorridos virtuales de Massa Group",
+  "name": "MASSA HOME | Portafolio & Residencias de Autor",
+  "short_name": "MASSA HOME",
+  "description": "MASSA HOME - Plataforma de visualización arquitectónica 3D y residencias de autor",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080d0a",

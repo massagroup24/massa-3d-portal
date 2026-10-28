@@ -14,97 +14,47 @@ export interface PortfolioWork {
   bgImage: string;
 }
 
-// Curated collection of high-end architectural works by MASSA GROUP
+// Curated collection of high-end architectural works by MASSA GROUP (Obras reales en existencia)
 export const PORTFOLIO_WORKS: PortfolioWork[] = [
   {
-    id: 'villa-serena',
-    name: 'VILLA SERENA',
+    id: 'project_hacienda_f22',
+    name: 'HACIENDA F22',
+    category: 'Residencia Campestre Luxury',
+    location: 'Cúcuta, Norte de Santander',
+    area: 'Por definir m²',
+    year: '2026',
+    thumbnail: '',
+    bgImage: '',
+  },
+  {
+    id: 'project_ibiza_a14',
+    name: 'IBIZA A14',
+    category: 'Villa Campestre de Autor',
+    location: 'Cúcuta, Norte de Santander',
+    area: 'Por definir m²',
+    year: '2026',
+    thumbnail: '',
+    bgImage: '',
+  },
+  {
+    id: 'project_1781963945215',
+    name: 'RESIDENCIA JEJÉN',
     category: 'Residencia Unifamiliar Luxury',
-    location: 'Valle del Cauca',
+    location: 'Cali, Colombia',
     area: '480 m²',
     year: '2026',
-    thumbnail: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=85',
+    thumbnail: '',
+    bgImage: '',
   },
   {
-    id: 'marquimoda',
-    name: 'MARQUIMODA',
-    category: 'Sede Corporativa & Oficinas',
-    location: 'Valle del Cauca',
+    id: 'project_1782912175010',
+    name: 'SEDE MARQUIMODA',
+    category: 'Sede Corporativa & Atelier',
+    location: 'Valle del Cauca, Colombia',
     area: '620 m²',
     year: '2026',
-    thumbnail: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=2000&q=85',
-  },
-  {
-    id: 'edinson-jejen',
-    name: 'EDINSON JEJEN',
-    category: 'Diseño Residencial Contemporáneo',
-    location: 'Valle del Cauca',
-    area: '420 m²',
-    year: '2025',
-    thumbnail: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2000&q=85',
-  },
-  {
-    id: 'casa-del-lago',
-    name: 'CASA DEL LAGO',
-    category: 'Villa Campestre & Biofílica',
-    location: 'Calima, Colombia',
-    area: '520 m²',
-    year: '2026',
-    thumbnail: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=2000&q=85',
-  },
-  {
-    id: 'penthouse-massa',
-    name: 'PENTHOUSE MASSA',
-    category: 'Penthouse Dúplex Panorámico',
-    location: 'Cali / Peñón',
-    area: '380 m²',
-    year: '2025',
-    thumbnail: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=2000&q=85',
-  },
-  {
-    id: 'altos-del-valle',
-    name: 'ALTOS DEL VALLE',
-    category: 'Estructura Monolítica & Concreto',
-    location: 'Dapa, Valle',
-    area: '610 m²',
-    year: '2026',
-    thumbnail: 'https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?auto=format&fit=crop&w=2000&q=85',
-  },
-  {
-    id: 'residencia-bambu',
-    name: 'RESIDENCIA BAMBÚ',
-    category: 'Estrategia Bioclimática & Spa',
-    location: 'Valle del Cauca',
-    area: '440 m²',
-    year: '2025',
-    thumbnail: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=2000&q=85',
-  },
-  {
-    id: 'torre-horizonte',
-    name: 'TORRE HORIZONTE',
-    category: 'Sky Villas & Penthouse',
-    location: 'Cali / Peñón',
-    area: '780 m²',
-    year: '2026',
-    thumbnail: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=2000&q=85',
-  },
-  {
-    id: 'casa-cantera',
-    name: 'CASA CANTERA',
-    category: 'Piedra Natural & Volúmenes Flotantes',
-    location: 'Valle del Cauca',
-    area: '560 m²',
-    year: '2025',
-    thumbnail: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=400&q=80',
-    bgImage: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=2000&q=85',
+    thumbnail: '',
+    bgImage: '',
   },
 ];
 
@@ -196,6 +146,7 @@ interface GuestPortfolioShowcaseProps {
   onSelectProject: (projectId: string) => void;
   onOpenLogin: () => void;
   onContactCommercial?: () => void;
+  onBackToCommercial?: () => void;
 }
 
 // Icono de barra lateral exacto al solicitado en la captura de pantalla
@@ -256,6 +207,7 @@ export function GuestPortfolioShowcase({
   onSelectProject,
   onOpenLogin,
   onContactCommercial,
+  onBackToCommercial,
 }: GuestPortfolioShowcaseProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -440,8 +392,8 @@ export function GuestPortfolioShowcase({
       <header className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-5 sm:pt-7 pb-2">
         <div className="w-full h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* LADO IZQUIERDO (flex-1): Botón de Menú Isotipo MASSA */}
-          <div className="flex-1 flex items-center justify-start">
+          {/* LADO IZQUIERDO (flex-1): Botón de Menú Isotipo MASSA + Volver a Comercial */}
+          <div className="flex-1 flex items-center justify-start gap-2 sm:gap-3">
             <button
               onClick={() => setIsSidebarOpen(true)}
               type="button"
@@ -472,6 +424,17 @@ export function GuestPortfolioShowcase({
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#9CD01A]" />
               </span>
             </button>
+
+            {onBackToCommercial && (
+              <button
+                type="button"
+                onClick={onBackToCommercial}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/[0.06] hover:bg-[#9CD01A] text-white/80 hover:text-black border border-white/10 hover:border-[#9CD01A] text-xs font-bold transition-all cursor-pointer"
+                title="Volver al Catálogo y Cotizador Comercial"
+              >
+                <span>← Catálogo</span>
+              </button>
+            )}
           </div>
 
           {/* CENTRO (shrink-0): Logo Oficial MASSA GROUP 100% Centrado sin riesgo de solapamiento */}
@@ -617,7 +580,7 @@ export function GuestPortfolioShowcase({
                     <button
                       type="button"
                       onClick={() => {
-                        onSelectProject(activeWork ? activeWork.id : 'villa-serena');
+                        onSelectProject(activeWork ? activeWork.id : PORTFOLIO_WORKS[0].id);
                         setIsSidebarOpen(false);
                       }}
                       className="w-full group flex items-center text-left py-2 px-1 rounded-xl text-white/50 hover:text-white/90 hover:bg-white/[0.03] transition-all cursor-pointer"
@@ -725,11 +688,22 @@ export function GuestPortfolioShowcase({
                         : 'border-white/15 hover:border-white/40'
                     }`}
                   >
-                    <img
-                      src={work.thumbnail}
-                      alt={work.name}
-                      className="w-full h-full object-cover transform duration-500 group-hover:scale-115"
-                    />
+                    {work.thumbnail ? (
+                      <img
+                        src={work.thumbnail}
+                        alt={work.name}
+                        className="w-full h-full object-cover transform duration-500 group-hover:scale-115"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-[#15161a] p-1 text-center select-none">
+                        <span className="text-[10px] sm:text-xs font-mono font-black text-[#9CD01A]">
+                          {String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-[7px] sm:text-[8px] font-mono text-white/50 tracking-tighter uppercase truncate max-w-full">
+                          {work.name.split(' ')[0]}
+                        </span>
+                      </div>
+                    )}
                     <div className={`absolute inset-0 transition-colors ${isItemActive ? 'bg-transparent' : 'bg-black/20 group-hover:bg-transparent'}`} />
                   </m.div>
 

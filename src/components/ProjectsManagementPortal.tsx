@@ -14,10 +14,12 @@ import {
   Camera, 
   Box, 
   Share2, 
-  AlertCircle
+  AlertCircle,
+  RotateCcw
 } from 'lucide-react';
 import { Project } from '../data/tourData';
 import { ArchitectHeader } from './layout/ArchitectHeader';
+import { EmptyState } from './ui/EmptyState';
 
 interface ProjectsManagementPortalProps {
   projects: Record<string, Project>;
@@ -86,13 +88,7 @@ export function ProjectsManagementPortal({
   };
 
   const handleOpenConfigWithPin = (project: Project) => {
-    if (!project.pin) {
-      onConfigureProject(project.id);
-    } else {
-      setPinModalProject(project);
-      setEnteredPin('');
-      setPinError(false);
-    }
+    onConfigureProject(project.id);
   };
 
   const handlePinSubmit = (e: React.FormEvent) => {
@@ -266,17 +262,32 @@ export function ProjectsManagementPortal({
 
         {/* Cuadrícula de Proyectos */}
         {filteredProjects.length === 0 ? (
-          <div className="p-12 text-center bg-white/[0.02] border border-white/10 rounded-3xl">
-            <Building2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-white mb-1">No se encontraron proyectos</h3>
-            <p className="text-xs text-white/50 mb-4">Intenta ajustar los filtros de búsqueda o crea un nuevo proyecto.</p>
-            <button
-              onClick={onCreateProject}
-              className="px-4 py-2 rounded-xl bg-[#9CD01A] text-black font-bold text-xs"
-            >
-              + Crear Proyecto MASSA
-            </button>
-          </div>
+          <EmptyState
+            variant={searchQuery.trim() ? 'search' : 'projects'}
+            title={searchQuery.trim() ? `Sin resultados para "${searchQuery}"` : 'No hay proyectos en esta sección'}
+            description={
+              searchQuery.trim() || filterStatus !== 'all'
+                ? 'No encontramos proyectos que coincidan con el término o estado actual. Restablece los filtros para ver el catálogo completo de MASSA.'
+                : 'Aún no se han configurado proyectos en el catálogo. Comienza creando el primero para administrar sus renders, planos y recorrido virtual 360°.'
+            }
+            badge={searchQuery.trim() ? 'FILTRO DE BÚSQUEDA' : 'PANEL EJECUTIVO'}
+            primaryAction={{
+              label: '+ Crear Proyecto MASSA',
+              onClick: onCreateProject,
+            }}
+            secondaryAction={
+              searchQuery.trim() || filterStatus !== 'all'
+                ? {
+                    label: 'Restablecer Filtros',
+                    onClick: () => {
+                      setSearchQuery('');
+                      setFilterStatus('all');
+                    },
+                    icon: <RotateCcw className="w-3.5 h-3.5" />
+                  }
+                : undefined
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {filteredProjects.map((project) => {
@@ -288,7 +299,7 @@ export function ProjectsManagementPortal({
               return (
                 <div 
                   key={project.id}
-                  className="group relative bg-[#121215] border border-white/10 hover:border-[#9CD01A]/50 rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-[0_15px_40px_-15px_rgba(156,208,26,0.2)] flex flex-col justify-between"
+                  className="group relative bg-[#121215] border border-white/10 hover:border-[#9CD01A]/60 rounded-3xl overflow-hidden transition-all duration-400 hover:shadow-[0_25px_60px_-15px_rgba(156,208,26,0.3)] hover:-translate-y-1.5 flex flex-col justify-between"
                 >
                   <div>
                     {/* Header de la Tarjeta de Proyecto: Imagen con Overlay y Badges */}
@@ -459,7 +470,8 @@ export function ProjectsManagementPortal({
                         title="Configurar Proyecto y Hotspots 3D"
                       >
                         <Settings className="w-3.5 h-3.5 text-[#9CD01A]" />
-                        <span className="hidden sm:inline">Configuración</span>
+                        <span className="hidden sm:inline">Editar Proyecto & 3D</span>
+                        <span className="sm:hidden">Editar</span>
                       </button>
 
                       {/* Alternar Estado: En Proceso <-> Terminado */}

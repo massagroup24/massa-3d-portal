@@ -9,10 +9,12 @@ import {
   X, 
   ZoomIn, 
   ZoomOut, 
-  RotateCcw
+  RotateCcw,
+  Image as ImageIcon
 } from 'lucide-react';
 import { ProjectMediaItem } from '../../services/portalService';
 import { GlassCard } from '../ui/GlassCard';
+import { EmptyState } from '../ui/EmptyState';
 
 interface RendersGalleryProps {
   renders: ProjectMediaItem[];
@@ -101,36 +103,75 @@ export function RendersGallery({ renders, projectName }: RendersGalleryProps) {
         </div>
       </div>
 
-      {/* Renders Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredRenders.map((render, idx) => (
-          <m.div
-            key={render.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: idx * 0.06 }}
-            className="group relative cursor-pointer"
-            onClick={() => setActiveImageIndex(idx)}
-          >
-            <GlassCard
-              variant="card"
-              glowColor="#9CD01A"
-              className="p-0 overflow-hidden border-white/10 hover:border-[#9CD01A]/40 transition-all duration-500"
+      {/* Renders Grid / Empty State */}
+      {filteredRenders.length === 0 ? (
+        <EmptyState
+          variant="renders"
+          title={selectedCategory === 'Todos' ? 'Sin renders cargados aún' : `No hay renders en ${selectedCategory}`}
+          description={`Las visualizaciones arquitectónicas para ${projectName} en este apartado se encuentran en producción fotorrealista.`}
+          badge={selectedCategory === 'Todos' ? 'PORTAFOLIO FOTORREALISTA' : `SECCIÓN ${selectedCategory.toUpperCase()}`}
+          secondaryAction={
+            selectedCategory !== 'Todos'
+              ? {
+                  label: 'Ver Todos los Renders',
+                  onClick: () => setSelectedCategory('Todos'),
+                  icon: <RotateCcw className="w-3.5 h-3.5" />
+                }
+              : undefined
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredRenders.map((render, idx) => (
+            <m.div
+              key={render.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: idx * 0.06 }}
+              className="group relative cursor-pointer"
+              onClick={() => setActiveImageIndex(idx)}
             >
-              {/* Image Container with Aspect Ratio */}
-              <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
-                <img
-                  src={render.thumbnail_path || render.storage_path}
-                  alt={render.title}
-                  className="w-full h-full object-cover transform duration-700 ease-out group-hover:scale-105"
-                  loading="lazy"
-                />
-
-                {/* Dark Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+              <GlassCard
+                variant="card"
+                glowColor="#9CD01A"
+                className="p-0 overflow-hidden border-white/10 hover:border-[#9CD01A]/60 transition-all duration-400 hover:shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_25px_rgba(156,208,26,0.2)] hover:-translate-y-1.5"
+              >
+                {/* Image Container with Aspect Ratio */}
+                <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
+                {render.thumbnail_path || render.storage_path ? (
+                  <>
+                    <img
+                      src={encodeURI(render.thumbnail_path || render.storage_path)}
+                      alt={render.title}
+                      className="w-full h-full object-cover transform duration-700 ease-out group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-[#121318] flex flex-col items-center justify-center p-6 text-center select-none overflow-hidden">
+                    <div
+                      className="absolute inset-0 opacity-[0.12] pointer-events-none"
+                      style={{
+                        backgroundImage: `linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)`,
+                        backgroundSize: '20px 20px'
+                      }}
+                    />
+                    <div className="w-12 h-12 rounded-2xl bg-[#9CD01A]/10 border border-[#9CD01A]/30 flex items-center justify-center text-[#9CD01A] mb-3 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(156,208,26,0.2)]">
+                      <ImageIcon className="w-6 h-6" />
+                    </div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#9CD01A] font-bold">
+                      Espacio Listo Para Render
+                    </span>
+                    <span className="text-xs text-white/50 mt-1 max-w-[200px]">
+                      Pendiente de asignar imagen HD
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                  </div>
+                )}
 
                 {/* Top Badges */}
-                <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
                   <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[#9CD01A] border border-white/10 flex items-center gap-1.5">
                     <Sparkles className="w-3 h-3" />
                     {render.category || 'Render'}
@@ -142,14 +183,14 @@ export function RendersGallery({ renders, projectName }: RendersGalleryProps) {
                 </div>
 
                 {/* Hover Quick Action Icon */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 pointer-events-none">
                   <div className="w-12 h-12 rounded-full bg-black/70 backdrop-blur-xl border border-[#9CD01A]/50 flex items-center justify-center text-[#9CD01A] shadow-[0_0_24px_rgba(156,208,26,0.4)] transform scale-90 group-hover:scale-100 transition-transform">
                     <Maximize2 className="w-5 h-5" />
                   </div>
                 </div>
 
                 {/* Bottom Information */}
-                <div className="absolute bottom-3 left-3 right-3">
+                <div className="absolute bottom-3 left-3 right-3 z-10">
                   <h3 className="text-base font-bold text-white tracking-tight drop-shadow-md">
                     {render.title}
                   </h3>
@@ -164,6 +205,7 @@ export function RendersGallery({ renders, projectName }: RendersGalleryProps) {
           </m.div>
         ))}
       </div>
+      )}
 
       {/* Lightbox Modal (visionOS Fullscreen View) */}
       <AnimatePresence>
@@ -212,14 +254,16 @@ export function RendersGallery({ renders, projectName }: RendersGalleryProps) {
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
-                <button
-                  onClick={() => handleDownload(activeRender.storage_path, activeRender.title)}
-                  className="px-3.5 h-10 rounded-full bg-[#9CD01A] hover:bg-[#b0eb1e] text-black font-semibold text-xs flex items-center gap-1.5 transition shadow-[0_0_20px_rgba(156,208,26,0.3)]"
-                  title="Descargar Alta Resolución"
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="hidden sm:inline">Descargar HD</span>
-                </button>
+                {activeRender.storage_path && (
+                  <button
+                    onClick={() => handleDownload(activeRender.storage_path, activeRender.title)}
+                    className="px-3.5 h-10 rounded-full bg-[#9CD01A] hover:bg-[#b0eb1e] text-black font-semibold text-xs flex items-center gap-1.5 transition shadow-[0_0_20px_rgba(156,208,26,0.3)]"
+                    title="Descargar Alta Resolución"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">Descargar HD</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveImageIndex(null)}
                   className="w-10 h-10 rounded-full bg-white/10 hover:bg-red-500/30 backdrop-blur-xl border border-white/15 flex items-center justify-center text-white hover:text-red-300 transition"
@@ -235,17 +279,37 @@ export function RendersGallery({ renders, projectName }: RendersGalleryProps) {
               className="relative max-w-6xl max-h-[80vh] w-full h-full flex items-center justify-center overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <m.img
-                key={activeRender.id}
-                src={activeRender.storage_path}
-                alt={activeRender.title}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: zoomLevel }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl transition-transform duration-200"
-                style={{ transform: `scale(${zoomLevel})` }}
-              />
+              {activeRender.storage_path ? (
+                <m.img
+                  key={activeRender.id}
+                  src={encodeURI(activeRender.storage_path)}
+                  alt={activeRender.title}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: zoomLevel }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl transition-transform duration-200"
+                  style={{ transform: `scale(${zoomLevel})` }}
+                />
+              ) : (
+                <div className="p-8 sm:p-12 rounded-3xl bg-[#141416]/95 border border-[#9CD01A]/30 backdrop-blur-2xl max-w-xl text-center shadow-2xl flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-3xl bg-[#9CD01A]/10 border border-[#9CD01A]/30 flex items-center justify-center text-[#9CD01A] mb-4 shadow-[0_0_25px_rgba(156,208,26,0.25)]">
+                    <ImageIcon className="w-8 h-8" />
+                  </div>
+                  <span className="text-xs font-mono uppercase tracking-widest text-[#9CD01A] font-bold mb-1">
+                    Espacio Listo para Render
+                  </span>
+                  <h3 className="text-2xl font-black text-white tracking-tight mb-2">
+                    {activeRender.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-white/70 leading-relaxed mb-4">
+                    {activeRender.metadata?.description || 'Este espacio está configurado y listo para recibir la imagen fotorrealista en alta definición.'}
+                  </p>
+                  <span className="px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-white/50">
+                    Resolución recomendada: 4K UHD (3840 x 2160)
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Navigation Arrows */}

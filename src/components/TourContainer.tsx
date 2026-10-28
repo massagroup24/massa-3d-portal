@@ -2,13 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { Room } from '../data/tourData';
 import { TourViewer } from './TourViewer';
 import { OverlayUI } from './OverlayUI';
+import { ArrowLeft, Rotate3d } from 'lucide-react';
+import { EmptyState } from './ui/EmptyState';
+import { ArchitecturalCadBackground } from './ui/ArchitecturalCadBackground';
 
 interface TourContainerProps {
-  currentRoom: Room;
+  currentRoom?: Room;
   rooms: Record<string, Room>;
   minimapImage: string;
   onNavigate: (roomId: string, position?: [number, number, number]) => void;
   onBackToHome?: () => void;
+  tourEmbedUrl?: string;
+  projectName?: string;
 }
 
 export function TourContainer({
@@ -17,6 +22,8 @@ export function TourContainer({
   minimapImage,
   onNavigate,
   onBackToHome,
+  tourEmbedUrl,
+  projectName = 'Recorrido Virtual MASSA'
 }: TourContainerProps) {
   const [isIdle, setIsIdle] = useState(false);
   const [transitionPhase, setTransitionPhase] = useState<'idle' | 'zooming' | 'fading-in'>('idle');
@@ -24,6 +31,48 @@ export function TourContainer({
   
   const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Soporte directo para Recorrido 3D Externo / Gemelo Digital (Matterport / Spline / Kuula)
+  if (tourEmbedUrl && tourEmbedUrl.trim()) {
+    return (
+      <div className="relative w-full h-screen overflow-hidden bg-black flex flex-col">
+        {/* Floating Topbar */}
+        <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between pointer-events-none">
+          <div className="pointer-events-auto flex items-center gap-3 bg-[#0D0D0E]/85 backdrop-blur-2xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
+            {onBackToHome && (
+              <button
+                type="button"
+                onClick={onBackToHome}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-[#9CD01A] text-white hover:text-black text-xs font-bold transition cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Volver</span>
+              </button>
+            )}
+            <div className="flex items-center gap-2 pl-1 border-l border-white/10">
+              <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
+              <span className="text-xs font-black tracking-wider text-white uppercase">{projectName}</span>
+            </div>
+          </div>
+
+          <div className="pointer-events-auto flex items-center gap-2">
+            <span className="px-3.5 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-[#9CD01A]/30 text-[#9CD01A] text-[10px] font-mono font-bold tracking-widest uppercase flex items-center gap-1.5">
+              <Rotate3d className="w-3.5 h-3.5" />
+              <span>GEMELO DIGITAL 3D</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Embedded Iframe */}
+        <iframe
+          src={tourEmbedUrl}
+          className="w-full h-full border-0"
+          allow="fullscreen; xr-spatial-tracking; vr; gyroscope; accelerometer"
+          title={projectName}
+        />
+      </div>
+    );
+  }
 
   // Limpieza general de temporizadores al desmontar el componente
   useEffect(() => {
@@ -89,14 +138,56 @@ export function TourContainer({
     }, 450);
   };
 
-  if (!currentRoom) return null;
+  // Habitación segura (si no hay ninguna pasada o seleccionada, usar la primera disponible)
+  const safeRoom = currentRoom || Object.values(rooms)[0];
+
+  // Si no hay ninguna habitación o no tiene imagen 360 configurada, mostrar Empty State de ultralujo
+  if (!safeRoom || !safeRoom.imageUrl) {
+    return (
+      <div className="relative w-full h-screen overflow-hidden bg-[#08080A] flex flex-col items-center justify-center p-4 sm:p-6 text-white">
+        <ArchitecturalCadBackground />
+        
+        {/* Topbar flotante para volver */}
+        {onBackToHome && (
+          <div className="absolute top-5 left-5 z-20">
+            <button
+              type="button"
+              onClick={onBackToHome}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.08] hover:bg-[#9CD01A] text-white hover:text-black border border-white/10 text-xs font-bold transition-all shadow-xl cursor-pointer active:scale-95 group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span>Volver al Catálogo</span>
+            </button>
+          </div>
+        )}
+
+        <div className="relative z-10 max-w-lg w-full">
+          <EmptyState
+            variant="rooms"
+            title="Recorrido 360° en Preparación"
+            description={`Este proyecto (${projectName}) se encuentra actualmente en proceso de captura y renderizado panorámico 360°. Las tomas inmersivas estarán disponibles muy pronto.`}
+            badge="DIGITAL TWIN • EN RENDERIZADO"
+            primaryAction={
+              onBackToHome
+                ? {
+                    label: 'Volver a Proyectos',
+                    onClick: onBackToHome,
+                    icon: <ArrowLeft className="w-4 h-4" />
+                  }
+                : undefined
+            }
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
       {/* 3D Canvas Layer */}
       <div className="absolute inset-0 z-0">
         <TourViewer 
-          room={currentRoom} 
+          room={safeRoom} 
           onNavigate={handleNavigate}
           isTransitioning={transitionPhase === 'zooming'}
           targetPosition={targetPos}
@@ -133,7 +224,7 @@ export function TourContainer({
       {/* 2D UI Overlay Layer */}
       <div className="absolute inset-0 z-20 pointer-events-none">
         <OverlayUI 
-          currentRoom={currentRoom} 
+          currentRoom={safeRoom} 
           rooms={rooms}
           minimapImage={minimapImage}
           onNavigate={handleNavigate} 

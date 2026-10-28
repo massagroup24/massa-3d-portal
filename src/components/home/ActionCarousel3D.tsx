@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { ArchitectAction, ARCHITECT_ACTIONS } from '../../config/architectActions';
 
 interface ActionCarousel3DProps {
@@ -24,19 +25,21 @@ export function ActionCarousel3D({
   const [activeIndex, setActiveIndex] = useState(0);
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Referencias para interacción táctil y arrastre
   const containerRef = useRef<HTMLDivElement>(null);
   const activeCardRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
 
-  // Detección de arrastre y swipe
+  // Detección de arrastre y swipe (con supresión de clic accidental)
   const isDraggingRef = useRef(false);
   const dragStartXRef = useRef(0);
   const dragStartYRef = useRef(0);
   const isHorizontalSwipeRef = useRef<boolean | null>(null);
+  const hasDraggedRef = useRef(false);
 
-  // Escuchar preferencia de movimiento reducido
+  // Escuchar preferencia de movimiento reducido y ancho de pantalla
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -44,7 +47,17 @@ export function ActionCarousel3D({
 
     const listener = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener('change', listener);
-    return () => mediaQuery.removeEventListener('change', listener);
+
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      mediaQuery.removeEventListener('change', listener);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   const totalActions = ARCHITECT_ACTIONS.length;
@@ -137,6 +150,7 @@ export function ActionCarousel3D({
   // Eventos de arrastre táctil / mouse (Swipe)
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     isDraggingRef.current = true;
+    hasDraggedRef.current = false;
     isHorizontalSwipeRef.current = null;
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -150,6 +164,10 @@ export function ActionCarousel3D({
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const deltaX = clientX - dragStartXRef.current;
     const deltaY = clientY - dragStartYRef.current;
+
+    if (Math.abs(deltaX) > 8) {
+      hasDraggedRef.current = true;
+    }
 
     if (isHorizontalSwipeRef.current === null) {
       if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
@@ -173,17 +191,23 @@ export function ActionCarousel3D({
       }
     }
     isHorizontalSwipeRef.current = null;
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 150);
   };
 
   return (
-    <section 
+    <motion.section 
       ref={containerRef}
       role="region" 
       aria-roledescription="carrusel 3d" 
       aria-label="Acciones destacadas del portal arquitectónico"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className={`relative w-full py-4 sm:py-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9CD01A] select-none ${className}`}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      className={`relative w-full py-3 sm:py-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9CD01A] select-none overflow-x-clip sm:overflow-visible ${className}`}
       style={{ touchAction: 'pan-y' }}
     >
       {/* Mensaje accesible para lectores de pantalla */}
@@ -191,29 +215,29 @@ export function ActionCarousel3D({
         Acción {activeIndex + 1} de {totalActions}: {ARCHITECT_ACTIONS[activeIndex]?.title}
       </div>
 
-      {/* Flechas de Navegación Flotantes (Visibles en pantallas medianas y grandes) */}
+      {/* Flechas de Navegación Flotantes */}
       <button
         type="button"
         onClick={goToPrev}
         aria-label="Tarjeta anterior"
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-[#9CD01A] hover:text-[#0D0D0E] text-white/80 border border-white/15 hover:border-[#9CD01A] backdrop-blur-xl flex items-center justify-center transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95 cursor-pointer group"
+        className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-black/75 sm:bg-black/60 hover:bg-[#9CD01A] hover:text-[#0D0D0E] text-white/85 sm:text-white/80 border border-white/20 sm:border-white/15 hover:border-[#9CD01A] backdrop-blur-xl flex items-center justify-center transition-all duration-300 shadow-2xl hover:scale-110 active:scale-90 cursor-pointer group"
       >
-        <ChevronLeft className="w-6 h-6 transition-transform group-hover:-translate-x-0.5" />
+        <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:-translate-x-0.5" />
       </button>
 
       <button
         type="button"
         onClick={goToNext}
         aria-label="Tarjeta siguiente"
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-[#9CD01A] hover:text-[#0D0D0E] text-white/80 border border-white/15 hover:border-[#9CD01A] backdrop-blur-xl flex items-center justify-center transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95 cursor-pointer group"
+        className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-black/75 sm:bg-black/60 hover:bg-[#9CD01A] hover:text-[#0D0D0E] text-white/85 sm:text-white/80 border border-white/20 sm:border-white/15 hover:border-[#9CD01A] backdrop-blur-xl flex items-center justify-center transition-all duration-300 shadow-2xl hover:scale-110 active:scale-90 cursor-pointer group"
       >
-        <ChevronRight className="w-6 h-6 transition-transform group-hover:translate-x-0.5" />
+        <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:translate-x-0.5" />
       </button>
 
       {/* Contenedor con Perspectiva 3D Estilo Skiper49 */}
       <div 
-        className="relative w-full h-[400px] sm:h-[450px] md:h-[480px] flex items-center justify-center overflow-visible"
-        style={{ perspective: prefersReducedMotion ? 'none' : '1100px' }}
+        className="relative w-full h-[380px] sm:h-[450px] md:h-[480px] flex items-center justify-center overflow-visible cursor-grab active:cursor-grabbing"
+        style={{ perspective: prefersReducedMotion ? 'none' : isMobile ? '800px' : '1100px' }}
         onMouseDown={handleTouchStart}
         onMouseMove={handleTouchMove}
         onMouseUp={handleTouchEnd}
@@ -248,13 +272,13 @@ export function ActionCarousel3D({
               zIndex = 30;
               opacity = 1;
             } else if (isLeft) {
-              transformStyle = 'translateX(-85%) scale(0.88)';
+              transformStyle = isMobile ? 'translateX(-74%) scale(0.85)' : 'translateX(-85%) scale(0.88)';
               zIndex = 10;
-              opacity = 0.6;
+              opacity = isMobile ? 0.5 : 0.6;
             } else if (isRight) {
-              transformStyle = 'translateX(85%) scale(0.88)';
+              transformStyle = isMobile ? 'translateX(74%) scale(0.85)' : 'translateX(85%) scale(0.88)';
               zIndex = 10;
-              opacity = 0.6;
+              opacity = isMobile ? 0.5 : 0.6;
             } else {
               transformStyle = 'translateX(0%) scale(0.7)';
               zIndex = 0;
@@ -263,22 +287,26 @@ export function ActionCarousel3D({
           } else {
             // COVERFLOW 3D PERSPECTIVA INVERTIDA (Skiper UI Skiper49):
             // - Tarjeta Central: rotateY(0deg), en primer plano
-            // - Tarjeta Izquierda: rotateY(36deg), su borde izquierdo queda adelante y el derecho se hunde
-            // - Tarjeta Derecha: rotateY(-36deg), su borde derecho queda adelante y el izquierdo se hunde
+            // - Tarjeta Izquierda: rotateY(40deg o 28deg en móvil), borde izquierdo adelante y derecho se hunde
+            // - Tarjeta Derecha: rotateY(-40deg o -28deg en móvil), borde derecho adelante e izquierdo se hunde
             if (isActive) {
               transformStyle = 'translateX(0%) translateZ(0px) rotateY(0deg) scale(1)';
               zIndex = 30;
               opacity = 1;
             } else if (isLeft) {
-              // Colocada inmediatamente a la izquierda con rotación 36deg
-              transformStyle = 'translateX(calc(-96% - 12px)) translateZ(-70px) rotateY(36deg) scale(0.90)';
+              // Colocada inmediatamente a la izquierda con rotación y profundidad calibrada
+              transformStyle = isMobile
+                ? 'translateX(calc(-75% - 4px)) translateZ(-65px) rotateY(28deg) scale(0.86)'
+                : 'translateX(calc(-96% - 12px)) translateZ(-85px) rotateY(40deg) scale(0.90)';
               zIndex = 15;
-              opacity = 0.82;
+              opacity = isMobile ? 0.72 : 0.82;
             } else if (isRight) {
-              // Colocada inmediatamente a la derecha con rotación -36deg
-              transformStyle = 'translateX(calc(96% + 12px)) translateZ(-70px) rotateY(-36deg) scale(0.90)';
+              // Colocada inmediatamente a la derecha con rotación y profundidad calibrada
+              transformStyle = isMobile
+                ? 'translateX(calc(75% + 4px)) translateZ(-65px) rotateY(-28deg) scale(0.86)'
+                : 'translateX(calc(96% + 12px)) translateZ(-85px) rotateY(-40deg) scale(0.90)';
               zIndex = 15;
-              opacity = 0.82;
+              opacity = isMobile ? 0.72 : 0.82;
             } else {
               // Tarjetas restantes se ocultan en el fondo
               transformStyle = 'translateX(0%) translateZ(-250px) rotateY(0deg) scale(0.7)';
@@ -293,6 +321,7 @@ export function ActionCarousel3D({
               ref={isActive ? activeCardRef : undefined}
               onPointerMove={isActive ? handlePointerMove : undefined}
               onClick={(e) => {
+                if (hasDraggedRef.current) return;
                 if (!isActive) {
                   // Clic en lateral la enfoca al centro
                   setActiveIndex(index);
@@ -312,14 +341,14 @@ export function ActionCarousel3D({
               }}
               className={`
                 group absolute 
-                w-[76vw] max-w-[310px] sm:w-[330px] md:w-[350px]
-                h-[390px] sm:h-[430px] md:h-[460px]
-                rounded-[28px] overflow-hidden
+                w-[74vw] max-w-[285px] sm:w-[330px] md:w-[350px]
+                h-[365px] sm:h-[430px] md:h-[460px]
+                rounded-[24px] sm:rounded-[28px] overflow-hidden
                 flex flex-col justify-between
                 transition-all duration-600 ease-[cubic-bezier(0.22,1,0.36,1)]
                 cursor-pointer
                 ${isActive 
-                  ? 'border-2 border-[#9CD01A] shadow-[0_0_40px_rgba(156,208,26,0.35),0_30px_70px_rgba(0,0,0,0.9)] ring-1 ring-[#9CD01A]/30' 
+                  ? 'border-2 border-[#9CD01A] shadow-[0_0_35px_rgba(156,208,26,0.35),0_25px_60px_rgba(0,0,0,0.9)] ring-1 ring-[#9CD01A]/30' 
                   : 'border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8)] hover:border-white/30'
                 }
               `}
@@ -380,58 +409,58 @@ export function ActionCarousel3D({
               ))}
 
               {/* PARTE SUPERIOR: Ícono de Glassmorphism & Status Badge */}
-              <div className="relative z-20 p-5 sm:p-6 flex items-start justify-between">
+              <div className="relative z-20 p-4 sm:p-6 flex items-start justify-between">
                 <div 
                   className={`
-                    w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-md
+                    w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-md
                     ${isActive 
                       ? 'bg-[#9CD01A] text-[#0D0D0E] shadow-[0_0_25px_rgba(156,208,26,0.55)] scale-105' 
                       : 'bg-black/50 border border-white/20 text-white/80 group-hover:border-white/40'
                     }
                   `}
                 >
-                  <Icon className="w-6 h-6 sm:w-7 sm:h-7 stroke-[2.2]" />
+                  <Icon className="w-5 h-5 sm:w-7 sm:h-7 stroke-[2.2]" />
                 </div>
 
                 <div className="flex items-center gap-2">
                   {/* Badge de Estado */}
                   {action.badge ? (
-                    <span className="px-3 py-1 rounded-full text-[10px] font-mono tracking-wider font-bold bg-black/60 border border-white/20 text-white/70 uppercase backdrop-blur-md">
+                    <span className="px-2.5 sm:px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-mono tracking-wider font-bold bg-black/60 border border-white/20 text-white/70 uppercase backdrop-blur-md">
                       {action.badge}
                     </span>
                   ) : isActive ? (
-                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono tracking-wider font-extrabold bg-[#9CD01A]/20 text-[#9CD01A] border border-[#9CD01A]/50 uppercase backdrop-blur-md shadow-[0_0_15px_rgba(156,208,26,0.25)]">
+                    <span className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-mono tracking-wider font-extrabold bg-[#9CD01A]/20 text-[#9CD01A] border border-[#9CD01A]/50 uppercase backdrop-blur-md shadow-[0_0_15px_rgba(156,208,26,0.25)]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A] animate-pulse" />
                       <span>ACTIVO</span>
                     </span>
                   ) : null}
 
                   {/* Número de Tarjeta */}
-                  <span className="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold text-white/60 bg-black/50 border border-white/10 backdrop-blur-md">
+                  <span className="px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold text-white/60 bg-black/50 border border-white/10 backdrop-blur-md">
                     0{index + 1}
                   </span>
                 </div>
               </div>
 
               {/* PARTE INFERIOR: Títulos, Subtítulos y Botón de Acción */}
-              <div className="relative z-20 p-5 sm:p-6 pt-0">
+              <div className="relative z-20 p-4 sm:p-6 pt-0">
                 {/* Overline de Identidad */}
-                <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.2em] text-[#9CD01A] uppercase block mb-1">
+                <span className="text-[9px] sm:text-[11px] font-semibold tracking-[0.2em] text-[#9CD01A] uppercase block mb-1">
                   PORTAL MASSA
                 </span>
 
-                <h3 className={`text-2xl sm:text-3xl font-extrabold tracking-tight transition-colors leading-tight drop-shadow-md ${
+                <h3 className={`text-xl sm:text-3xl font-extrabold tracking-tight transition-colors leading-tight drop-shadow-md ${
                   isActive ? 'text-white' : 'text-white/85'
                 }`}>
                   {action.title}
                 </h3>
                 
-                <p className="text-xs sm:text-sm text-white/75 font-medium mt-1 mb-4 line-clamp-1 drop-shadow">
+                <p className="text-xs sm:text-sm text-white/75 font-medium mt-0.5 sm:mt-1 mb-3 sm:mb-4 line-clamp-1 drop-shadow">
                   {action.subtitle}
                 </p>
 
                 {/* Fila de Acción */}
-                <div className="pt-3 border-t border-white/15 flex items-center justify-between">
+                <div className="pt-2.5 sm:pt-3 border-t border-white/15 flex items-center justify-between">
                   {isActive ? (
                     action.enabled ? (
                       <button
@@ -441,26 +470,26 @@ export function ActionCarousel3D({
                           triggerRipple(e);
                           executeAction(action);
                         }}
-                        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl bg-[#9CD01A] hover:bg-[#ABDE24] text-[#0D0D0E] font-black text-xs sm:text-sm tracking-wide shadow-[0_0_22px_rgba(156,208,26,0.45)] transition-all cursor-pointer hover:scale-105 active:scale-95"
+                        className="min-h-[44px] inline-flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl bg-[#9CD01A] hover:bg-[#ABDE24] text-[#0D0D0E] font-black text-xs sm:text-sm tracking-wide shadow-[0_0_22px_rgba(156,208,26,0.45)] transition-all cursor-pointer hover:scale-105 active:scale-95"
                       >
                         <span>Abrir</span>
                         <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                       </button>
                     ) : (
-                      <span className="text-xs font-mono text-white/50 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-sm">
+                      <span className="text-xs font-mono text-white/50 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-sm min-h-[44px] inline-flex items-center">
                         En desarrollo
                       </span>
                     )
                   ) : (
-                    <div className="flex items-center gap-1.5 text-white/50 group-hover:text-white/80 transition-colors">
+                    <div className="flex items-center gap-1.5 text-white/50 group-hover:text-white/80 transition-colors py-1">
                       <Eye className="w-3.5 h-3.5" />
-                      <span className="text-[11px] font-mono tracking-wider uppercase">
+                      <span className="text-[10px] sm:text-[11px] font-mono tracking-wider uppercase">
                         Tocar para enfocar
                       </span>
                     </div>
                   )}
 
-                  <span className="text-[11px] font-mono font-bold text-white/40">
+                  <span className="text-[10px] sm:text-[11px] font-mono font-bold text-white/40">
                     0{index + 1} / 0{totalActions}
                   </span>
                 </div>
@@ -474,7 +503,7 @@ export function ActionCarousel3D({
       <div 
         role="tablist" 
         aria-label="Paginación de tarjetas 3D"
-        className="flex items-center justify-center gap-2.5 mt-5 sm:mt-6"
+        className="flex items-center justify-center gap-2 sm:gap-2.5 mt-4 sm:mt-6"
       >
         {ARCHITECT_ACTIONS.map((action, i) => {
           const isCurrent = i === activeIndex;
@@ -487,17 +516,17 @@ export function ActionCarousel3D({
               aria-label={`Ir a tarjeta ${i + 1}: ${action.title}`}
               onClick={() => setActiveIndex(i)}
               className={`
-                h-2.5 rounded-full transition-all duration-300 cursor-pointer
+                h-2 sm:h-2.5 rounded-full transition-all duration-300 cursor-pointer
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9CD01A]
                 ${isCurrent 
-                  ? 'w-8 bg-[#9CD01A] shadow-[0_0_14px_#9CD01A]' 
-                  : 'w-2.5 bg-white/20 hover:bg-white/40'
+                  ? 'w-7 sm:w-8 bg-[#9CD01A] shadow-[0_0_14px_#9CD01A]' 
+                  : 'w-2 sm:w-2.5 bg-white/20 hover:bg-white/40'
                 }
               `}
             />
           );
         })}
       </div>
-    </section>
+    </motion.section>
   );
 }

@@ -6,6 +6,7 @@ import { TourContainer } from './TourContainer';
 import { WelcomeScreen } from './WelcomeScreen';
 import { useTexture } from '@react-three/drei';
 import { ArrowLeft } from 'lucide-react';
+import { MassaLoadingScreen } from './common/MassaLoadingScreen';
 
 export function ClientViewer() {
   const { id } = useParams<{ id: string }>();
@@ -80,11 +81,7 @@ export function ClientViewer() {
   }, [project, currentRoomId]);
 
   if (loading) {
-    return (
-      <div className="fixed inset-0 bg-[#050508] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-lime-500 border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(163,230,53,0.5)]"></div>
-      </div>
-    );
+    return <MassaLoadingScreen message="MASSA 360°" subMessage="CARGANDO RECORRIDO INMERSIVO" />;
   }
 
   if (error || !project) {

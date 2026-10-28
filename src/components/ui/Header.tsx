@@ -14,7 +14,7 @@ interface HeaderProps {
 }
 
 export function Header({
-  projectName = 'Villa Serena',
+  projectName = 'RESIDENCIA JEJÉN',
   userRole = 'client',
   onLogout,
   publicProjects = [],
@@ -58,33 +58,25 @@ export function Header({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
         
-        {/* Lado Izquierdo: Isotipo Massa Transparente + Marca + Selector de Proyecto */}
+        {/* Lado Izquierdo: Logotipo Completo MASSA + Selector de Proyecto */}
         <div className="flex items-center gap-3 sm:gap-4">
           
-          {/* Tile VisionOS del Isotipo */}
           <div 
             onClick={userRole === 'guest' && onBackToPortfolio ? onBackToPortfolio : undefined}
-            className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#161618] border border-white/10 p-2 flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.6)] shrink-0 group hover:border-[#9CD01A]/40 transition-all duration-300 ${userRole === 'guest' && onBackToPortfolio ? 'cursor-pointer' : ''}`}
-            title={userRole === 'guest' && onBackToPortfolio ? "Volver al Portafolio de Obras" : undefined}
+            className={`flex items-center gap-2 group transition-all duration-300 shrink-0 ${userRole === 'guest' && onBackToPortfolio ? 'cursor-pointer' : ''}`}
+            title={userRole === 'guest' && onBackToPortfolio ? "Volver al Catálogo Comercial" : undefined}
           >
-            <div className="absolute inset-0 rounded-2xl bg-[#9CD01A]/10 opacity-0 group-hover:opacity-100 blur-sm transition-opacity" />
             <img
-              src="/massa-cube-transparent.png"
-              alt="Massa Logo"
-              className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(156,208,26,0.35)] transform duration-300 group-hover:scale-110"
+              src="/MASSA_USO.png"
+              alt="MASSA GROUP"
+              className="h-7 sm:h-8 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(156,208,26,0.35)] transition-transform duration-300 group-hover:scale-105"
             />
+            <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-md bg-white/10 text-[9px] font-mono tracking-widest text-[#9CD01A] uppercase">
+              VIEW
+            </span>
           </div>
 
           <div className="flex flex-col justify-center">
-            {/* Tagline Corporativo */}
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[10px] sm:text-[11px] font-black tracking-[0.25em] text-[#9CD01A] uppercase">
-                MASSA GROUP
-              </span>
-              <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-white/10 text-white/80 font-mono tracking-wider">
-                VIEW
-              </span>
-            </div>
 
             {/* Nombre del Proyecto / Selector visionOS */}
             {userRole === 'guest' && publicProjects.length > 1 && onSelectProject ? (
@@ -94,10 +86,10 @@ export function Header({
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="inline-flex items-center gap-2 px-2 py-0.5 -ml-2 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-white/10 transition-all cursor-pointer group text-left focus:outline-none"
                 >
-                  <span className="text-sm sm:text-base font-extrabold text-[#F5F5F5] tracking-tight group-hover:text-[#9CD01A] transition-colors">
+                  <span className="text-xs sm:text-base font-extrabold text-[#F5F5F5] tracking-tight group-hover:text-[#9CD01A] transition-colors truncate max-w-[120px] xs:max-w-[170px] sm:max-w-xs md:max-w-md block">
                     {projectName}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/10 text-[10px] font-semibold text-white/70 group-hover:bg-[#9CD01A]/20 group-hover:text-[#9CD01A] transition-colors">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/10 text-[10px] font-semibold text-white/70 group-hover:bg-[#9CD01A]/20 group-hover:text-[#9CD01A] transition-colors shrink-0">
                     <span>Cambiar</span>
                     <ChevronDown className={`w-3 h-3 transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                   </span>
@@ -133,8 +125,8 @@ export function Header({
                                 : 'text-white/80 hover:bg-white/10 hover:text-white'
                             }`}
                           >
-                            <span>{p.name}</span>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-[#9CD01A]" />}
+                            <span className="truncate pr-2">{p.name}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-[#9CD01A] shrink-0" />}
                           </button>
                         );
                       })}
@@ -143,7 +135,7 @@ export function Header({
                 </AnimatePresence>
               </div>
             ) : (
-              <span className="text-sm sm:text-base font-extrabold text-[#F5F5F5] tracking-tight">
+              <span className="text-xs sm:text-base font-extrabold text-[#F5F5F5] tracking-tight truncate max-w-[140px] xs:max-w-[200px] sm:max-w-none block">
                 {projectName}
               </span>
             )}

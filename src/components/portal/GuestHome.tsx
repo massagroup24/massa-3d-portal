@@ -7,7 +7,10 @@ import {
   Sparkles, 
   MessageSquare, 
   Phone,
-  Lock
+  Compass,
+  CreditCard,
+  CheckCircle2,
+  MapPin
 } from 'lucide-react';
 import { ProjectPublicSpecs } from '../../services/portalService';
 
@@ -102,13 +105,37 @@ export function GuestHome({
 
       {/* TARJETA HERO: Render Principal del Proyecto */}
       <div className="group relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#171717] border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)]">
-        <div className="relative w-full h-[280px] sm:h-[380px] md:h-[440px] overflow-hidden">
-          <img
-            src={heroImage}
-            alt={projectName}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#171717] via-black/30 to-black/40" />
+        <div className="relative w-full h-[280px] sm:h-[380px] md:h-[440px] overflow-hidden bg-gradient-to-br from-[#12141a] via-[#0d0e12] to-black">
+          {heroImage ? (
+            <img
+              src={heroImage}
+              alt={projectName}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center select-none">
+              <div 
+                className="absolute inset-0 opacity-[0.12] pointer-events-none"
+                style={{
+                  backgroundImage: `linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)`,
+                  backgroundSize: '28px 28px'
+                }}
+              />
+              <div className="w-16 h-16 rounded-3xl bg-[#9CD01A]/10 border border-[#9CD01A]/30 flex items-center justify-center text-[#9CD01A] mb-3 shadow-[0_0_25px_rgba(156,208,26,0.25)] relative z-10">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#9CD01A] font-bold relative z-10">
+                OBRA EN DISEÑO & PREVENTA 2026
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-black text-white mt-1 relative z-10">
+                {projectName}
+              </h2>
+              <span className="text-xs text-white/50 mt-1 relative z-10">
+                Espacio preparado para render fotorrealista de portada
+              </span>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#171717] via-black/30 to-black/40 pointer-events-none" />
 
           {/* Badges superiores */}
           <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2">
@@ -140,139 +167,341 @@ export function GuestHome({
         </div>
       </div>
 
-      {/* SECCIÓN: Experiencia de Exploración para Invitados (3 Secciones Públicas) */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F5] tracking-tight">
-            Explorar este proyecto
-          </h2>
-          <span className="text-xs sm:text-sm text-[#A3A3A3] font-medium">
-            3 áreas disponibles
+      {/* SECCIÓN: Experiencia de Exploración del Proyecto (6 Módulos Arquitectónicos) */}
+      <div className="flex flex-col gap-5">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-[#F5F5F5] tracking-tight">
+              Visualización Integral de la Obra
+            </h2>
+            <p className="text-xs sm:text-sm text-[#A3A3A3] font-medium mt-0.5">
+              Planos, renders, recorrido 360°, acabados, ubicación y plan de inversión
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30 text-xs font-mono font-bold text-[#9CD01A]">
+            6 ESPACIOS DISPONIBLES
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
           
-          {/* Tarjeta 1: Renders Fotorrealistas (Full-bleed edge-to-edge) */}
+          {/* Módulo 1: Planos Arquitectónicos */}
+          <div
+            onClick={() => onNavigateSection('blueprints')}
+            className="group relative min-h-[175px] sm:min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
+          >
+            <div className="absolute inset-0 bg-[#0c0d10] opacity-95 group-hover:opacity-100 transition-opacity" />
+            <div 
+              className="absolute inset-0 opacity-[0.14] group-hover:opacity-[0.22] transition-opacity pointer-events-none"
+              style={{
+                backgroundImage: `linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)`,
+                backgroundSize: '24px 24px'
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0E] via-[#0D0D0E]/70 to-transparent" />
+            <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/[0.04]" />
+
+            <div className="relative z-10 p-5 sm:p-7 flex items-end justify-between gap-3 sm:gap-4">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-1.5 sm:mb-2">
+                  <Compass className="w-3 h-3" /> Distribución Acotada
+                </span>
+                <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-0.5 sm:mb-1 group-hover:text-[#9CD01A] transition-colors">
+                  Planos Arquitectónicos
+                </h3>
+                <p className="text-xs text-[#A3A3A3] font-medium leading-relaxed">
+                  Plantas por niveles, cotas y zonificación funcional
+                </p>
+              </div>
+
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-black text-white border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0 group-hover:scale-110">
+                <Compass className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Módulo 2: Renders Fotorrealistas */}
           <div
             onClick={() => onNavigateSection('renders')}
-            className="group relative min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
+            className="group relative min-h-[175px] sm:min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
           >
-            {/* Foto a sangre completa sin bordes negros internos */}
-            <img
-              src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1200&auto=format&fit=crop"
-              alt="Renders"
-              className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-65 group-hover:scale-108 transition-all duration-700 ease-out"
-            />
-            {/* Gradiente cinemático de alto contraste para lectura perfecta */}
+            {heroImage ? (
+              <img
+                src={heroImage}
+                alt="Renders"
+                className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-65 group-hover:scale-108 transition-all duration-700 ease-out"
+              />
+            ) : (
+              <div
+                className="absolute inset-0 opacity-[0.14] pointer-events-none"
+                style={{
+                  backgroundImage: `linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)`,
+                  backgroundSize: '24px 24px'
+                }}
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0E] via-[#0D0D0E]/60 to-black/20" />
             <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/[0.04]" />
 
-            <div className="relative z-10 p-6 sm:p-7 flex items-end justify-between gap-4">
+            <div className="relative z-10 p-5 sm:p-7 flex items-end justify-between gap-3 sm:gap-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-1.5 sm:mb-2">
                   <Sparkles className="w-3 h-3" /> Alta Definición 4K
                 </span>
-                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-1 group-hover:text-[#9CD01A] transition-colors">
-                  Renders
+                <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-0.5 sm:mb-1 group-hover:text-[#9CD01A] transition-colors">
+                  Renders & Vistas
                 </h3>
-                <p className="text-xs text-[#A3A3A3] font-medium">
-                  Galería exterior e interior en ultra definición
+                <p className="text-xs text-[#A3A3A3] font-medium leading-relaxed">
+                  Fachadas, áreas sociales y materialidad en HD
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-black text-white border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0 group-hover:scale-110">
-                <Layers className="w-5 h-5" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-black text-white border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0 group-hover:scale-110">
+                <Layers className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
             </div>
           </div>
 
-          {/* Tarjeta 2: Recorrido 360° (Full-bleed edge-to-edge) */}
+          {/* Módulo 3: Recorrido 360° */}
           <div
             onClick={onOpen360Tour}
-            className="group relative min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
+            className="group relative min-h-[175px] sm:min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
           >
-            {/* Foto a sangre completa sin bordes negros internos */}
-            <img
-              src="https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=1200&auto=format&fit=crop"
-              alt="Recorrido 360"
-              className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-65 group-hover:scale-108 transition-all duration-700 ease-out"
-            />
-            {/* Gradiente cinemático de alto contraste */}
+            <div className="absolute inset-0 bg-[#0e0f14]" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0E] via-[#0D0D0E]/60 to-black/20" />
             <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/[0.04]" />
 
-            <div className="relative z-10 p-6 sm:p-7 flex items-end justify-between gap-4">
+            <div className="relative z-10 p-5 sm:p-7 flex items-end justify-between gap-3 sm:gap-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-1.5 sm:mb-2">
                   <Rotate3d className="w-3 h-3" /> Inmersión Espacial
                 </span>
-                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-1 group-hover:text-[#9CD01A] transition-colors">
+                <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-0.5 sm:mb-1 group-hover:text-[#9CD01A] transition-colors">
                   Recorrido 360°
                 </h3>
-                <p className="text-xs text-[#A3A3A3] font-medium">
-                  Visor esférico interactivo de todas las estancias
+                <p className="text-xs text-[#A3A3A3] font-medium leading-relaxed">
+                  Visor interactivo con puntos de navegación
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-[#9CD01A] text-black border border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-[0_0_20px_rgba(156,208,26,0.4)] shrink-0 group-hover:scale-110">
-                <Rotate3d className="w-6 h-6 animate-pulse" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#9CD01A] text-black border border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-[0_0_20px_rgba(156,208,26,0.4)] shrink-0 group-hover:scale-110">
+                <Rotate3d className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
               </div>
             </div>
           </div>
 
-          {/* Tarjeta 3: Especificaciones del Proyecto (Armónica y Full-bleed) */}
+          {/* Módulo 4: Ficha Técnica & Acabados */}
           <div
             onClick={() => onNavigateSection('specs')}
-            className="group relative min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
+            className="group relative min-h-[175px] sm:min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
           >
-            {/* Fondo arquitectónico sutil con plano / grid */}
-            <img
-              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop"
-              alt="Especificaciones"
-              className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:opacity-40 group-hover:scale-108 transition-all duration-700 ease-out"
-            />
+            <div className="absolute inset-0 bg-[#0e0f14]" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0E] via-[#0D0D0E]/70 to-black/30" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
             <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/[0.04]" />
 
-            <div className="relative z-10 p-6 sm:p-7 flex items-end justify-between gap-4">
+            <div className="relative z-10 p-5 sm:p-7 flex items-end justify-between gap-3 sm:gap-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-2">
-                  <FileText className="w-3 h-3" /> Ficha Técnica & Datos
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-1.5 sm:mb-2">
+                  <FileText className="w-3 h-3" /> Acabados & Materiales
                 </span>
-                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-1 group-hover:text-[#9CD01A] transition-colors">
-                  Especificaciones
+                <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-0.5 sm:mb-1 group-hover:text-[#9CD01A] transition-colors">
+                  Ficha Técnica
                 </h3>
-                <p className="text-xs text-[#A3A3A3] font-medium">
-                  Áreas, materiales nobles, zonificación y bioclimática
+                <p className="text-xs text-[#A3A3A3] font-medium leading-relaxed">
+                  Porcelanatos, maderas nobles y carpintería
                 </p>
               </div>
 
-              <div className="w-12 h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-black text-white border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0 group-hover:scale-110">
-                <FileText className="w-5 h-5" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-black text-white border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0 group-hover:scale-110">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
             </div>
           </div>
+
+          {/* Módulo 5: Ubicación del Conjunto o Casa */}
+          <a
+            href="#seccion-ubicacion"
+            className="group relative min-h-[175px] sm:min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
+          >
+            <div className="absolute inset-0 bg-[#0e0f14]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0E] via-[#0D0D0E]/70 to-black/30" />
+            <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/[0.04]" />
+
+            <div className="relative z-10 p-5 sm:p-7 flex items-end justify-between gap-3 sm:gap-4">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-1.5 sm:mb-2">
+                  <MapPin className="w-3 h-3" /> Conjunto & Sector
+                </span>
+                <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-0.5 sm:mb-1 group-hover:text-[#9CD01A] transition-colors">
+                  Ubicación & Lote
+                </h3>
+                <p className="text-xs text-[#A3A3A3] font-medium leading-relaxed">
+                  {specs.locationDetails?.neighborhood || specs.location} • {specs.locationDetails?.lotNumber || 'Lote Privado'}
+                </p>
+              </div>
+
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-black text-white border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0 group-hover:scale-110">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+            </div>
+          </a>
+
+          {/* Módulo 6: Valor del Proyecto y Forma de Pago */}
+          <a
+            href="#seccion-pagos"
+            className="group relative min-h-[175px] sm:min-h-[220px] rounded-3xl overflow-hidden bg-[#161618] border border-white/10 hover:border-[#9CD01A]/50 transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(156,208,26,0.18)] cursor-pointer flex flex-col justify-end active:scale-[0.98]"
+          >
+            <div className="absolute inset-0 bg-[#0e0f14]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0E] via-[#0D0D0E]/70 to-black/30" />
+            <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/[0.04]" />
+
+            <div className="relative z-10 p-5 sm:p-7 flex items-end justify-between gap-3 sm:gap-4">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-1.5 sm:mb-2">
+                  <CreditCard className="w-3 h-3" /> Presupuesto Llave en Mano
+                </span>
+                <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-0.5 sm:mb-1 group-hover:text-[#9CD01A] transition-colors">
+                  Valor & Forma de Pago
+                </h3>
+                <p className="text-xs text-[#A3A3A3] font-medium leading-relaxed">
+                  Inversión estimada, cuota inicial e hitos de obra
+                </p>
+              </div>
+
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 group-hover:bg-[#9CD01A] group-hover:text-black text-white border border-white/20 group-hover:border-[#9CD01A] flex items-center justify-center transition-all duration-300 shadow-xl shrink-0 group-hover:scale-110">
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+            </div>
+          </a>
 
         </div>
       </div>
 
-      {/* AVISO DE PRIVACIDAD: Planos y documentos reservados */}
-      <div className="rounded-2xl bg-[#171717]/60 border border-white/10 p-4 sm:p-5 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/50 shrink-0">
-            <Lock className="w-4 h-4 text-amber-400" />
+      {/* SECCIÓN DETALLADA: Ubicación del Conjunto o Casa */}
+      <div id="seccion-ubicacion" className="rounded-3xl bg-[#141416]/90 border border-white/10 p-6 sm:p-8 backdrop-blur-2xl shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/[0.08]">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-[#9CD01A]/10 border border-[#9CD01A]/30 flex items-center justify-center text-[#9CD01A] shrink-0">
+              <MapPin className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#9CD01A] font-bold">
+                LOCALIZACIÓN GEORREFERENCIADA
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                Ubicación del Conjunto & Lote
+              </h3>
+            </div>
           </div>
-          <div className="text-xs text-[#A3A3A3]">
-            <strong className="text-white block font-medium">Documentación técnica protegida:</strong>
-            Los planos constructivos, memorias ejecutivas y avances semanales de obra están restringidos exclusivamente al cliente propietario.
+          <span className="px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-white/70 self-start sm:self-auto">
+            {specs.locationDetails?.city || specs.location}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+            <span className="text-[10px] font-mono text-white/40 uppercase block mb-1">Sector o Condominio</span>
+            <div className="text-base font-bold text-white">
+              {specs.locationDetails?.neighborhood || specs.location}
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+            <span className="text-[10px] font-mono text-white/40 uppercase block mb-1">Identificación del Terreno</span>
+            <div className="text-base font-bold text-[#9CD01A]">
+              {specs.locationDetails?.lotNumber || specs.lotArea || 'Lote Exclusivo'}
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+            <span className="text-[10px] font-mono text-white/40 uppercase block mb-1">Área y Tipología</span>
+            <div className="text-base font-bold text-white">
+              {specs.areaBuilt} • {specs.typology}
+            </div>
           </div>
         </div>
 
-        <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 shrink-0 hidden md:inline">
-          MODO INVITADO
-        </span>
+        {specs.locationDetails?.environment && (
+          <p className="mt-5 text-xs sm:text-sm text-white/70 leading-relaxed font-normal p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+            <strong className="text-white font-semibold">Entorno y Privacidad:</strong> {specs.locationDetails.environment}
+          </p>
+        )}
+      </div>
+
+      {/* SECCIÓN DETALLADA: Valor del Proyecto y Forma de Pago */}
+      <div id="seccion-pagos" className="rounded-3xl bg-gradient-to-br from-[#161720] via-[#111217] to-[#0c0d11] border border-[#9CD01A]/30 p-6 sm:p-8 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/[0.08]">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-[#9CD01A] text-black flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(156,208,26,0.35)]">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#9CD01A] font-bold">
+                ESTRUCTURA DE INVERSIÓN MASSA
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                Valor del Proyecto & Forma de Pago
+              </h3>
+            </div>
+          </div>
+          <span className="px-3.5 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30 text-xs font-mono font-bold text-[#9CD01A] self-start sm:self-auto">
+            PRESUPUESTO CERRADO
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="p-5 rounded-2xl bg-black/40 border border-white/10">
+            <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">
+              01 • Cuota Inicial / Separación
+            </span>
+            <div className="text-lg font-black text-white mb-1">
+              {specs.financials?.downPayment || '30% Durante Planeación'}
+            </div>
+            <p className="text-xs text-white/50 leading-relaxed">
+              Firma de contrato, estudios geotécnicos y radicación de licencias.
+            </p>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-black/40 border border-white/10">
+            <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">
+              02 • Durante Construcción
+            </span>
+            <div className="text-lg font-black text-white mb-1">
+              {specs.financials?.milestones || '50% en Hitos de Obra'}
+            </div>
+            <p className="text-xs text-white/50 leading-relaxed">
+              Cuotas distribuidas según actas de avance e interventoría técnica.
+            </p>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-black/40 border border-white/10">
+            <span className="text-[10px] font-mono text-[#9CD01A] uppercase tracking-wider block mb-1">
+              03 • Contra Entrega de Llaves
+            </span>
+            <div className="text-lg font-black text-white mb-1">
+              {specs.financials?.delivery || '20% Contra Entrega'}
+            </div>
+            <p className="text-xs text-white/50 leading-relaxed">
+              Revisión a satisfacción, entrega de garantías y escrituración.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08]">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-[#9CD01A] shrink-0" />
+            <div className="text-xs text-white/80">
+              <strong className="text-white">Garantía Total Llave en Mano:</strong> Sin sobrecostos imprevistos. Cotización respaldada por contrato de obra a precio cerrado.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.open(whatsappUrl, '_blank')}
+            className="px-5 py-2.5 rounded-xl bg-[#9CD01A] hover:bg-white text-black font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-lg shrink-0"
+          >
+            Cotizar Plan de Pagos
+          </button>
+        </div>
       </div>
 
       {/* TARJETA DE CONTACTO COMERCIAL CON MASSA GROUP */}
