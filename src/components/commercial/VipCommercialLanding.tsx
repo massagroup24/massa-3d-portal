@@ -4,16 +4,12 @@ import {
   MapPin, 
   Sparkles, 
   Phone, 
-  Lock, 
+  Compass, 
   ArrowRight, 
   X, 
   Mail, 
   ArrowUpRight, 
   CheckCircle2,
-  Building2,
-  Layers,
-  ShieldCheck,
-  Eye,
   Image as ImageIcon,
   ChevronDown
 } from 'lucide-react';
@@ -26,6 +22,7 @@ import {
 import { VipContactModal } from './VipContactModal';
 import { CommercialLoginModal } from './CommercialLoginModal';
 import { Project, CANONICAL_PROJECT_ORDER } from '../../data/tourData';
+import { getProjectIdentity } from '../../config/projectIdentityConfig';
 
 interface VipCommercialLandingProps {
   onSelectProjectForPortal: (projectId: string) => void;
@@ -59,7 +56,7 @@ export function VipCommercialLanding({
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [selectedResidenceForContact] = useState<string | undefined>(undefined);
-  const [activeInfoModal, setActiveInfoModal] = useState<'quienes-somos' | 'lineas-negocio' | 'operacion-inmobiliaria' | null>(null);
+  const [activeInfoModal, setActiveInfoModal] = useState<'quienes-somos' | null>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Acordeón interactivo para Proyectos en desarrollo (por defecto índice 0 expandido)
@@ -191,7 +188,9 @@ export function VipCommercialLanding({
     return '';
   };
 
-  // Mapear los proyectos dinámicos administrables garantizando unicidad estricta y el render principal auténtico
+  // Mapear los proyectos activos en desarrollo (Marquimoda y Edinson Jején se conservan exclusivamente en el apartado de Recorridos 360° Guardados)
+  const SAVED_TOUR_ONLY_IDS = new Set(['project_1781963945215', 'project_1782912175010']);
+
   const dynamicResidences: CommercialResidence[] = useMemo(() => {
     if (projects && Object.keys(projects).length > 0) {
       const seen = new Set<string>();
@@ -204,6 +203,7 @@ export function VipCommercialLanding({
           : (p.id === 'ibiza-a14' || p.id === 'ibiza') ? 'project_ibiza_a14'
           : (p.id === 'hacienda-f22' || p.id === 'hacienda') ? 'project_hacienda_f22'
           : p.id;
+        if (SAVED_TOUR_ONLY_IDS.has(canonicalId)) continue;
         if (seen.has(canonicalId)) continue;
         seen.add(canonicalId);
 
@@ -254,10 +254,12 @@ export function VipCommercialLanding({
         return list;
       }
     }
-    const fallbackList = COMMERCIAL_RESIDENCES.map((c) => ({
-      ...c,
-      heroImage: !is360OrPlaceholderAsset(c.heroImage) ? c.heroImage : '',
-    }));
+    const fallbackList = COMMERCIAL_RESIDENCES
+      .filter((c) => !SAVED_TOUR_ONLY_IDS.has(c.id) && !(c.projectId && SAVED_TOUR_ONLY_IDS.has(c.projectId)))
+      .map((c) => ({
+        ...c,
+        heroImage: !is360OrPlaceholderAsset(c.heroImage) ? c.heroImage : '',
+      }));
     return fallbackList.sort((a, b) => {
       const idxA = CANONICAL_PROJECT_ORDER.indexOf(a.id);
       const idxB = CANONICAL_PROJECT_ORDER.indexOf(b.id);
@@ -483,13 +485,13 @@ export function VipCommercialLanding({
                 type="button"
                 onClick={() => setIsLoginModalOpen(true)}
                 className="p-2.5 rounded-2xl bg-[#16161A]/90 border border-white/15 text-[#9CD01A] cursor-pointer"
-                title="Acceso Administrador"
+                title="Ingreso Recorridos 360°"
               >
-                <Lock className="w-4 h-4" />
+                <Compass className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Columna Vertical de Cápsulas (Orientación y estilo según imagen de referencia) */}
+            {/* Columna Vertical de Cápsulas */}
             <nav className={`
               ${isMobileNavOpen ? 'flex' : 'hidden'} md:flex
               flex-col items-end gap-2 sm:gap-2.5 select-none
@@ -512,31 +514,7 @@ export function VipCommercialLanding({
                 Proyectos
               </a>
 
-              {/* 3. Líneas de negocio */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveInfoModal('lineas-negocio');
-                  setIsMobileNavOpen(false);
-                }}
-                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl bg-[#52535a]/80 hover:bg-[#5f6068]/95 backdrop-blur-xl border border-white/10 hover:border-white/25 text-[15px] sm:text-base font-medium text-white transition-all duration-200 shadow-lg text-left cursor-pointer active:scale-98"
-              >
-                Líneas de negocio
-              </button>
-
-              {/* 4. Operación Inmobiliaria */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveInfoModal('operacion-inmobiliaria');
-                  setIsMobileNavOpen(false);
-                }}
-                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl bg-[#52535a]/80 hover:bg-[#5f6068]/95 backdrop-blur-xl border border-white/10 hover:border-white/25 text-[15px] sm:text-base font-medium text-white transition-all duration-200 shadow-lg text-left cursor-pointer active:scale-98"
-              >
-                Operación Inmobiliaria
-              </button>
-
-              {/* 5. Nosotros */}
+              {/* 3. Nosotros */}
               <button
                 type="button"
                 onClick={() => {
@@ -548,7 +526,7 @@ export function VipCommercialLanding({
                 Nosotros
               </button>
 
-              {/* 6. Contacto */}
+              {/* 4. Contacto */}
               <a
                 href="#contacto"
                 onClick={() => setIsMobileNavOpen(false)}
@@ -557,21 +535,21 @@ export function VipCommercialLanding({
                 Contacto
               </a>
 
-              {/* Acceso Administrador */}
+              {/* Ingreso al Creador y Gestor de Recorridos 360° */}
               <button
                 type="button"
                 onClick={() => {
                   setIsLoginModalOpen(true);
                   setIsMobileNavOpen(false);
                 }}
-                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 rounded-2xl bg-[#2e2f35]/90 hover:bg-[#3d3e46]/95 backdrop-blur-xl border border-white/10 hover:border-[#9CD01A]/50 text-xs sm:text-sm font-semibold text-white/70 hover:text-white transition-all duration-200 shadow-lg flex items-center justify-between cursor-pointer active:scale-98 mt-1"
-                title="Panel de administración"
+                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 rounded-2xl bg-[#2e2f35]/90 hover:bg-[#3d3e46]/95 backdrop-blur-xl border border-white/10 hover:border-[#9CD01A]/50 text-xs sm:text-sm font-semibold text-white/80 hover:text-white transition-all duration-200 shadow-lg flex items-center justify-between cursor-pointer active:scale-98 mt-1"
+                title="Ingreso Recorridos 360°"
               >
                 <div className="flex items-center gap-2">
-                  <Lock className="w-3.5 h-3.5 text-[#9CD01A]" />
-                  <span>Admin</span>
+                  <Compass className="w-3.5 h-3.5 text-[#9CD01A]" />
+                  <span>Recorridos 360°</span>
                 </div>
-                <span className="text-[10px] font-mono text-[#9CD01A]/80 tracking-wider">VIP</span>
+                <span className="text-[10px] font-mono text-[#9CD01A]/80 tracking-wider">STUDIO</span>
               </button>
             </nav>
           </div>
@@ -785,6 +763,18 @@ export function VipCommercialLanding({
             const isActive = activeProjectIndex === idx;
             const hasRealRender = !!residence.heroImage;
             const isHacienda = residence.id === 'project_hacienda_f22';
+            const identity = getProjectIdentity(residence.id);
+            const brand = identity.clientBrand;
+            const isCustomBrand = Boolean(brand);
+            const primaryColor = identity.theme.primaryColor || '#9CD01A';
+            const metallicGradient =
+              brand?.metallicGradient ||
+              `linear-gradient(135deg, ${primaryColor} 0%, ${identity.theme.primaryHover || primaryColor} 100%)`;
+
+            const facadeRender =
+              identity.heroVideoPoster ||
+              residence.heroImage ||
+              (residence.id === 'project_hacienda_f22' ? '/HACIENDA F22/FACHADA.png' : '/IBIZA A14/01-F004.jpg');
 
             return (
               <div
@@ -799,53 +789,30 @@ export function VipCommercialLanding({
                 }}
                 className={`relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-700 ease-out border ${
                   isActive
-                    ? 'lg:flex-[3.5] flex-none min-h-[440px] lg:min-h-0 border-[#9CD01A]/60 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_40px_rgba(156,208,26,0.15)]'
-                    : 'lg:flex-[1] flex-none min-h-[90px] lg:min-h-0 border-white/10 hover:border-white/30'
+                    ? isCustomBrand
+                      ? 'lg:flex-[3.5] flex-none min-h-[440px] lg:min-h-0 border-[#DFC47B]/70 shadow-[0_20px_50px_rgba(0,0,0,0.92),0_0_45px_rgba(223,196,123,0.22)]'
+                      : 'lg:flex-[3.5] flex-none min-h-[440px] lg:min-h-0 border-[#9CD01A]/60 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_40px_rgba(156,208,26,0.15)]'
+                    : isCustomBrand
+                      ? 'lg:flex-[1] flex-none min-h-[90px] lg:min-h-0 border-[#DFC47B]/25 hover:border-[#DFC47B]/55'
+                      : 'lg:flex-[1] flex-none min-h-[90px] lg:min-h-0 border-white/10 hover:border-white/30'
                 }`}
               >
-                {/* Visual de Fondo: Video de Hacienda F22, Render Genuino o Marco CAD Técnico */}
-                {isHacienda ? (
+                {/* Visual de Fondo Unificado: Render Fotorrealista de Fachada en Alta Definición para ambas obras */}
+                {facadeRender ? (
                   <>
-                    <div className="absolute inset-0 bg-black overflow-hidden">
-                      <video
-                        src="/VIDEO H4.mp4"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ${
-                          isActive ? 'scale-105 filter brightness-[0.70] contrast-[1.05]' : 'filter brightness-[0.32] grayscale-[20%]'
-                        }`}
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
-                  </>
-                ) : hasRealRender ? (
-                  <>
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#101218] via-[#0b0c10] to-[#06070a]">
-                      {residence.heroImage.includes('isometria') && (
-                        <div
-                          className="absolute inset-0 opacity-[0.12] pointer-events-none"
-                          style={{
-                            backgroundImage: `linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)`,
-                            backgroundSize: '24px 24px'
-                          }}
-                        />
-                      )}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#101218] via-[#0b0c10] to-[#06070a] overflow-hidden">
                       <img
-                        src={residence.heroImage}
+                        src={encodeURI(facadeRender)}
                         alt={residence.name}
-                        className={`absolute inset-0 w-full h-full ${
-                          residence.heroImage.includes('isometria')
-                            ? 'object-contain p-6 sm:p-10 lg:p-12'
-                            : 'object-cover'
-                        } transition-transform duration-1000 ${
-                          isActive ? 'scale-105 filter brightness-95' : 'filter brightness-40'
+                        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out ${
+                          isActive
+                            ? 'scale-105 filter brightness-[0.78] contrast-[1.08]'
+                            : 'filter brightness-[0.38] contrast-[0.95] grayscale-[15%]'
                         }`}
-                        loading="lazy"
+                        loading="eager"
                       />
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent pointer-events-none" />
                   </>
                 ) : (
                   /* Fondo Técnico CAD cuando no hay render 2D asignado */
@@ -853,7 +820,7 @@ export function VipCommercialLanding({
                     <div
                       className="absolute inset-0 opacity-[0.08] pointer-events-none"
                       style={{
-                        backgroundImage: `linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)`,
+                        backgroundImage: `linear-gradient(${primaryColor} 1px, transparent 1px), linear-gradient(90deg, ${primaryColor} 1px, transparent 1px)`,
                         backgroundSize: '24px 24px'
                       }}
                     />
@@ -864,52 +831,118 @@ export function VipCommercialLanding({
                 {/* CONTENIDO CUANDO EL PROYECTO NO ESTÁ ACTIVO */}
                 {!isActive && (
                   <div className="absolute inset-0 p-5 sm:p-6 flex lg:flex-col items-center lg:items-start justify-between z-10 select-none">
-                    <span className="text-xs font-mono font-bold text-[#9CD01A]">
-                      0{idx + 1}
-                    </span>
-                    <h3 className="text-base sm:text-lg lg:text-2xl font-black text-white uppercase tracking-wider lg:[writing-mode:vertical-rl] lg:rotate-180 truncate">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-xs font-mono font-bold"
+                        style={{ color: primaryColor }}
+                      >
+                        0{idx + 1}
+                      </span>
+                      {brand?.logoIcon && (
+                        <img
+                          src={encodeURI(brand.logoIcon)}
+                          alt={brand.shortName}
+                          className="w-4 h-4 object-contain"
+                        />
+                      )}
+                    </div>
+                    <h3
+                      style={{ fontFamily: identity.theme.fontFamilyTitle }}
+                      className="text-base sm:text-lg lg:text-2xl font-black text-white uppercase tracking-wider lg:[writing-mode:vertical-rl] lg:rotate-180 truncate"
+                    >
                       {residence.name}
                     </h3>
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 shrink-0">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${
+                        isCustomBrand
+                          ? 'bg-[#DFC47B]/15 border-[#DFC47B]/40 text-[#F1E29B]'
+                          : 'bg-white/10 border-white/15 text-white/70'
+                      }`}
+                    >
                       <ArrowUpRight className="w-4 h-4" />
                     </div>
                   </div>
                 )}
 
-                {/* CONTENIDO CUANDO EL PROYECTO ESTÁ ACTIVO (Panel Extendido) */}
+                {/* CONTENIDO CUANDO EL PROYECTO ESTÁ ACTIVO (Panel Extendido con Identidad Propia) */}
                 {isActive && (
                   <div className="absolute inset-0 p-6 sm:p-10 flex flex-col justify-between z-10 text-left select-none">
                     {/* Barra Superior */}
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="px-3.5 py-1.5 rounded-full bg-[#9CD01A] text-black font-black text-xs tracking-wider uppercase">
-                          OBRA 0{idx + 1}
+                        <span
+                          className={`px-3.5 py-1.5 rounded-full font-black text-xs tracking-wider uppercase ${
+                            isCustomBrand ? 'text-[#060608] shadow-[0_4px_15px_rgba(223,196,123,0.35)]' : 'bg-[#9CD01A] text-black'
+                          }`}
+                          style={isCustomBrand ? { backgroundImage: metallicGradient } : undefined}
+                        >
+                          {identity.lot ? `OBRA 0${idx + 1} • ${identity.lot}` : `OBRA 0${idx + 1}`}
                         </span>
-                        <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 font-mono text-[11px] font-bold tracking-wider uppercase">
-                          {residence.categoryLabel || 'Residencia de Autor'}
+                        <span
+                          className={`px-3 py-1 rounded-full bg-black/65 backdrop-blur-md border font-mono text-[11px] font-bold tracking-wider uppercase ${
+                            isCustomBrand
+                              ? 'border-[#DFC47B]/35 text-[#F1E29B]'
+                              : 'border-white/10 text-white/80'
+                          }`}
+                        >
+                          {identity.categoryLabel || residence.categoryLabel || 'Residencia de Autor'}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2">
                         {residence.hasTour360 && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#9CD01A]/30 text-[#9CD01A] text-[11px] font-mono font-bold">
-                            <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/65 backdrop-blur-md border text-[11px] font-mono font-bold ${
+                              isCustomBrand
+                                ? 'border-[#DFC47B]/45 text-[#F1E29B]'
+                                : 'border-[#9CD01A]/30 text-[#9CD01A]'
+                            }`}
+                          >
+                            <span
+                              className="w-2 h-2 rounded-full animate-pulse"
+                              style={{ backgroundColor: primaryColor }}
+                            />
                             <span>360° ACTIVO</span>
                           </span>
                         )}
-                        <span className="text-xs font-mono text-white/50 tracking-widest hidden sm:inline">
-                          MASSA HOME
-                        </span>
+
+                        {brand?.logoHorizontalWhite ? (
+                          <div className="hidden sm:flex items-center px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border border-[#DFC47B]/40 shadow-lg">
+                            <img
+                              src={encodeURI(brand.logoHorizontalWhite)}
+                              alt={brand.companyName}
+                              className="h-5 w-auto object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-xs font-mono text-white/50 tracking-widest hidden sm:inline">
+                            {identity.brandName || 'MASSA HOME'}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     {/* Información Principal y Llamado a la Acción */}
                     <div className="max-w-2xl">
-                      <span className="text-xs sm:text-sm font-mono text-[#9CD01A] font-bold tracking-wider uppercase block mb-1">
-                        {residence.location || 'Cúcuta, Colombia'} • {residence.zone || 'Zona Exclusiva'}
+                      <span
+                        className={`text-xs sm:text-sm font-mono font-bold tracking-wider uppercase block mb-1 ${
+                          isCustomBrand ? 'text-[#F1E29B]' : 'text-[#9CD01A]'
+                        }`}
+                      >
+                        {identity.locationFull || `${residence.location || 'Cúcuta, Colombia'} • ${residence.zone || 'Zona Exclusiva'}`}
                       </span>
-                      <h3 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white mb-3 tracking-tight uppercase">
-                        {residence.name}
+
+                      <h3
+                        style={{ fontFamily: identity.theme.fontFamilyTitle }}
+                        className="text-3xl sm:text-5xl lg:text-6xl font-black mb-3 tracking-tight uppercase leading-none"
+                      >
+                        <span className="text-white">{identity.titlePrefix || residence.name}</span>{' '}
+                        <span
+                          className="bg-clip-text text-transparent"
+                          style={{ backgroundImage: metallicGradient }}
+                        >
+                          {identity.titleHighlight || ''}
+                        </span>
                       </h3>
 
                       {(!hasRealRender && !isHacienda) ? (
@@ -926,38 +959,64 @@ export function VipCommercialLanding({
                         </div>
                       ) : (
                         <p className="text-xs sm:text-base text-white/85 leading-relaxed mb-6 font-medium line-clamp-2">
-                          {residence.tagline || residence.description}
+                          {identity.tagline || residence.tagline || residence.description}
                         </p>
                       )}
 
                       {/* Chips de especificaciones clave */}
                       <div className="flex flex-wrap items-center gap-2.5 mb-6 text-xs font-mono">
-                        <div className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white/80">
+                        <div
+                          className={`px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border text-white/80 ${
+                            isCustomBrand ? 'border-[#DFC47B]/30' : 'border-white/10'
+                          }`}
+                        >
                           <span className="text-white/40 mr-1.5">Área:</span>
-                          <span className="font-bold text-white">{residence.areaBuilt}</span>
+                          <span className="font-bold text-white">{identity.specs?.areaBuilt || residence.areaBuilt}</span>
                         </div>
-                        <div className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white/80">
+                        <div
+                          className={`px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border text-white/80 ${
+                            isCustomBrand ? 'border-[#DFC47B]/30' : 'border-white/10'
+                          }`}
+                        >
                           <span className="text-white/40 mr-1.5">Estado:</span>
-                          <span className="font-bold text-[#9CD01A]">{residence.statusLabel || 'En Ejecución'}</span>
+                          <span
+                            className="font-bold"
+                            style={{ color: isCustomBrand ? '#F1E29B' : primaryColor }}
+                          >
+                            {identity.statusLabel || residence.statusLabel || 'En Ejecución'}
+                          </span>
                         </div>
-                        {residence.priceCOP && (
-                          <div className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white/80 hidden sm:block">
-                            <span className="text-white/40 mr-1.5">Modalidad:</span>
-                            <span className="font-bold text-white">{residence.priceCOP}</span>
-                          </div>
-                        )}
+                        <div
+                          className={`px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border text-white/80 hidden sm:block ${
+                            isCustomBrand ? 'border-[#DFC47B]/30' : 'border-white/10'
+                          }`}
+                        >
+                          <span className="text-white/40 mr-1.5">{brand ? 'Firma:' : 'Modalidad:'}</span>
+                          <span className="font-bold text-white">
+                            {brand ? brand.companyName : (residence.priceCOP || 'Inversión Privada')}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Botón Principal */}
+                      {/* Botón Principal Personalizado según la Marca del Proyecto */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelectProjectForPortal(residence.projectId || residence.id);
                         }}
-                        className="px-8 py-4 rounded-full bg-[#9CD01A] hover:bg-white text-black font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 cursor-pointer shadow-2xl hover:scale-105 active:scale-95"
+                        className={`px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 cursor-pointer hover:scale-105 active:scale-95 ${
+                          isCustomBrand
+                            ? 'text-[#060608] border border-[#F7E8A8]/55 shadow-[0_10px_30px_rgba(223,196,123,0.4)]'
+                            : 'bg-[#9CD01A] hover:bg-white text-black shadow-2xl'
+                        }`}
+                        style={isCustomBrand ? { backgroundImage: metallicGradient } : undefined}
                       >
-                        <span>Explorar Ficha & Gemelo Digital 360°</span>
+                        <span>
+                          {isCustomBrand
+                            ? `Explorar Proyecto ${brand?.shortName} & Gemelo 360°`
+                            : 'Explorar Ficha & Gemelo Digital 360°'}
+                        </span>
                         <ArrowUpRight className="w-4 h-4 font-black" />
                       </button>
                     </div>
@@ -1338,8 +1397,8 @@ export function VipCommercialLanding({
               onClick={() => setIsLoginModalOpen(true)}
               className="text-white/40 hover:text-[#9CD01A] transition flex items-center gap-1.5 cursor-pointer"
             >
-              <Lock className="w-3.5 h-3.5" />
-              <span>Acceso Administrador</span>
+              <Compass className="w-3.5 h-3.5" />
+              <span>Recorridos 360°</span>
             </button>
           </div>
 
@@ -1424,173 +1483,6 @@ export function VipCommercialLanding({
                   >
                     Contactar
                   </button>
-                </div>
-              </div>
-            )}
-
-            {/* MODAL: LÍNEAS DE NEGOCIO */}
-            {activeInfoModal === 'lineas-negocio' && (
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30 mb-4">
-                  <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-[#9CD01A] uppercase">
-                    MASSA GROUP • ECOSISTEMA INTEGRAL
-                  </span>
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-black text-white mb-2">
-                  Líneas de Negocio
-                </h3>
-                <p className="text-xs sm:text-sm text-white/70 leading-relaxed mb-5">
-                  Concebimos, estructuramos y ejecutamos proyectos de alta gama con un modelo interdisciplinario que garantiza calidad de autor, cumplimiento y valorización.
-                </p>
-
-                <div className="space-y-3 mb-6 max-h-[50vh] overflow-y-auto pr-1">
-                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#9CD01A]/40 transition">
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <div className="w-6 h-6 rounded-lg bg-[#9CD01A]/15 flex items-center justify-center text-[#9CD01A]">
-                        <Building2 className="w-3.5 h-3.5" />
-                      </div>
-                      <h4 className="text-sm font-bold text-white">Diseño Arquitectónico Bioclimático</h4>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed pl-8">
-                      Espacios fluidos, confort térmico pasivo y diálogo armónico con el entorno natural mediante materiales nobles y concreto a la vista.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#9CD01A]/40 transition">
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <div className="w-6 h-6 rounded-lg bg-[#9CD01A]/15 flex items-center justify-center text-[#9CD01A]">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      </div>
-                      <h4 className="text-sm font-bold text-white">Construcción Llave en Mano</h4>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed pl-8">
-                      Dirección técnica e ingeniería integral. Presupuesto cerrado garantizado y cronograma milimétrico sin sobrecostos imprevistos.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#9CD01A]/40 transition">
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <div className="w-6 h-6 rounded-lg bg-[#9CD01A]/15 flex items-center justify-center text-[#9CD01A]">
-                        <Eye className="w-3.5 h-3.5" />
-                      </div>
-                      <h4 className="text-sm font-bold text-white">Gemelos Digitales & Realidad Virtual 360°</h4>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed pl-8">
-                      Modelos 3D y recorridos inmersivos fotorrealistas para experimentar y perfeccionar cada detalle antes de colocar el primer ladrillo.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#9CD01A]/40 transition">
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <div className="w-6 h-6 rounded-lg bg-[#9CD01A]/15 flex items-center justify-center text-[#9CD01A]">
-                        <Layers className="w-3.5 h-3.5" />
-                      </div>
-                      <h4 className="text-sm font-bold text-white">Estructuración & Supervisión de Obra</h4>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed pl-8">
-                      Estudios de factibilidad financiera, volumetría y normativa urbana para asegurar la rentabilidad y plusvalía de tu desarrollo.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <a
-                    href="#proyectos"
-                    onClick={() => setActiveInfoModal(null)}
-                    className="flex-1 py-3 px-4 rounded-xl bg-[#9CD01A] hover:bg-[#aef01e] text-black font-extrabold text-xs text-center uppercase tracking-wider transition"
-                  >
-                    Ver Obras en Curso
-                  </a>
-                  <a
-                    href="https://wa.me/573108924410?text=Hola%20Massa%20Group,%20quisiera%20cotizar%20un%20servicio%20de%20sus%20l%C3%ADneas%20de%20negocio."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setActiveInfoModal(null)}
-                    className="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition flex items-center gap-1.5"
-                  >
-                    <span>Cotizar por WhatsApp</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* MODAL: OPERACIÓN INMOBILIARIA */}
-            {activeInfoModal === 'operacion-inmobiliaria' && (
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30 mb-4">
-                  <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-[#9CD01A] uppercase">
-                    MASSA GROUP • INVERSIÓN PATRIMONIAL
-                  </span>
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-black text-white mb-2">
-                  Operación Inmobiliaria
-                </h3>
-                <p className="text-xs sm:text-sm text-white/70 leading-relaxed mb-5">
-                  Conectamos a inversionistas y familias exigentes con los mejores terrenos, proyectos residenciales y esquemas fiduciarios de alta rentabilidad.
-                </p>
-
-                <div className="space-y-3 mb-6 max-h-[50vh] overflow-y-auto pr-1">
-                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#9CD01A]/40 transition">
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <div className="w-6 h-6 rounded-lg bg-[#9CD01A]/15 flex items-center justify-center text-[#9CD01A]">
-                        <MapPin className="w-3.5 h-3.5" />
-                      </div>
-                      <h4 className="text-sm font-bold text-white">Curaduría & Adquisición de Lotes</h4>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed pl-8">
-                      Evaluamos topografía, asoleamiento, servicios y tradición legal de terrenos en los condominios más cotizados de Cúcuta y Colombia.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#9CD01A]/40 transition">
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <div className="w-6 h-6 rounded-lg bg-[#9CD01A]/15 flex items-center justify-center text-[#9CD01A]">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                      </div>
-                      <h4 className="text-sm font-bold text-white">Estructuración Fiduciaria & Blindaje</h4>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed pl-8">
-                      Modelos de inversión transparentes gestionados bajo esquemas fiduciarios y fiducias de administración para máxima seguridad patrimonial.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#9CD01A]/40 transition">
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <div className="w-6 h-6 rounded-lg bg-[#9CD01A]/15 flex items-center justify-center text-[#9CD01A]">
-                        <Sparkles className="w-3.5 h-3.5" />
-                      </div>
-                      <h4 className="text-sm font-bold text-white">Preventa de Residencias de Autor</h4>
-                    </div>
-                    <p className="text-xs text-white/60 leading-relaxed pl-8">
-                      Acceso preferencial en etapa cero a residencias campestres y urbanas de lujo con atractivas condiciones de pago y plusvalía asegurada.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveInfoModal(null);
-                      setIsContactModalOpen(true);
-                    }}
-                    className="flex-1 py-3 px-4 rounded-xl bg-[#9CD01A] hover:bg-[#aef01e] text-black font-extrabold text-xs text-center uppercase tracking-wider transition cursor-pointer"
-                  >
-                    Agendar Asesoría de Inversión
-                  </button>
-                  <a
-                    href="https://wa.me/573108924410?text=Hola%20Massa%20Group,%20estoy%20interesado%20en%20conocer%20m%C3%A1s%20sobre%20su%20Operaci%C3%B3n%20Inmobiliaria%20y%20lotes."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setActiveInfoModal(null)}
-                    className="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition flex items-center gap-1.5"
-                  >
-                    <span>WhatsApp</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </a>
                 </div>
               </div>
             )}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { X, Eye, EyeOff, KeyRound, Mail, ArrowRight, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { X, Eye, EyeOff, KeyRound, Mail, ArrowRight, CheckCircle2, AlertCircle, RefreshCw, Compass } from 'lucide-react';
 import { authService } from '../../lib/authService';
 
 interface CommercialLoginModalProps {
@@ -54,7 +54,7 @@ export function CommercialLoginModal({
       }
 
       setErrorMessage(
-        authResult.error || 'Credenciales de administrador incorrectas. Verifica tu correo y contraseña.'
+        authResult.error || 'Credenciales incorrectas. Verifica tu correo y contraseña.'
       );
       triggerShake();
     } catch (err: any) {
@@ -101,23 +101,19 @@ export function CommercialLoginModal({
             <X className="w-4 h-4" />
           </button>
 
-          {/* Logo Massa & Encabezado */}
+          {/* Logo & Encabezado del Estudio 360° */}
           <div className="flex flex-col items-center text-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-[#1A1A1E] border border-white/10 p-2 mb-3 flex items-center justify-center shadow-[0_0_20px_rgba(156,208,26,0.2)] group hover:border-[#9CD01A]/50 transition-colors">
-              <img
-                src="/massa-cube-transparent.png"
-                alt="Massa"
-                className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(156,208,26,0.4)] group-hover:scale-105 transition-transform"
-              />
+            <div className="w-12 h-12 rounded-2xl bg-[#1A1A1E] border border-[#9CD01A]/35 p-2 mb-3 flex items-center justify-center shadow-[0_0_20px_rgba(156,208,26,0.2)] group hover:border-[#9CD01A]/70 transition-colors">
+              <Compass className="w-6 h-6 text-[#9CD01A] group-hover:rotate-45 transition-transform duration-300" />
             </div>
             <span className="text-[10px] font-mono font-bold tracking-[0.25em] text-[#9CD01A] uppercase">
-              MASSA VIEW • PANEL DE CONTROL
+              MASSA 360° • STUDIO PORTAL
             </span>
             <h3 className="text-2xl font-black text-white mt-1">
-              Acceso Administrador
+              Recorridos 360°
             </h3>
-            <p className="text-xs text-white/50 mt-1 max-w-xs">
-              Gestión comercial, edición de proyectos en venta, recorridos 3D y renders de la web
+            <p className="text-xs text-white/55 mt-1 max-w-xs leading-relaxed">
+              Crea y configura los recorridos 360° de los proyectos actuales y accede a tus recorridos 360° guardados
             </p>
           </div>
 
@@ -129,10 +125,10 @@ export function CommercialLoginModal({
               </div>
               <div>
                 <h4 className="text-lg font-black text-white uppercase tracking-wider">
-                  Acceso Autorizado
+                  Ingreso Autorizado
                 </h4>
                 <p className="text-xs text-white/60 mt-1">
-                  Abriendo consola de administración ejecutiva...
+                  Abriendo el Estudio de Recorridos 360°...
                 </p>
               </div>
               <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden mt-1">
@@ -143,7 +139,7 @@ export function CommercialLoginModal({
             /* ESTADO 2: RECUPERACIÓN DE CONTRASEÑA */
             <form onSubmit={handlePasswordRecovery} className="space-y-4">
               <p className="text-xs text-white/70">
-                Ingresa tu correo de administrador para recibir el enlace de recuperación.
+                Ingresa tu correo registrado para recibir el enlace de recuperación.
               </p>
               <div>
                 <label className="block text-[11px] font-mono uppercase text-white/60 mb-1.5 font-semibold">
@@ -278,11 +274,11 @@ export function CommercialLoginModal({
                 {isLoading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-black" />
-                    <span>Verificando Administrador...</span>
+                    <span>Abriendo Estudio 360°...</span>
                   </>
                 ) : (
                   <>
-                    <span>Ingresar como Administrador</span>
+                    <span>Ingresar al Estudio 360°</span>
                     <ArrowRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -290,7 +286,7 @@ export function CommercialLoginModal({
 
               <div className="pt-2 text-center">
                 <span className="text-[10px] text-white/40 font-mono tracking-wider">
-                  ACCESO RESTRINGIDO AL EQUIPO ADMINISTRATIVO MASSA
+                  CREADOR DE RECORRIDOS 360° • PROYECTOS ACTUALES & GUARDADOS
                 </span>
               </div>
             </form>

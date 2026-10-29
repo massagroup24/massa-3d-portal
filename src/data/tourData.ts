@@ -326,8 +326,8 @@ export const projectsData: Record<string, Project> = {
     progress: 15,
     hasTour360: true,
     featured: true,
-    heroImage: '', // Espacio listo para la URL de render de portada
-    thumbnail: '',
+    heroImage: '/IBIZA A14/01-F004.jpg',
+    thumbnail: '/IBIZA A14/01-F004.jpg',
     minimapImage: '/PLANO.jpg', // Plano base para minimapa
     initialRoomId: 'room_ibiza_1',
     tourType: '360_spheres',
@@ -340,38 +340,48 @@ export const projectsData: Record<string, Project> = {
       'Esquema de pago flexible por hitos de avance de obra'
     ],
     description: 'Exclusiva residencia diseñada a medida por MASSA GROUP en el prestigioso Condominio Ibiza. Espacio concebido para maximizar la ventilación bioclimática, la privacidad y el confort de alta gama.',
-    galleryImages: [],
+    galleryImages: [
+      '/IBIZA A14/01-F004.jpg',
+      '/IBIZA A14/02-F005.jpg',
+      '/IBIZA A14/03-F006.jpg',
+      '/IBIZA A14/04-F007.jpg',
+      '/IBIZA A14/05-F12.jpg',
+      '/IBIZA A14/06-S2.jpg',
+      '/IBIZA A14/07-S1.jpg',
+      '/IBIZA A14/08-C01.jpg',
+      '/IBIZA A14/09-C02.jpg',
+    ],
     renders: [
       {
         id: 'r_ibiza_1',
         title: 'Fachada Principal Bioclimática',
-        storage_path: '',
+        storage_path: '/IBIZA A14/01-F004.jpg',
         category: 'Fachada',
-        description: 'Espacio listo para render exterior en alta definición de fachada principal y accesos.',
+        description: 'Fachada principal bioclimática con aleros de control solar y materiales nobles.',
         order_index: 1
       },
       {
         id: 'r_ibiza_2',
         title: 'Gran Salón Social & Doble Altura',
-        storage_path: '',
+        storage_path: '/IBIZA A14/06-S2.jpg',
         category: 'Interiores',
-        description: 'Espacio listo para render interior de sala, comedor y ventanales.',
+        description: 'Espacio diáfano con doble altura y ventanales panorámicos de piso a techo.',
         order_index: 2
       },
       {
         id: 'r_ibiza_3',
         title: 'Terraza Lounge, Deck & Piscina',
-        storage_path: '',
+        storage_path: '/IBIZA A14/03-F006.jpg',
         category: 'Zonas Comunes',
-        description: 'Espacio listo para render de área social exterior, piscina y asador.',
+        description: 'Oasis exterior con solárium, espejo de agua y pérgola bioclimática.',
         order_index: 3
       },
       {
         id: 'r_ibiza_4',
-        title: 'Master Suite & Vestidor',
-        storage_path: '',
+        title: 'Cocina de Chef con Isla',
+        storage_path: '/IBIZA A14/08-C01.jpg',
         category: 'Interiores',
-        description: 'Espacio listo para render de habitación principal y baño spa.',
+        description: 'Cocina gourmet de alta gama con isla monolítica y barra social.',
         order_index: 4
       }
     ],

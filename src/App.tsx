@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { LazyMotion, domAnimation } from 'framer-motion';
 import { TourContainer } from './components/TourContainer';
-import { Home } from './components/Home';
-import { AdminProjectEditor } from './components/AdminProjectEditor';
+import { ProjectConfigurator } from './components/ProjectConfigurator';
 import { ClientViewer } from './components/ClientViewer';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { LoginScreen } from './components/LoginScreen';
@@ -24,16 +23,15 @@ import { NavTab } from './components/ui/Dock';
 import { projectsData, Project, normalizeProject, resolveCanonicalProjectId, CANONICAL_PROJECT_ORDER } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 import { Lock } from 'lucide-react';
-import { UsersManagementPortal } from './components/UsersManagementPortal';
 import { ProjectsManagementPortal } from './components/ProjectsManagementPortal';
 import { authService } from './lib/authService';
 import { ProjectDedicatedView } from './components/project/ProjectDedicatedView';
 import { openProjectInNewTab } from './config/projectIdentityConfig';
 
-function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usuarios' }) {
+function MainPortal() {
   const navigate = useNavigate();
 
-  // Estado de rol: 'guest' (acceso abierto comercial VIP por defecto), 'portal' (login), 'client' (portal cliente), 'architect' (panel arquitecto)
+  // Estado de rol: 'guest' (acceso abierto comercial VIP por defecto), 'portal' (login), 'client' (portal cliente), 'architect' (estudio de recorridos 360)
   const [userRole, setUserRole] = useState<'portal' | 'guest' | 'client' | 'architect'>(() => {
     try {
       const saved = sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role');
@@ -57,7 +55,6 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
         return;
       }
 
-      // Verificación estricta: proteger la sesión activa de arquitecto
       const savedRole = sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role');
       const savedLevel = sessionStorage.getItem('massa_3d_user_level') || localStorage.getItem('massa_3d_user_level');
       const isArchitectSession = savedRole === 'editor' || savedLevel === 'architect' || savedLevel === 'admin';
@@ -99,64 +96,6 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
     }
   }, [userRole]);
 
-  const [architectTab, setArchitectTab] = useState<'inicio' | 'proyectos' | 'usuarios'>(() => {
-    if (initialTab) return initialTab;
-    try {
-      const path = window.location.pathname;
-      if (path.includes('/admin/usuarios')) return 'usuarios';
-      if (path.includes('/admin/proyectos')) return 'proyectos';
-
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('tab') === 'usuarios') return 'usuarios';
-      if (params.get('tab') === 'proyectos') return 'proyectos';
-
-      const saved = sessionStorage.getItem('massa_3d_architect_tab');
-      if (saved === 'usuarios' || saved === 'proyectos' || saved === 'inicio') {
-        return saved as 'inicio' | 'proyectos' | 'usuarios';
-      }
-    } catch {
-      // ignore
-    }
-    return 'inicio';
-  });
-
-  // Si cambia el initialTab de la ruta activa, sincronizar el estado y persistir
-  useEffect(() => {
-    if (initialTab) {
-      setArchitectTab(initialTab);
-      try {
-        sessionStorage.setItem('massa_3d_architect_tab', initialTab);
-      } catch {}
-    }
-  }, [initialTab]);
-
-  // Si la ruta en el navegador es '/', pero en sessionStorage teníamos una pestaña activa, sincronizar URL
-  useEffect(() => {
-    try {
-      const path = window.location.pathname;
-      if (path === '/' && userRole === 'architect') {
-        const saved = sessionStorage.getItem('massa_3d_architect_tab');
-        if (saved === 'usuarios') navigate('/admin/usuarios', { replace: true });
-        else if (saved === 'proyectos') navigate('/admin/proyectos', { replace: true });
-      }
-    } catch {}
-  }, [userRole, navigate]);
-
-  // Función unificada para navegar entre pestañas del arquitecto manteniendo URL y persistencia al refrescar
-  const changeArchitectTab = (tab: 'inicio' | 'proyectos' | 'usuarios') => {
-    setArchitectTab(tab);
-    try {
-      sessionStorage.setItem('massa_3d_architect_tab', tab);
-    } catch {}
-    if (tab === 'usuarios') {
-      navigate('/admin/usuarios');
-    } else if (tab === 'proyectos') {
-      navigate('/admin/proyectos');
-    } else {
-      navigate('/');
-    }
-  };
-
   const [activeTab, setActiveTab] = useState<NavTab>(() => {
     try {
       const saved = sessionStorage.getItem('massa_3d_client_tab') as NavTab;
@@ -166,6 +105,7 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
     } catch {}
     return 'home';
   });
+
   const [projects, setProjects] = useState<Record<string, Project>>(() => {
     const normalized: Record<string, Project> = {};
     CANONICAL_PROJECT_ORDER.forEach(id => {
@@ -186,7 +126,6 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
   });
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
   const [configuringProjectId, setConfiguringProjectId] = useState<string | null>(null);
-  const [draftNewProject, setDraftNewProject] = useState<Project | null>(null);
   const [tourStarted, setTourStarted] = useState(false);
   const [guestView, setGuestView] = useState<'commercial' | 'showcase' | 'project'>('commercial');
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -332,8 +271,6 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
     setGuestView('commercial');
     setTourStarted(false);
     setActiveTab('home');
-    setArchitectTab('inicio');
-    setDraftNewProject(null);
     setConfiguringProjectId(null);
     navigate('/', { replace: true });
   };
@@ -348,7 +285,6 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
       sessionStorage.removeItem('massa_3d_client_tab');
     } catch {}
     setActiveTab('home');
-    setArchitectTab('inicio');
     navigate('/', { replace: true });
   };
 
@@ -370,84 +306,9 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
     });
   };
 
-  const handleCreateNewProject = () => {
-    const newId = `project_${Date.now()}`;
-    const newProject: Project = {
-      id: newId,
-      name: "Nueva Residencia MASSA",
-      tagline: "Exclusiva residencia de autor lista para construcción",
-      category: "villa",
-      categoryLabel: "Villa Campestre",
-      location: "Valle del Cauca, Colombia",
-      zone: "Zona Exclusiva",
-      areaBuilt: "480 m²",
-      areaLot: "1.500 m²",
-      bedrooms: 4,
-      bathrooms: 5,
-      parkingSpaces: 4,
-      priceCOP: "$1.850.000.000 COP",
-      priceUSD: "~$460.000 USD",
-      status: "disponible",
-      statusLabel: "Disponible para Construcción",
-      hasTour360: true,
-      featured: false,
-      heroImage: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=85",
-      thumbnail: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-      description: "Concebida como una escultura habitable frente a la calma del paisaje. Volumetría horizontal con vigas en concreto visto, carpintería de aluminio hermético y bioclimática pasiva.",
-      minimapImage: "/PLANO.jpg",
-      initialRoomId: "room_1",
-      tourType: "360_spheres",
-      highlights: [
-        "Piscina infinity climatizada con borde flotante",
-        "Voladizos en concreto visto y ventanería hermética",
-        "Master suite con terraza panorámica",
-        "Domótica Lutron integral y paneles solares"
-      ],
-      renders: [],
-      rooms: {
-        "room_1": {
-          id: "room_1",
-          name: "Sala Principal",
-          description: "Punto de partida del recorrido 3D",
-          imageUrl: "",
-          minimapPosition: { x: 50, y: 50 },
-          hotspots: []
-        }
-      }
-    };
-    setDraftNewProject(newProject);
-    setConfiguringProjectId(null);
-  };
-
   const handleConfigureProject = (projectId: string) => {
-    setDraftNewProject(null);
     setConfiguringProjectId(projectId);
   };
-
-  const handleDeleteProject = async (projectId: string) => {
-    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este proyecto de forma permanente?");
-    if (!confirmDelete) return;
-
-    try {
-      const { deleteProjectFromSupabase } = await import('./supabase');
-      await deleteProjectFromSupabase(projectId).catch(err => {
-        console.warn("No se pudo eliminar de Supabase (posiblemente existía solo en memoria):", err);
-      });
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-    }
-
-    setProjects(prev => {
-      const copy = { ...prev };
-      delete copy[projectId];
-      return copy;
-    });
-
-    if (activeProjectId === projectId) {
-      setActiveProjectId(null);
-    }
-  };
-
 
   // 1. Pantalla de Login si no ha iniciado sesión
   if (userRole === 'portal') {
@@ -461,21 +322,21 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
     );
   }
 
-  // 2. Editor de Proyectos, Renders y Recorridos 3D (Panel Administrador)
-  const projectToConfigure = draftNewProject || (configuringProjectId ? projects[configuringProjectId] : null);
+  // 2. Creador Interactivo de Recorridos 360° (Proyectos Actuales y Guardados)
+  const projectToConfigure = configuringProjectId
+    ? (projects[configuringProjectId] || projectsData[configuringProjectId] || null)
+    : null;
 
   if (projectToConfigure) {
     return (
-      <AdminProjectEditor
+      <ProjectConfigurator
         initialProject={projectToConfigure}
-        isNewProject={!!draftNewProject}
+        isNewProject={false}
         onClose={() => {
-          setDraftNewProject(null);
           setConfiguringProjectId(null);
         }}
         onSave={(savedProject) => {
           handleSaveProject(savedProject);
-          setDraftNewProject(null);
           setConfiguringProjectId(savedProject.id);
         }}
       />
@@ -505,66 +366,25 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
     );
   }
 
-  // 4. Panel de Administrador / Arquitecto (si seleccionó rol Arquitecto)
+  // 4. Estudio de Recorridos 360° (Crear recorridos 360° de proyectos actuales y consultar recorridos 360° guardados)
   if (userRole === 'architect') {
-    if (architectTab === 'usuarios') {
-      return (
-        <UsersManagementPortal
-          onBackToHome={() => changeArchitectTab('inicio')}
-          onNavigateToProjects={() => changeArchitectTab('proyectos')}
-          onLogout={handleLogout}
-          currentUserName={sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name') || undefined}
-          totalProjects={Object.keys(projects).length}
-          onCreateProject={handleCreateNewProject}
-        />
-      );
-    }
-
-    if (architectTab === 'proyectos') {
-      return (
-        <ProjectsManagementPortal
-          projects={projects}
-          onSelectProject={handleSelectProject}
-          onStart360Tour={(projId) => {
-            handleSelectProject(projId);
-            handleStart360Tour();
-          }}
-          onConfigureProject={handleConfigureProject}
-          onCreateProject={handleCreateNewProject}
-          onDeleteProject={handleDeleteProject}
-          onUpdateProjectStatus={(projId, newStatus) => {
-            setProjects(prev => {
-              const current = prev[projId];
-              if (!current) return prev;
-              const updated = { ...current, status: newStatus };
-              saveProjectToSupabase(updated).catch(err => console.warn("Error actualizando estado en Supabase:", err));
-              return { ...prev, [projId]: updated };
-            });
-          }}
-          onBackToHome={() => changeArchitectTab('inicio')}
-          onNavigateToUsers={() => changeArchitectTab('usuarios')}
-          onLogout={handleLogout}
-          currentUserName={sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name') || undefined}
-        />
-      );
-    }
-
     return (
-      <div className="relative w-full min-h-screen bg-[#0D0D0E] text-white">
-        <Home
-          projects={projects}
-          onCreateProject={handleCreateNewProject}
-          userRole="editor"
-          userName={sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name') || undefined}
-          onSwitchRole={() => {
-            setUserRole('guest');
-            setGuestView('commercial');
-          }}
-          onLogout={handleLogout}
-          onNavigateToProjects={() => changeArchitectTab('proyectos')}
-          onNavigateToUsers={() => changeArchitectTab('usuarios')}
-        />
-      </div>
+      <ProjectsManagementPortal
+        projects={projects}
+        onSelectProject={(projId) => {
+          openProjectInNewTab(projId);
+        }}
+        onStart360Tour={(projId) => {
+          handleStart360Tour(projId);
+        }}
+        onConfigureProject={handleConfigureProject}
+        onBackToHome={() => {
+          setUserRole('guest');
+          setGuestView('commercial');
+        }}
+        onLogout={handleLogout}
+        currentUserName={sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name') || undefined}
+      />
     );
   }
 
@@ -610,7 +430,6 @@ function MainPortal({ initialTab }: { initialTab?: 'inicio' | 'proyectos' | 'usu
   }
 
   // 7. Portal con Sistema de Diseño visionOS (Cliente & Invitado en Obra Activa)
-
   const publicProjectsList = (() => {
     const seenNames = new Set<string>();
     const list: { id: string; name: string }[] = [];
@@ -782,12 +601,16 @@ export default function App() {
       <PWAInstallBanner />
       <Routes>
         <Route path="/" element={<MainPortal />} />
-        <Route path="/admin/proyectos" element={<MainPortal initialTab="proyectos" />} />
-        <Route path="/admin/usuarios" element={<MainPortal initialTab="usuarios" />} />
+        <Route path="/admin/proyectos" element={<MainPortal />} />
+        <Route path="/admin/usuarios" element={<MainPortal />} />
         <Route path="/tour/:id" element={<ClientViewer />} />
         <Route path="/proyecto/:id" element={<ProjectDedicatedView />} />
         <Route path="/project/:id" element={<ProjectDedicatedView />} />
         <Route path="/obra/:id" element={<ProjectDedicatedView />} />
+        <Route path="/a14" element={<Navigate to="/proyecto/ibiza-a14" replace />} />
+        <Route path="/ibiza-a14" element={<Navigate to="/proyecto/ibiza-a14" replace />} />
+        <Route path="/f22" element={<Navigate to="/proyecto/hacienda-f22" replace />} />
+        <Route path="/hacienda-f22" element={<Navigate to="/proyecto/hacienda-f22" replace />} />
       </Routes>
     </LazyMotion>
   );

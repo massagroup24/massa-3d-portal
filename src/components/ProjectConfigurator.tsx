@@ -16,8 +16,10 @@ interface ConfiguratorProps {
 export function ProjectConfigurator({ initialProject, onClose, onSave, isNewProject = false }: ConfiguratorProps) {
   const [project, setProject] = useState<Project>(initialProject);
   const [hasSaved, setHasSaved] = useState(false);
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(initialProject.initialRoomId);
-  const [activeTab, setActiveTab] = useState<'settings' | '360' | 'map'>('settings');
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
+    initialProject.initialRoomId || Object.keys(initialProject.rooms || {})[0] || null
+  );
+  const [activeTab, setActiveTab] = useState<'360' | 'map'>('360');
   const [copied, setCopied] = useState(false);
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -36,7 +38,6 @@ export function ProjectConfigurator({ initialProject, onClose, onSave, isNewProj
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const minimapInputRef = useRef<HTMLInputElement>(null);
-  const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const handleSaveToSupabase = async () => {
     try {
@@ -46,12 +47,17 @@ export function ProjectConfigurator({ initialProject, onClose, onSave, isNewProj
         setTimeout(() => reject(new Error("Tiempo de espera agotado al conectar con Supabase (límite 15s)")), 15000)
       );
 
+      const updatedProject: Project = {
+        ...project,
+        hasTour360: Object.keys(project.rooms || {}).length > 0,
+      };
+
       await Promise.race([
-        saveProjectToSupabase(project),
+        saveProjectToSupabase(updatedProject),
         timeoutPromise
       ]);
 
-      if (onSave) onSave(project);
+      if (onSave) onSave(updatedProject);
       
       setSavingState('saved');
       setHasSaved(true);
@@ -370,16 +376,16 @@ export const projectsData: Record<string, Project> = {
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <button 
             onClick={handleClose} 
-            className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors font-semibold text-xs sm:text-sm border border-white/15 shrink-0 shadow-lg"
-            title="Volver al Portafolio de Proyectos / Menú"
+            className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors font-semibold text-xs sm:text-sm border border-white/15 shrink-0 shadow-lg cursor-pointer"
+            title="Volver al Estudio de Recorridos 360°"
           >
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-lime-400 shrink-0" />
-            <span>Volver al Portafolio</span>
+            <span>Volver a Recorridos 360°</span>
           </button>
           <div className="flex items-center gap-2 text-lime-400 min-w-0">
             <Settings className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
             <h1 className="font-semibold tracking-wide text-xs sm:text-base truncate">
-              {isNewProject ? `Crear Proyecto: ${project.name}` : `Configurador: ${project.name}`}
+              Creador 360°: {project.name}
             </h1>
           </div>
         </div>
@@ -566,101 +572,20 @@ export const projectsData: Record<string, Project> = {
           
           <div className="flex gap-1.5 p-3 sm:p-4 border-b border-white/10 bg-black/20 overflow-x-auto shrink-0">
             <button 
-              onClick={() => setActiveTab('settings')}
-              className={`px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 ${activeTab === 'settings' ? 'bg-lime-500 text-black font-bold shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
-            >
-              1. Info General
-            </button>
-            <button 
               onClick={() => setActiveTab('360')}
-              className={`px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 ${activeTab === '360' ? 'bg-lime-500 text-black font-bold shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
+              className={`px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 cursor-pointer ${activeTab === '360' ? 'bg-lime-500 text-black font-bold shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
             >
-              2. Editor 360
+              1. Editor 360° & Hotspots
             </button>
             <button 
               onClick={() => setActiveTab('map')}
-              className={`px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 ${activeTab === 'map' ? 'bg-lime-500 text-black font-bold shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
+              className={`px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 cursor-pointer ${activeTab === 'map' ? 'bg-lime-500 text-black font-bold shadow-lg' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}
             >
-              3. Mapa Interactivo
+              2. Plano / Minimapa Interactivo
             </button>
           </div>
 
           <div className="flex-1 relative p-4 sm:p-6 overflow-y-auto">
-            {activeTab === 'settings' && (
-              <div className="w-full h-full py-4 sm:py-6 flex flex-col gap-8 max-w-3xl mx-auto">
-                <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
-                  <h2 className="text-2xl font-semibold text-lime-400 border-b border-white/10 pb-4">Ajustes Generales del Proyecto</h2>
-                  
-                  <div>
-                    <label className="block text-sm text-white/70 mb-2 uppercase tracking-wider font-medium">Nombre del Proyecto</label>
-                    <input 
-                      type="text" 
-                      value={project.name}
-                      onChange={(e) => setProject(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-lime-500 transition-colors"
-                      placeholder="Ej: Apartamento Modelo"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-white/70 mb-2 uppercase tracking-wider font-medium">Descripción</label>
-                    <textarea 
-                      value={project.description}
-                      onChange={(e) => setProject(prev => ({ ...prev, description: e.target.value }))}
-                      className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 min-h-[120px] focus:outline-none focus:border-lime-500 transition-colors"
-                      placeholder="Describe este proyecto..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="flex items-center justify-between text-sm text-white/70 mb-2 uppercase tracking-wider font-medium">
-                      <span>PIN de Seguridad para Creador Visual</span>
-                      <span className="text-xs text-lime-400 normal-case font-normal">Por defecto: 1234</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      value={project.pin || "1234"}
-                      onChange={(e) => setProject(prev => ({ ...prev, pin: e.target.value }))}
-                      className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-lime-500 transition-colors font-mono tracking-widest text-lg"
-                      placeholder="Ej: 1234 o 2026"
-                      maxLength={10}
-                    />
-                    <p className="text-xs text-white/40 mt-1">Este PIN se solicitará al pulsar en 'Abrir Creador Visual' desde el menú principal.</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-white/70 mb-2 uppercase tracking-wider font-medium">Imagen de Portada (Thumbnail)</label>
-                    <input type="file" accept="image/*" className="hidden" ref={thumbnailInputRef} onChange={(e) => handleFileUpload(e, 'thumbnail')} />
-                    
-                    {project.thumbnail ? (
-                      <div className="relative w-48 h-32 bg-black rounded-xl border border-white/10 overflow-hidden group">
-                        <img src={project.thumbnail} alt="Portada" className="w-full h-full object-cover opacity-80" />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={() => thumbnailInputRef.current?.click()}
-                            disabled={uploadingImage}
-                            className="bg-lime-500 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-lime-400 transition-colors"
-                          >
-                            Cambiar
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button 
-                        onClick={() => thumbnailInputRef.current?.click()}
-                        disabled={uploadingImage}
-                        className="w-48 h-32 border-2 border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center text-white/50 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50"
-                      >
-                        <Upload className="w-6 h-6 mb-2" />
-                        <span className="text-sm font-medium">{uploadingImage ? '⚡ Optimizando y subiendo...' : 'Subir Portada'}</span>
-                      </button>
-                    )}
-                    <p className="text-xs text-white/40 mt-3">Esta imagen se mostrará en el menú principal "Tus Recorridos".</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {activeTab === '360' && selectedRoomId && project.rooms[selectedRoomId] && (
               <HotspotEditor3D 
                 room={project.rooms[selectedRoomId]} 
@@ -668,7 +593,7 @@ export const projectsData: Record<string, Project> = {
               />
             )}
             {activeTab === '360' && !selectedRoomId && (
-              <div className="w-full h-full flex items-center justify-center text-white/30">Selecciona una habitación a la izquierda</div>
+              <div className="w-full h-full flex items-center justify-center text-white/30">Selecciona o añade una habitación 360° a la izquierda</div>
             )}
 
             {activeTab === 'map' && (
