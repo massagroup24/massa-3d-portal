@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { BackSide } from 'three';
 import { Room } from '../data/tourData';
 import { HotspotMarker } from './HotspotMarker';
 import { generateProceduralPanorama } from '../utils/panoramaFallback';
@@ -8,50 +7,123 @@ import { generateProceduralPanorama } from '../utils/panoramaFallback';
 interface RoomSphereProps {
   room: Room;
   onNavigate: (roomId: string, targetPosition?: [number, number, number]) => void;
+  brandColor?: string;
 }
 
-export function RoomSphere({ room, onNavigate }: RoomSphereProps) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+// Activar caché de texturas a nivel Three.js para evitar re-descargas
+THREE.Cache.enabled = true;
+
+// Caché de texturas para cambio instantáneo entre ambientes ya visitados
+const textureCache = new Map<string, THREE.Texture>();
+
+function SphereMesh({ texture }: { texture: THREE.Texture | null }) {
+  const matRef = useRef<THREE.MeshBasicMaterial>(null);
+
+  useEffect(() => {
+    if (matRef.current) {
+      matRef.current.needsUpdate = true;
+    }
+  }, [texture]);
+
+  return (
+    <mesh scale={[-1, 1, 1]}>
+      <sphereGeometry args={[500, 60, 40]} />
+      <meshBasicMaterial 
+        ref={matRef}
+        key={texture ? texture.uuid : 'empty-sphere'}
+        map={texture || undefined}
+        color={texture ? '#FFFFFF' : '#0D0D0E'}
+        side={THREE.DoubleSide} 
+        toneMapped={false}
+      />
+    </mesh>
+  );
+}
+
+export function RoomSphere({ room, onNavigate, brandColor }: RoomSphereProps) {
+  const [texture, setTexture] = useState<THREE.Texture | null>(() => {
+    if (room?.imageUrl && textureCache.has(room.imageUrl)) {
+      return textureCache.get(room.imageUrl)!;
+    }
+    return null;
+  });
+
+  const currentLoadingUrlRef = useRef<string>('');
 
   useEffect(() => {
     let isCancelled = false;
-
-    // 1. Crear inmediatamente una textura inicial para evitar cualquier bloqueo o parpadeo
-    const fallbackDataUrl = generateProceduralPanorama(room?.name || 'Ambiente 360');
-    const imgFallback = new Image();
-    imgFallback.onload = () => {
-      if (isCancelled) return;
-      const initialTex = new THREE.Texture(imgFallback);
-      initialTex.needsUpdate = true;
-      initialTex.wrapS = THREE.RepeatWrapping;
-      initialTex.repeat.x = -1; // Mantener orientación correcta
-      if (!texture) {
-        setTexture(initialTex);
-      }
-    };
-    imgFallback.src = fallbackDataUrl;
-
-    // 2. Si hay una URL de imagen real especificada, intentar cargarla
     const rawUrl = room?.imageUrl?.trim();
-    if (rawUrl && rawUrl !== fallbackDataUrl) {
-      const loader = new THREE.TextureLoader();
-      loader.crossOrigin = 'anonymous';
 
-      loader.load(
-        rawUrl,
-        (loadedTexture) => {
-          if (isCancelled) return;
-          loadedTexture.wrapS = THREE.RepeatWrapping;
-          loadedTexture.needsUpdate = true;
-          setTexture(loadedTexture);
-        },
-        undefined,
-        (err) => {
-          console.warn(`[MASSA 3D] Error cargando textura 360 de "${room?.name}" (${rawUrl}):`, err);
-          // Mantiene la textura fallback arquitectónica generada automáticamente
+    if (!rawUrl) {
+      // Si no hay imagen configurada, generar textura arquitectónica de respaldo
+      const fallbackUrl = generateProceduralPanorama(room?.name || 'Ambiente 360');
+      const loader = new THREE.TextureLoader();
+      loader.load(fallbackUrl, (tex) => {
+        if (!isCancelled) {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.repeat.x = -1;
+          setTexture(tex);
         }
-      );
+      });
+      return;
     }
+
+    // Si ya está en caché, usarla directamente sin re-descargar
+    if (textureCache.has(rawUrl)) {
+      setTexture(textureCache.get(rawUrl)!);
+      return;
+    }
+
+    currentLoadingUrlRef.current = rawUrl;
+
+    // Codificar URL para soportar rutas con espacios como "/HACIENDA F22/360/ZONA SOCIAL.jpg"
+    const safeUrl = encodeURI(rawUrl);
+    const loader = new THREE.TextureLoader();
+    
+    // Solo activar crossOrigin si es una URL remota http/https
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      loader.setCrossOrigin('anonymous');
+    }
+
+    loader.load(
+      safeUrl,
+      (loadedTexture) => {
+        if (isCancelled || currentLoadingUrlRef.current !== rawUrl) return;
+
+        // Configuración de ultralujo y alto rendimiento para Three.js:
+        // 1. Espacio de color sRGB para colores vivos y fieles a los renders 3D
+        loadedTexture.colorSpace = THREE.SRGBColorSpace;
+        // 2. LinearFilter sin mipmaps para evitar sobrecarga de GPU en texturas 4K (4096x2048)
+        loadedTexture.minFilter = THREE.LinearFilter;
+        loadedTexture.magFilter = THREE.LinearFilter;
+        loadedTexture.generateMipmaps = false;
+        // 3. Ajuste de repetición y actualización inmediata
+        loadedTexture.wrapS = THREE.ClampToEdgeWrapping;
+        loadedTexture.wrapT = THREE.ClampToEdgeWrapping;
+        loadedTexture.needsUpdate = true;
+
+        textureCache.set(rawUrl, loadedTexture);
+        setTexture(loadedTexture);
+      },
+      undefined,
+      (err) => {
+        if (isCancelled) return;
+        console.warn(`[MASSA 3D] Error cargando esfera 360 de "${room?.name}" (${safeUrl}):`, err);
+
+        // Si falla, generar panorama arquitectónico elegante de respaldo
+        const fallbackUrl = generateProceduralPanorama(room?.name || 'Ambiente 360');
+        const fallbackLoader = new THREE.TextureLoader();
+        fallbackLoader.load(fallbackUrl, (fallbackTex) => {
+          if (!isCancelled) {
+            fallbackTex.colorSpace = THREE.SRGBColorSpace;
+            fallbackTex.minFilter = THREE.LinearFilter;
+            fallbackTex.generateMipmaps = false;
+            setTexture(fallbackTex);
+          }
+        });
+      }
+    );
 
     return () => {
       isCancelled = true;
@@ -63,23 +135,17 @@ export function RoomSphere({ room, onNavigate }: RoomSphereProps) {
   return (
     <group>
       {/* 
-        Esfera gigante de 500 unidades para proyección equirectangular.
-        Escala X en -1 para vista interior sin espejo.
+        Esfera de 500 unidades para proyección equirectangular.
+        SphereMesh garantiza montaje limpio con material reactivo y needsUpdate forzado.
       */}
-      <mesh scale={[-1, 1, 1]}>
-        <sphereGeometry args={[500, 64, 40]} />
-        {texture ? (
-          <meshBasicMaterial map={texture} side={BackSide} />
-        ) : (
-          <meshBasicMaterial color="#141418" side={BackSide} />
-        )}
-      </mesh>
+      <SphereMesh texture={texture} />
 
       {/* Hotspots interactivos de navegación entre ambientes */}
       {(room.hotspots || []).filter(Boolean).map((hotspot) => (
         <HotspotMarker 
           key={hotspot.id} 
           hotspot={hotspot} 
+          brandColor={brandColor}
           onClick={() => onNavigate(hotspot.targetRoom, hotspot.position)} 
         />
       ))}

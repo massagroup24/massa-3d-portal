@@ -31,13 +31,17 @@ import { openProjectInNewTab } from './config/projectIdentityConfig';
 function MainPortal() {
   const navigate = useNavigate();
 
-  // Estado de rol: 'guest' (acceso abierto comercial VIP por defecto), 'portal' (login), 'client' (portal cliente), 'architect' (estudio de recorridos 360)
+  // Estado de rol: 'guest' (acceso comercial VIP por defecto), 'portal' (login), 'client' (portal cliente), 'architect' (estudio de recorridos 360)
   const [userRole, setUserRole] = useState<'portal' | 'guest' | 'client' | 'architect'>(() => {
     try {
       const saved = sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role');
       if (saved === 'editor') return 'architect';
-      if (saved === 'visitor') return 'client';
-      if (saved === 'guest') return 'guest';
+      // Limpiar tokens residuales obsoletos de 'visitor' o 'client' para que nunca desvíen al portal cliente en recargas
+      if (saved === 'visitor' || saved === 'client') {
+        sessionStorage.setItem('massa_3d_role', 'guest');
+        localStorage.setItem('massa_3d_role', 'guest');
+        return 'guest';
+      }
       return 'guest'; // Entrada directa sin barreras a la plataforma comercial VIP
     } catch {
       return 'guest';
@@ -50,19 +54,24 @@ function MainPortal() {
 
     const syncSessionUser = (user: { role: string } | null) => {
       if (!isMounted) return;
-      if (!user) {
-        setUserRole(prev => (prev === 'architect' || prev === 'client' ? 'guest' : prev));
-        return;
-      }
 
       const savedRole = sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role');
       const savedLevel = sessionStorage.getItem('massa_3d_user_level') || localStorage.getItem('massa_3d_user_level');
       const isArchitectSession = savedRole === 'editor' || savedLevel === 'architect' || savedLevel === 'admin';
 
+      if (!user) {
+        if (isArchitectSession) {
+          setUserRole('architect');
+        } else {
+          setUserRole('guest');
+        }
+        return;
+      }
+
       if (user.role === 'architect' || isArchitectSession) {
         setUserRole('architect');
-      } else if (user.role === 'client') {
-        setUserRole('client');
+      } else {
+        setUserRole('guest');
       }
     };
 
@@ -125,7 +134,13 @@ function MainPortal() {
     return 'project_hacienda_f22';
   });
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
-  const [configuringProjectId, setConfiguringProjectId] = useState<string | null>(null);
+  const [configuringProjectId, setConfiguringProjectId] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem('massa_configuring_project_id');
+    } catch {
+      return null;
+    }
+  });
   const [tourStarted, setTourStarted] = useState(false);
   const [guestView, setGuestView] = useState<'commercial' | 'showcase' | 'project'>('commercial');
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -166,7 +181,23 @@ function MainPortal() {
             Object.keys(custom).forEach(k => {
               const item = custom[k];
               if (item && item.id && !legacyDummies.has(k) && !legacyDummies.has(item.id)) {
-                rawLoaded[item.id] = normalizeProject(item);
+                const existing = rawLoaded[item.id];
+                if (existing) {
+                  rawLoaded[item.id] = normalizeProject({
+                    ...existing,
+                    ...item,
+                    floorPlans: {
+                      ...(existing.floorPlans || {}),
+                      ...(item.floorPlans || {})
+                    },
+                    rooms: {
+                      ...(existing.rooms || {}),
+                      ...(item.rooms || {})
+                    }
+                  });
+                } else {
+                  rawLoaded[item.id] = normalizeProject(item);
+                }
               }
             });
           }
@@ -177,7 +208,24 @@ function MainPortal() {
           fbProjects.forEach(p => {
             if (p && p.id) {
               const canonicalId = resolveCanonicalProjectId(p.id);
-              rawLoaded[canonicalId] = normalizeProject({ ...p, id: canonicalId });
+              const existing = rawLoaded[canonicalId];
+              if (existing) {
+                rawLoaded[canonicalId] = normalizeProject({
+                  ...existing,
+                  ...p,
+                  id: canonicalId,
+                  floorPlans: {
+                    ...(existing.floorPlans || {}),
+                    ...(p.floorPlans || {})
+                  },
+                  rooms: {
+                    ...(existing.rooms || {}),
+                    ...(p.rooms || {})
+                  }
+                });
+              } else {
+                rawLoaded[canonicalId] = normalizeProject({ ...p, id: canonicalId });
+              }
             }
           });
         }
@@ -265,6 +313,7 @@ function MainPortal() {
       sessionStorage.removeItem('massa_3d_architect_tab');
       sessionStorage.removeItem('massa_3d_client_tab');
       sessionStorage.removeItem('massa_3d_role');
+      sessionStorage.removeItem('massa_configuring_project_id');
       localStorage.removeItem('massa_3d_role');
     } catch {}
     setUserRole('guest');
@@ -308,6 +357,9 @@ function MainPortal() {
 
   const handleConfigureProject = (projectId: string) => {
     setConfiguringProjectId(projectId);
+    try {
+      sessionStorage.setItem('massa_configuring_project_id', projectId);
+    } catch {}
   };
 
   // 1. Pantalla de Login si no ha iniciado sesión
@@ -334,10 +386,16 @@ function MainPortal() {
         isNewProject={false}
         onClose={() => {
           setConfiguringProjectId(null);
+          try {
+            sessionStorage.removeItem('massa_configuring_project_id');
+          } catch {}
         }}
         onSave={(savedProject) => {
           handleSaveProject(savedProject);
           setConfiguringProjectId(savedProject.id);
+          try {
+            sessionStorage.setItem('massa_configuring_project_id', savedProject.id);
+          } catch {}
         }}
       />
     );
@@ -358,10 +416,13 @@ function MainPortal() {
         currentRoom={currentRoom}
         rooms={currentProject.rooms || {}}
         minimapImage={currentProject.minimapImage}
+        floorPlans={currentProject.floorPlans}
         onNavigate={(roomId) => setCurrentRoomId(roomId)}
         onBackToHome={handleBackToPortal}
         tourEmbedUrl={currentProject.tourType === 'matterport_iframe' ? currentProject.tourEmbedUrl : undefined}
         projectName={currentProject.name}
+        brandLogo={currentProject.id === 'project_hacienda_f22' ? '/HACIENDA F22/LOGO AMHO.png' : undefined}
+        brandColor={currentProject.id === 'project_hacienda_f22' ? '#DFC47B' : undefined}
       />
     );
   }
@@ -390,8 +451,8 @@ function MainPortal() {
 
   const currentDisplayName = portalData?.name || currentProject?.name || (activeProjectId && (projects[activeProjectId]?.name || projectsData[activeProjectId]?.name)) || 'RESIDENCIA JEJÉN';
 
-  // 5. Plataforma Comercial VIP para Invitados (Entrada Abierta de Alto Impacto)
-  if (userRole === 'guest' && guestView === 'commercial') {
+  // 5. Plataforma Comercial VIP para Invitados (Entrada Abierta de Alto Impacto por Defecto)
+  if (userRole === 'guest' && guestView !== 'showcase' && guestView !== 'project') {
     return (
       <VipCommercialLanding
         projects={projects}

@@ -23,6 +23,8 @@ export function Header({
   onBackToPortfolio,
   className = '',
 }: HeaderProps) {
+  const isF22 = Boolean(projectName?.includes('F22') || projectName?.includes('HACIENDA') || projectName?.includes('Hacienda'));
+  const primaryColor = isF22 ? '#DFC47B' : '#9CD01A';
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -66,14 +68,29 @@ export function Header({
             className={`flex items-center gap-2 group transition-all duration-300 shrink-0 ${userRole === 'guest' && onBackToPortfolio ? 'cursor-pointer' : ''}`}
             title={userRole === 'guest' && onBackToPortfolio ? "Volver al Catálogo Comercial" : undefined}
           >
-            <img
-              src="/MASSA_USO.png"
-              alt="MASSA GROUP"
-              className="h-7 sm:h-8 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(156,208,26,0.35)] transition-transform duration-300 group-hover:scale-105"
-            />
-            <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-md bg-white/10 text-[9px] font-mono tracking-widest text-[#9CD01A] uppercase">
-              VIEW
-            </span>
+            {isF22 ? (
+              <div className="flex items-center gap-2">
+                <img
+                  src="/HACIENDA F22/LOGO AMHO.png"
+                  alt="AMHO CONSTRUCCIONES"
+                  className="h-7 sm:h-8 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(223,196,123,0.35)] transition-transform duration-300 group-hover:scale-105"
+                />
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-black/60 border border-[#DFC47B]/40 text-[9px] font-mono tracking-widest text-[#DFC47B] font-bold uppercase">
+                  AMHO
+                </span>
+              </div>
+            ) : (
+              <>
+                <img
+                  src="/MASSA_USO.png"
+                  alt="MASSA GROUP"
+                  className="h-7 sm:h-8 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(156,208,26,0.35)] transition-transform duration-300 group-hover:scale-105"
+                />
+                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-md bg-white/10 text-[9px] font-mono tracking-widest text-[#9CD01A] uppercase">
+                  VIEW
+                </span>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col justify-center">
@@ -155,7 +172,7 @@ export function Header({
           </button>
         ) : (
           <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-medium text-white/80 shadow-inner">
-            <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_8px_rgba(156,208,26,0.9)] animate-pulse" />
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor, boxShadow: `0 0 8px ${primaryColor}` }} />
             <span>
               {userRole === 'guest' 
                 ? 'Portafolio Público' 

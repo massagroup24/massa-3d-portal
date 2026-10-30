@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Html, useProgress } from '@react-three/drei';
+import { OrbitControls, Html, useProgress, DeviceOrientationControls } from '@react-three/drei';
 import { Suspense, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { RoomSphere } from './RoomSphere';
@@ -16,11 +16,12 @@ function CameraController({ isTransitioning, targetPosition, room }: CameraContr
   const initialFovRef = useRef<number>(75);
   const targetVecRef = useRef<THREE.Vector3 | null>(null);
 
-  // Ajuste responsivo del FOV según pantalla
+  // Ajuste responsivo ultra-preciso del FOV para móviles y pantallas táctiles
   useEffect(() => {
     const aspect = size.width / size.height;
     if (aspect < 1) {
-      initialFovRef.current = Math.max(90, Math.min(105, 75 / aspect * 0.65));
+      // En celulares (vertical/portrait), ampliamos el campo visual para que no se sienta encerrado
+      initialFovRef.current = Math.max(88, Math.min(102, (75 / aspect) * 0.62));
     } else {
       initialFovRef.current = 75;
     }
@@ -31,7 +32,7 @@ function CameraController({ isTransitioning, targetPosition, room }: CameraContr
     }
   }, [camera, size.width, size.height, room.id, isTransitioning]);
 
-  // Manejo del objetivo y reinicio de cámara en transiciones
+  // Manejo del objetivo y reinicio de cámara en transiciones cinemáticas
   useEffect(() => {
     if (!isTransitioning) {
       camera.position.set(0, 0, 0.1);
@@ -70,18 +71,26 @@ function CameraController({ isTransitioning, targetPosition, room }: CameraContr
   return null;
 }
 
-function Loader() {
+function Loader({ brandColor = '#9CD01A' }: { brandColor?: string }) {
   const { progress } = useProgress();
   return (
     <Html center>
-      <div className="flex flex-col items-center gap-3">
-        <div className="text-white text-base md:text-lg font-medium whitespace-nowrap bg-black/70 px-6 py-3 rounded-xl backdrop-blur-md border border-white/20 shadow-2xl">
-          Descargando HD... {Math.round(progress)}%
+      <div className="flex flex-col items-center gap-2.5 select-none pointer-events-none">
+        <div className="text-white text-xs sm:text-base font-semibold whitespace-nowrap bg-black/80 px-4 py-2 sm:px-6 sm:py-3 rounded-full backdrop-blur-xl border border-white/20 shadow-2xl tracking-wide flex items-center gap-2">
+          <span 
+            className="w-2 h-2 rounded-full animate-ping" 
+            style={{ backgroundColor: brandColor }}
+          />
+          <span>Cargando 360° {Math.round(progress)}%</span>
         </div>
-        <div className="w-40 md:w-48 h-1.5 bg-black/60 rounded-full overflow-hidden border border-white/10 shadow-inner">
+        <div className="w-32 sm:w-48 h-1 bg-black/60 rounded-full overflow-hidden border border-white/10 shadow-inner">
           <div 
-            className="h-full bg-lime-500 transition-all duration-300 ease-out" 
-            style={{ width: `${progress}%` }}
+            className="h-full transition-all duration-300 ease-out" 
+            style={{ 
+              width: `${progress}%`,
+              backgroundColor: brandColor,
+              boxShadow: `0 0 8px ${brandColor}`
+            }}
           />
         </div>
       </div>
@@ -95,54 +104,90 @@ interface TourViewerProps {
   isTransitioning?: boolean;
   targetPosition?: [number, number, number] | null;
   isIdle?: boolean;
+  isGyroEnabled?: boolean;
+  brandColor?: string;
+  brandName?: string;
 }
 
-export function TourViewer({ room, onNavigate, isTransitioning, targetPosition, isIdle }: TourViewerProps) {
+export function TourViewer({
+  room,
+  onNavigate,
+  isTransitioning,
+  targetPosition,
+  isIdle,
+  isGyroEnabled = false,
+  brandColor = '#9CD01A',
+  brandName
+}: TourViewerProps) {
   if (!room) return null;
+
   return (
-    <Canvas camera={{ position: [0, 0, 0.1], fov: 75 }}>
+    <Canvas 
+      camera={{ position: [0, 0, 0.1], fov: 75 }}
+      dpr={[1, 2]} // Optimización crítica: límite a 2x en pantallas retina móviles para fluidez total de 60fps
+      gl={{ 
+        powerPreference: 'high-performance', 
+        antialias: true, 
+        alpha: false 
+      }}
+      style={{ touchAction: 'none', width: '100%', height: '100%' }}
+    >
+      <color attach="background" args={['#08080A']} />
       <CameraController isTransitioning={isTransitioning} targetPosition={targetPosition} room={room} />
       <ambientLight intensity={1} />
-      <Suspense fallback={<Loader />}>
+      
+      <Suspense fallback={<Loader brandColor={brandColor} />}>
         {room.imageUrl ? (
-          <RoomSphere room={room} onNavigate={onNavigate} />
+          <RoomSphere room={room} onNavigate={onNavigate} brandColor={brandColor} />
         ) : (
           <Html center>
-            <div className="flex flex-col items-center text-center p-6 sm:p-8 rounded-3xl bg-[#0D0D0E]/90 backdrop-blur-2xl border border-[#9CD01A]/40 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(156,208,26,0.2)] max-w-sm sm:max-w-md pointer-events-none select-none">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#9CD01A] shadow-[0_0_10px_#9CD01A] animate-ping mb-3" />
-              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#9CD01A] font-bold mb-1">
-                MASSA HOME • VISTA 360°
+            <div 
+              className="flex flex-col items-center text-center p-5 sm:p-8 rounded-3xl bg-[#0D0D0E]/90 backdrop-blur-2xl border shadow-2xl max-w-[85vw] sm:max-w-md pointer-events-none select-none"
+              style={{
+                borderColor: `${brandColor}66`,
+                boxShadow: `0 20px 50px rgba(0,0,0,0.9), 0 0 30px ${brandColor}33`
+              }}
+            >
+              <span 
+                className="w-2.5 h-2.5 rounded-full animate-ping mb-3" 
+                style={{ backgroundColor: brandColor, boxShadow: `0 0 10px ${brandColor}` }}
+              />
+              <span 
+                className="text-[10px] font-mono uppercase tracking-[0.25em] font-bold mb-1"
+                style={{ color: brandColor }}
+              >
+                {brandName || 'AMHO CONSTRUCCIONES'} • VISTA 360°
               </span>
-              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-2">
+              <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-2">
                 {room.name || 'Ambiente Arquitectónico'}
               </h3>
               <p className="text-xs text-white/70 leading-relaxed mb-3">
                 {room.description || 'Espacio preparado y listo para recibir la imagen equirectangular 360°.'}
               </p>
-              <span className="px-3 py-1 rounded-full bg-white/10 text-[11px] font-mono text-white/60 border border-white/10">
-                Pega la URL de la esfera 360 en tourData.ts
-              </span>
             </div>
           </Html>
         )}
       </Suspense>
+
       {/* 
-        OrbitControls configurado para experiencia 360 inmersiva en móvil y escritorio:
-        - enableZoom={false}: Evita desplazarse fuera de la esfera.
-        - enablePan={false}: Mantiene la cámara en el centro.
-        - rotateSpeed={-0.6}: Velocidad natural para arrastrar la escena en pantallas táctiles y ratón.
-        - autoRotate: Rotación panorámica suave cuando el usuario está inactivo (5s).
+        Controles de Navegación 360° Adaptativos:
+        1. Si el usuario activa el giroscopio en celular, la cámara rota físicamente al mover el teléfono.
+        2. Si no, OrbitControls gestiona el arrastre táctil natural sin bloquear el navegador.
       */}
-      <OrbitControls 
-        enabled={!isTransitioning}
-        enableZoom={false} 
-        enablePan={false} 
-        enableDamping={true}
-        dampingFactor={0.08}
-        rotateSpeed={-0.6}
-        autoRotate={isIdle && !isTransitioning}
-        autoRotateSpeed={0.4}
-      />
+      {isGyroEnabled ? (
+        <DeviceOrientationControls />
+      ) : (
+        <OrbitControls 
+          enabled={!isTransitioning}
+          enableZoom={false} 
+          enablePan={false} 
+          enableDamping={true}
+          dampingFactor={0.08}
+          rotateSpeed={-0.65}
+          autoRotate={isIdle && !isTransitioning}
+          autoRotateSpeed={0.35}
+        />
+      )}
     </Canvas>
   );
 }

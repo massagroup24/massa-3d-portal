@@ -163,41 +163,41 @@ export const HACIENDA_F22_BLUEPRINTS: ProjectMediaItem[] = [
     id: 'bp-hacienda-1',
     project_id: 'project_hacienda_f22',
     type: 'blueprint',
-    title: 'Planta Nivel 1 • Atrio, Gran Salón & Piscina',
-    storage_path: '/PLANO.jpg',
+    title: 'Planta Axonométrica Piso 1 • Social, Deck & Piscina',
+    storage_path: '/HACIENDA F22/360/PLANOS/P1-1.png',
     category: 'Plantas',
     order_index: 1,
-    metadata: { level: 'Nivel 1', area: '240 m²', description: 'Espacio listo para plano de atrio de agua, sala a doble altura, cocina y deck exterior.' }
+    metadata: { level: 'Nivel 1', area: '340 m² + 220 m² Exteriores', description: 'Plano 3D con atrio, gran salón a doble altura, cocina de chef, estudio, escaleras, quincho BBQ y piscina.' }
   },
   {
     id: 'bp-hacienda-2',
     project_id: 'project_hacienda_f22',
     type: 'blueprint',
-    title: 'Planta Nivel 2 • Suites & Estudio Privado',
-    storage_path: '/PLANO.jpg',
+    title: 'Planta Axonométrica Piso 2 • Suites & Mezzanine',
+    storage_path: '/HACIENDA F22/360/PLANOS/P1-2.png',
     category: 'Plantas',
     order_index: 2,
-    metadata: { level: 'Nivel 2', area: '210 m²', description: 'Espacio listo para plano de Suite Presidencial con terraza privada y suites familiares.' }
+    metadata: { level: 'Nivel 2', area: '220 m²', description: 'Plano 3D con Master Suite presidencial, vestier boutique, baño spa, family lounge, puente mezzanine y suites.' }
   },
   {
     id: 'bp-hacienda-3',
     project_id: 'project_hacienda_f22',
     type: 'blueprint',
-    title: 'Planta Rooftop • Mirador 360° & Fire Pit',
-    storage_path: '/PLANO.jpg',
+    title: 'Planta Axonométrica Piso 3 • Sky Lounge, Juegos & Mirador 360°',
+    storage_path: '/HACIENDA F22/360/PLANOS/P1-3.png',
     category: 'Cubiertas',
     order_index: 3,
-    metadata: { level: 'Rooftop', area: '110 m²', description: 'Espacio listo para plano de terraza superior mirador con zona lounge y asador.' }
+    metadata: { level: 'Rooftop', area: '110 m²', description: 'Plano 3D de cubierta transitable con visuales 360°, fire pit a cielo abierto y preinstalación bioclimática.' }
   },
   {
     id: 'bp-hacienda-4',
     project_id: 'project_hacienda_f22',
     type: 'blueprint',
-    title: 'Corte Transversal B-B\' • Voladizos',
-    storage_path: '/PLANO.jpg',
-    category: 'Cortes',
+    title: 'Planta General de Implantación & Lote F22',
+    storage_path: '/HACIENDA F22/360/PLANOS/P1-1.png',
+    category: 'Plantas',
     order_index: 4,
-    metadata: { level: 'Cortes & Secciones', area: 'Grandes Luces', description: 'Espacio listo para corte estructural con detalle de voladizos y control solar pasivo.' }
+    metadata: { level: 'Lote Completo', area: '1.200 m²', description: 'Implantación bioclimática en Condominio Hacienda con orientación solar óptima y retiros perimetrales.' }
   }
 ];
 

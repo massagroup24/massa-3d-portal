@@ -455,7 +455,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
 export const HACIENDA_F22_LEVELS: ProjectLevelInfo[] = [
   {
     id: 'nivel-1',
-    label: 'Planta Nivel 1 • Social & Wellness',
+    label: 'Planta Piso 1 • Social, Deck & Piscina',
     area: '340 m² + 220 m² Terrazas',
     height: 'Doble altura 6.20 m en salón principal',
     summary: 'Integración total entre el atrio de acceso con espejo de agua, gran salón de doble altura, cocina de autor con isla de cuarcita y apertura total hacia la piscina infinity y el quincho apergolado.',
@@ -471,7 +471,7 @@ export const HACIENDA_F22_LEVELS: ProjectLevelInfo[] = [
   },
   {
     id: 'nivel-2',
-    label: 'Planta Nivel 2 • Suites Privadas',
+    label: 'Planta Piso 2 • Suites Privadas & Mezzanine',
     area: '220 m²',
     height: 'Altura libre 3.20 m',
     summary: 'Ala residencial íntima conectada por un puente-galería flotante con baranda en cristal templado y vistas sobre la doble altura del salón y la piscina.',
@@ -485,7 +485,7 @@ export const HACIENDA_F22_LEVELS: ProjectLevelInfo[] = [
   },
   {
     id: 'nivel-3',
-    label: 'Terraza Mirador • Cubierta Técnica',
+    label: 'Planta Piso 3 • Sky Lounge & Mirador 360°',
     area: '110 m²',
     height: 'Cielo abierto 360°',
     summary: 'Espacio contemplativo superior para atardeceres sobre el Condominio Hacienda, equipado con preinstalación solar fotovoltaica y lounge de fuego.',
@@ -499,77 +499,168 @@ export const HACIENDA_F22_LEVELS: ProjectLevelInfo[] = [
 
 export const HACIENDA_F22_ROOMS_360: ProjectRoom360[] = [
   {
-    id: 'room-fachada',
-    name: 'Pórtico & Fachada Monumental F22',
+    id: 'room_f22_zona_social',
+    name: 'Oasis Exterior & Piscina Infinity',
     level: 'Planta Nivel 1 • Exterior',
-    area: 'Acceso Principal',
-    materials: 'Piedra sinterizada, concreto visto y emblema F22 retroiluminado',
-    previewUrl: '/HACIENDA F22/FACHADA.png',
+    area: '220 m² Exteriores',
+    materials: 'Deck en madera teca, piedra Bali en piscina, muros travertino y jacuzzi climatizado',
+    previewUrl: '/HACIENDA F22/360/ZONA SOCIAL.jpg',
     hotspots: [
-      { id: 'hs-1', label: 'Voladizo Estructural', detail: 'Losa en voladizo de 4.8m con iluminación cálida lineal empotrada.', x: 48, y: 38 },
-      { id: 'hs-2', label: 'Ingresar al Vestíbulo', detail: 'Ir al Atrio de Acceso Principal →', x: 54, y: 65, targetRoomId: 'room-sala' }
+      { id: 'hs-zs-1', label: 'Piscina Infinity & Jacuzzi', detail: 'Espejo de agua desbordante con hidromasaje y asoleadero húmedo.', x: 38, y: 64 },
+      { id: 'hs-zs-2', label: 'Pabellón Quincho BBQ', detail: 'Conectar con el pabellón de asados cubierto →', x: 22, y: 52, targetRoomId: 'room_f22_bbq' },
+      { id: 'hs-zs-3', label: 'Ingresar al Gran Salón', detail: 'Abrir ventanales hacia el salón central →', x: 74, y: 52, targetRoomId: 'room_f22_sala' }
     ]
   },
   {
-    id: 'room-sala',
-    name: 'Gran Salón de Doble Altura & Puente',
+    id: 'room_f22_bbq',
+    name: 'Pabellón BBQ & Quincho Gourmet',
+    level: 'Planta Nivel 1 • Exterior Gourmet',
+    area: '48 m²',
+    materials: 'Pérgola en concreto arquitectónico, asador en acero inox 304 y mesón en granito',
+    previewUrl: '/HACIENDA F22/360/BBQ.jpg',
+    hotspots: [
+      { id: 'hs-bbq-1', label: 'Asador & Campana Integrada', detail: 'Parrilla a gas y carbón con estación de corte y refrigerador bar.', x: 86, y: 54 },
+      { id: 'hs-bbq-2', label: 'Deck y Piscina', detail: 'Volver a la piscina desbordante →', x: 52, y: 60, targetRoomId: 'room_f22_zona_social' },
+      { id: 'hs-bbq-3', label: 'Ingresar a la Residencia', detail: 'Entrar al salón social →', x: 28, y: 48, targetRoomId: 'room_f22_sala' }
+    ]
+  },
+  {
+    id: 'room_f22_sala',
+    name: 'Gran Salón de Doble Altura & Comedor',
     level: 'Planta Nivel 1 • Social',
-    area: '96 m² (Altura 6.20 m)',
-    materials: 'Travertino Fiorito, listones de roble natural y cristal laminado',
-    previewUrl: '/HACIENDA F22/SALA.jpg',
+    area: '96 m² (Doble Altura 6.20 m)',
+    materials: 'Travertino Fiorito, listones de roble natural, chimenea lineal y cristal laminado',
+    previewUrl: '/HACIENDA F22/360/SALA.jpg',
     hotspots: [
-      { id: 'hs-3', label: 'Puente Galería Nivel 2', detail: 'Pasarela flotante en madera y vidrio que conecta las suites.', x: 52, y: 26, targetRoomId: 'room-master' },
-      { id: 'hs-4', label: 'Ir a Cocina de Autor', detail: 'Conectar con Cocina & Cava →', x: 78, y: 58, targetRoomId: 'room-cocina' },
-      { id: 'hs-5', label: 'Salir a Piscina & Deck', detail: 'Abrir hacia el Oasis Exterior →', x: 24, y: 62, targetRoomId: 'room-piscina' }
+      { id: 'hs-s-1', label: 'Chimenea Lineal de Bioetanol', detail: 'Muro central en piedra sinterizada e iluminación perimetral.', x: 50, y: 58 },
+      { id: 'hs-s-2', label: 'Cocina de Chef', detail: 'Pasar a la cocina y cava de vinos →', x: 20, y: 52, targetRoomId: 'room_f22_cocina' },
+      { id: 'hs-s-3', label: 'Subir a Nivel 2', detail: 'Ir a escaleras flotantes y suites →', x: 62, y: 46, targetRoomId: 'room_f22_escaleras' },
+      { id: 'hs-s-4', label: 'Estudio Privado', detail: 'Entrar al despacho ejecutivo →', x: 32, y: 50, targetRoomId: 'room_f22_estudio' },
+      { id: 'hs-s-5', label: 'Salir a Piscina', detail: 'Apertura hacia el oasis exterior →', x: 82, y: 52, targetRoomId: 'room_f22_zona_social' }
     ]
   },
   {
-    id: 'room-cocina',
-    name: 'Cocina de Chef & Isla en Cuarcita',
+    id: 'room_f22_cocina',
+    name: 'Cocina de Chef & Cava Climatizada',
     level: 'Planta Nivel 1 • Gastronomía',
     area: '44 m²',
-    materials: 'Cuarcita Taj Mahal, carpintería alemana soft-close y luminaria escultórica',
-    previewUrl: '/HACIENDA F22/COCINA.jpg',
+    materials: 'Cuarcita Taj Mahal en cascada, vitrina de vinos con vidrio bronce y carpintería soft-close',
+    previewUrl: '/HACIENDA F22/360/COCINA_1.jpg',
     hotspots: [
-      { id: 'hs-6', label: 'Isla Monolítica en Cascada', detail: 'Piedra natural seleccionada con corte a 45° e inducción oculta.', x: 48, y: 68 },
-      { id: 'hs-7', label: 'Volver al Gran Salón', detail: 'Regresar a la Sala Principal →', x: 18, y: 52, targetRoomId: 'room-sala' },
-      { id: 'hs-8', label: 'Ir al Pabellón BBQ', detail: 'Conectar con Terraza Gourmet →', x: 82, y: 55, targetRoomId: 'room-piscina' }
+      { id: 'hs-c-1', label: 'Isla Monolítica en Cascada', detail: 'Cuarcita exótica con estufa de inducción y barra de desayuno.', x: 50, y: 68 },
+      { id: 'hs-c-2', label: 'Cava de Vinos Iluminada', detail: 'Vitrina climatizada con control térmico y copero integrado.', x: 28, y: 46 },
+      { id: 'hs-c-3', label: 'Volver al Gran Salón', detail: 'Regresar al área social →', x: 42, y: 48, targetRoomId: 'room_f22_sala' },
+      { id: 'hs-c-4', label: 'Salir al Deck', detail: 'Acceso directo a terraza y piscina →', x: 74, y: 50, targetRoomId: 'room_f22_zona_social' }
     ]
   },
   {
-    id: 'room-piscina',
-    name: 'Piscina Desbordante & Quincho BBQ',
-    level: 'Planta Nivel 1 • Oasis Exterior',
-    area: '220 m² Exteriores',
-    materials: 'Revestimiento turquesa Bali, muro en travertino iluminado y pérgola',
-    previewUrl: '/HACIENDA F22/PISCINA.jpg',
+    id: 'room_f22_estudio',
+    name: 'Estudio & Home Office Ejecutivo',
+    level: 'Planta Nivel 1 • Despacho',
+    area: '24 m²',
+    materials: 'Panelado acústico en madera clara, escritorio curvo y biblioteca retroiluminada',
+    previewUrl: '/HACIENDA F22/360/ESTUDIO.jpg',
     hotspots: [
-      { id: 'hs-9', label: 'Espejo de Agua & Jacuzzi', detail: 'Borde infinito climatizado con iluminación subacuática RGBW.', x: 52, y: 74 },
-      { id: 'hs-10', label: 'Ingresar al Salón', detail: 'Volver al Interior →', x: 25, y: 48, targetRoomId: 'room-sala' }
+      { id: 'hs-est-1', label: 'Escritorio Curvo Flotante', detail: 'Área de trabajo ergonómica con conexiones ocultas y vista al frente.', x: 26, y: 64 },
+      { id: 'hs-est-2', label: 'Biblioteca Iluminada', detail: 'Estantería curva con luces led rasantes cálidas 2700K.', x: 48, y: 50 },
+      { id: 'hs-est-3', label: 'Salir al Salón', detail: 'Volver al salón central →', x: 88, y: 52, targetRoomId: 'room_f22_sala' }
     ]
   },
   {
-    id: 'room-master',
-    name: 'Master Suite Presidencial & Walk-In Closet',
+    id: 'room_f22_escaleras',
+    name: 'Atrio Escultórico & Escalera Flotante',
+    level: 'Planta Nivel 1 • Transición',
+    area: '32 m²',
+    materials: 'Peldaños macizos en madera noble, estructura metálica oculta y vidrio templado',
+    previewUrl: '/HACIENDA F22/360/ESCALERAS.jpg',
+    hotspots: [
+      { id: 'hs-esc-1', label: 'Escalera Flotante', detail: 'Peldaños suspendidos en voladizo sobre jardín interior seco.', x: 50, y: 46 },
+      { id: 'hs-esc-2', label: 'Subir al Mezzanine', detail: 'Acceder a Planta Nivel 2 y suites →', x: 50, y: 32, targetRoomId: 'room_f22_pasillo' },
+      { id: 'hs-esc-3', label: 'Bajar al Gran Salón', detail: 'Volver a la estancia principal →', x: 22, y: 60, targetRoomId: 'room_f22_sala' }
+    ]
+  },
+  {
+    id: 'room_f22_pasillo',
+    name: 'Puente Mezzanine & Galería Nivel 2',
+    level: 'Planta Nivel 2 • Distribución',
+    area: '28 m²',
+    materials: 'Pasarela en voladizo con baranda panorámica en cristal y vista sobre el salón',
+    previewUrl: '/HACIENDA F22/360/PASILLO 2P.jpg',
+    hotspots: [
+      { id: 'hs-pas-1', label: 'Visual a Doble Altura', detail: 'Vista aérea privilegiada sobre la sala social y araña de diseño.', x: 32, y: 64 },
+      { id: 'hs-pas-2', label: 'Family Room & Juegos', detail: 'Entrar a la sala de entretenimiento →', x: 24, y: 48, targetRoomId: 'room_f22_sala_tv' },
+      { id: 'hs-pas-3', label: 'Master Suite Presidencial', detail: 'Ingresar a la suite principal →', x: 50, y: 44, targetRoomId: 'room_f22_master' },
+      { id: 'hs-pas-4', label: 'Suite Auxiliar Huéspedes', detail: 'Ir a habitación secundaria →', x: 78, y: 48, targetRoomId: 'room_f22_hab_aux' },
+      { id: 'hs-pas-5', label: 'Bajar al Nivel 1', detail: 'Descender por la escalera flotante →', x: 68, y: 62, targetRoomId: 'room_f22_escaleras' }
+    ]
+  },
+  {
+    id: 'room_f22_sala_tv',
+    name: 'Sky Lounge, Juegos & Mirador 360°',
+    level: 'Planta Piso 3 • Rooftop & Entretenimiento',
+    area: '60 m² Cubiertos + 110 m² Terraza Mirador',
+    materials: 'Piso en madera cálida, iluminación perimetral curva, mesa de ping pong y ventanales a la gran terraza mirador 360°',
+    previewUrl: '/HACIENDA F22/360/SALA TV.jpg',
+    hotspots: [
+      { id: 'hs-tv-1', label: 'Mesa de Ping Pong / Juegos', detail: 'Zona lúdica con iluminación decorativa y amplio espacio de circulación.', x: 50, y: 56 },
+      { id: 'hs-tv-2', label: 'Gran Terraza Mirador 360°', detail: 'Salida directa a la cubierta mirador panorámica hacia las colinas.', x: 68, y: 48 },
+      { id: 'hs-tv-3', label: 'Bajar a Piso 2 (Suites)', detail: 'Descender al pasillo distribuidor de habitaciones →', x: 84, y: 52, targetRoomId: 'room_f22_pasillo' },
+      { id: 'hs-tv-4', label: 'Master Suite', detail: 'Pasar a la suite principal en Piso 2 →', x: 22, y: 48, targetRoomId: 'room_f22_master' }
+    ]
+  },
+  {
+    id: 'room_f22_master',
+    name: 'Master Suite Presidencial',
     level: 'Planta Nivel 2 • Privado',
     area: '68 m² Suite Completa',
-    materials: 'Cabecero acústico en lino, madera termo-tratada e iluminación 2700K',
-    previewUrl: '/HACIENDA F22/DORMITORIO.jpg',
+    materials: 'Panelado en roble natural, cabecero acolchado, iluminación 2700K y terraza privada',
+    previewUrl: '/HACIENDA F22/360/HAB PPAL 1.jpg',
     hotspots: [
-      { id: 'hs-11', label: 'Pasar al Master Bath Spa', detail: 'Explorar Baño Principal en Mármol →', x: 80, y: 54, targetRoomId: 'room-bano' },
-      { id: 'hs-12', label: 'Bajar al Nivel Social', detail: 'Volver al Gran Salón →', x: 20, y: 60, targetRoomId: 'room-sala' }
+      { id: 'hs-m-1', label: 'Cama King & Panelado', detail: 'Cabecero escultórico con iluminación rasante indirecta.', x: 50, y: 58 },
+      { id: 'hs-m-2', label: 'Terraza Privada Exterior', detail: 'Salida directa a balcón con vistas al jardín y piscina.', x: 24, y: 48 },
+      { id: 'hs-m-3', label: 'Vestier Boutique', detail: 'Entrar al walk-in closet con vitrinas ahumadas →', x: 82, y: 50, targetRoomId: 'room_f22_vestier' },
+      { id: 'hs-m-4', label: 'Salir a Mezzanine', detail: 'Volver al pasillo distribuidor →', x: 88, y: 56, targetRoomId: 'room_f22_pasillo' }
     ]
   },
   {
-    id: 'room-bano',
-    name: 'Master Bath Spa & Vestier Boutique',
-    level: 'Planta Nivel 2 • Wellness Privado',
-    area: '28 m²',
-    materials: 'Mármol Calacatta, espejos retroiluminados y grifería negro mate',
-    previewUrl: '/HACIENDA F22/BANO.jpg',
+    id: 'room_f22_vestier',
+    name: 'Vestier Boutique & Walk-In Closet',
+    level: 'Planta Nivel 2 • Vestier',
+    area: '26 m²',
+    materials: 'Vitrinas en vidrio ahumado bronce, iluminación led oculta y tocador doble con espejo',
+    previewUrl: '/HACIENDA F22/360/VESTIER.jpg',
     hotspots: [
-      { id: 'hs-13', label: 'Tocador Doble Flotante', detail: 'Mesón suspendido en piedra sinterizada de poro cerrado.', x: 58, y: 62 },
-      { id: 'hs-14', label: 'Volver a Master Suite', detail: 'Regresar al Dormitorio Principal →', x: 22, y: 55, targetRoomId: 'room-master' }
+      { id: 'hs-v-1', label: 'Vitrinas Boutique Iluminadas', detail: 'Armarios cerrados en cristal con iluminación de tienda de alta costura.', x: 74, y: 52 },
+      { id: 'hs-v-2', label: 'Tocador con Espejo LED', detail: 'Estación de maquillaje con luz neutra perimetral.', x: 18, y: 56 },
+      { id: 'hs-v-3', label: 'Master Bath & Spa', detail: 'Pasar al baño principal con tina exenta →', x: 50, y: 48, targetRoomId: 'room_f22_wc_ppal' },
+      { id: 'hs-v-4', label: 'Volver a Master Suite', detail: 'Regresar al dormitorio principal →', x: 38, y: 54, targetRoomId: 'room_f22_master' }
+    ]
+  },
+  {
+    id: 'room_f22_wc_ppal',
+    name: 'Master Bath & Spa Privado',
+    level: 'Planta Nivel 2 • Spa',
+    area: '24 m²',
+    materials: 'Tina exenta ergonómica, claraboya cenital natural, mesón suspendido y ducha de lluvia',
+    previewUrl: '/HACIENDA F22/360/WCPPAL.jpg',
+    hotspots: [
+      { id: 'hs-wc-1', label: 'Tina Exenta & Claraboya', detail: 'Bañera escultórica bajo tragaluz cenital de luz natural.', x: 26, y: 72 },
+      { id: 'hs-wc-2', label: 'Lavamanos Doble Flotante', detail: 'Mueble suspendido con grifería negra empotrada y espejo con luz cálida.', x: 54, y: 50 },
+      { id: 'hs-wc-3', label: 'Cabina Ducha Spa', detail: 'Doble regadera de techo con panel de cristal esmerilado.', x: 76, y: 52 },
+      { id: 'hs-wc-4', label: 'Regresar al Vestier', detail: 'Volver al walk-in closet boutique →', x: 42, y: 48, targetRoomId: 'room_f22_vestier' }
+    ]
+  },
+  {
+    id: 'room_f22_hab_aux',
+    name: 'Suite Auxiliar / Huéspedes',
+    level: 'Planta Nivel 2 • Suite',
+    area: '32 m²',
+    materials: 'Mueble bajo en roble, pantalla empotrada, cama central y ventanales de piso a techo',
+    previewUrl: '/HACIENDA F22/360/HAB AUX.jpg',
+    hotspots: [
+      { id: 'hs-aux-1', label: 'Cama Circular de Diseño', detail: 'Mobiliario vanguardista en tonos arena y textiles naturales.', x: 50, y: 64 },
+      { id: 'hs-aux-2', label: 'Ventanales Panorámicos', detail: 'Apertura directa de luz natural con vista a los árboles perimetrales.', x: 66, y: 48 },
+      { id: 'hs-aux-3', label: 'Volver a Mezzanine', detail: 'Salir al pasillo distribuidor de Nivel 2 →', x: 88, y: 50, targetRoomId: 'room_f22_pasillo' }
     ]
   }
 ];
@@ -822,7 +913,7 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       bathrooms: 5,
       parkingSpaces: 4,
       modality: 'Llave en Mano • AMHO Construcciones',
-      levels: '2 Plantas + Rooftop Mirador'
+      levels: '3 Plantas (Piso 1 Social, Piso 2 Suites, Piso 3 Sky Lounge)'
     },
     renders: HACIENDA_F22_RENDERS,
     levels: HACIENDA_F22_LEVELS,

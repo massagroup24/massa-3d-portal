@@ -8,6 +8,7 @@ interface DockProps {
   onSelectTab: (tab: NavTab) => void;
   userRole?: 'client' | 'architect' | 'guest';
   className?: string;
+  brandColor?: string;
 }
 
 interface DockItem {
@@ -35,7 +36,7 @@ const GUEST_DOCK_ITEMS: DockItem[] = [
   { id: 'contact', label: 'Contacto', icon: Phone },
 ];
 
-export function Dock({ activeTab, onSelectTab, userRole = 'client', className = '' }: DockProps) {
+export function Dock({ activeTab, onSelectTab, userRole = 'client', className = '', brandColor = '#9CD01A' }: DockProps) {
   const dockRef = useRef<HTMLDivElement>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [mouseX, setMouseX] = useState<number | null>(null);
@@ -95,12 +96,14 @@ export function Dock({ activeTab, onSelectTab, userRole = 'client', className = 
             style={{
               transform: `scale(${scale})`,
               transition: mouseX === null ? 'transform 0.25s ease-out' : 'transform 0.08s ease-out',
+              backgroundColor: isActive ? `${brandColor}22` : undefined,
+              color: isActive ? brandColor : undefined,
             }}
             className={`
               group relative flex flex-col items-center justify-center
               w-12 h-12 rounded-2xl cursor-pointer select-none
               transition-colors duration-200
-              ${isActive ? 'bg-[#9CD01A]/15 text-[#9CD01A]' : 'text-[#A3A3A3] hover:text-[#F5F5F5] hover:bg-white/[0.08]'}
+              ${isActive ? '' : 'text-[#A3A3A3] hover:text-[#F5F5F5] hover:bg-white/[0.08]'}
             `}
             title={item.label}
           >
@@ -119,7 +122,7 @@ export function Dock({ activeTab, onSelectTab, userRole = 'client', className = 
 
             {/* Indicador de activo: Dot verde lima Massa */}
             {isActive && (
-              <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#9CD01A] shadow-[0_0_8px_rgba(156,208,26,0.9)]" />
+              <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: brandColor, boxShadow: `0 0 8px ${brandColor}` }} />
             )}
           </button>
         );

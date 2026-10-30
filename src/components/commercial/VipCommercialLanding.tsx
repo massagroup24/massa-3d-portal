@@ -765,11 +765,15 @@ export function VipCommercialLanding({
             const isHacienda = residence.id === 'project_hacienda_f22';
             const identity = getProjectIdentity(residence.id);
             const brand = identity.clientBrand;
-            const isCustomBrand = Boolean(brand);
-            const primaryColor = identity.theme.primaryColor || '#9CD01A';
+            // Solo Hacienda F22 tiene marca de cliente externo (AMHO Construcciones con acentos champagne gold)
+            // Ibiza A14 conserva la identidad de autor insigne de MASSA con su verde lima característico (#9CD01A)
+            const isCustomBrand = Boolean(brand && isHacienda);
+            const primaryColor = identity.theme.primaryColor || (isHacienda ? '#DFC47B' : '#9CD01A');
             const metallicGradient =
               brand?.metallicGradient ||
-              `linear-gradient(135deg, ${primaryColor} 0%, ${identity.theme.primaryHover || primaryColor} 100%)`;
+              (isHacienda
+                ? 'linear-gradient(135deg, #B89752 0%, #DFC47B 32%, #F7E8A8 50%, #D1B16B 74%, #9E7D3B 100%)'
+                : 'linear-gradient(135deg, #729B0E 0%, #9CD01A 35%, #D4FF5E 52%, #8CBF14 76%, #5B7E08 100%)');
 
             const facadeRender =
               identity.heroVideoPoster ||
@@ -794,7 +798,7 @@ export function VipCommercialLanding({
                       : 'lg:flex-[3.5] flex-none min-h-[440px] lg:min-h-0 border-[#9CD01A]/60 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_40px_rgba(156,208,26,0.15)]'
                     : isCustomBrand
                       ? 'lg:flex-[1] flex-none min-h-[90px] lg:min-h-0 border-[#DFC47B]/25 hover:border-[#DFC47B]/55'
-                      : 'lg:flex-[1] flex-none min-h-[90px] lg:min-h-0 border-white/10 hover:border-white/30'
+                      : 'lg:flex-[1] flex-none min-h-[90px] lg:min-h-0 border-[#9CD01A]/20 hover:border-[#9CD01A]/50'
                 }`}
               >
                 {/* Visual de Fondo Unificado: Render Fotorrealista de Fachada en Alta Definición para ambas obras */}
@@ -848,15 +852,27 @@ export function VipCommercialLanding({
                     </div>
                     <h3
                       style={{ fontFamily: identity.theme.fontFamilyTitle }}
-                      className="text-base sm:text-lg lg:text-2xl font-black text-white uppercase tracking-wider lg:[writing-mode:vertical-rl] lg:rotate-180 truncate"
+                      className="text-base sm:text-lg lg:text-2xl font-black uppercase tracking-wider lg:[writing-mode:vertical-rl] lg:rotate-180 truncate select-none"
                     >
-                      {residence.name}
+                      <span className="text-white">{identity.titlePrefix || (isHacienda ? 'HACIENDA' : 'IBIZA')}</span>{' '}
+                      <span
+                        className="inline-block font-black"
+                        style={{
+                          backgroundImage: metallicGradient,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          color: primaryColor,
+                          filter: `drop-shadow(0 0 16px ${primaryColor}75)`
+                        }}
+                      >
+                        {identity.titleHighlight || (isHacienda ? 'F22' : 'A14')}
+                      </span>
                     </h3>
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-colors ${
                         isCustomBrand
                           ? 'bg-[#DFC47B]/15 border-[#DFC47B]/40 text-[#F1E29B]'
-                          : 'bg-white/10 border-white/15 text-white/70'
+                          : 'bg-[#9CD01A]/15 border-[#9CD01A]/40 text-[#9CD01A]'
                       }`}
                     >
                       <ArrowUpRight className="w-4 h-4" />
@@ -934,14 +950,20 @@ export function VipCommercialLanding({
 
                       <h3
                         style={{ fontFamily: identity.theme.fontFamilyTitle }}
-                        className="text-3xl sm:text-5xl lg:text-6xl font-black mb-3 tracking-tight uppercase leading-none"
+                        className="text-3xl sm:text-5xl lg:text-6xl font-black mb-3 tracking-tight uppercase leading-none select-none"
                       >
-                        <span className="text-white">{identity.titlePrefix || residence.name}</span>{' '}
+                        <span className="text-white">{identity.titlePrefix || (isHacienda ? 'HACIENDA' : 'IBIZA')}</span>{' '}
                         <span
-                          className="bg-clip-text text-transparent"
-                          style={{ backgroundImage: metallicGradient }}
+                          className="inline-block bg-clip-text text-transparent font-black"
+                          style={{
+                            backgroundImage: metallicGradient,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            color: primaryColor,
+                            filter: `drop-shadow(0 0 25px ${primaryColor}55)`
+                          }}
                         >
-                          {identity.titleHighlight || ''}
+                          {identity.titleHighlight || (isHacienda ? 'F22' : 'A14')}
                         </span>
                       </h3>
 

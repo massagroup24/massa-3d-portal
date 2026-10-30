@@ -2,15 +2,18 @@ import { Canvas, ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, useTexture, Html } from '@react-three/drei';
 import { Suspense, useState } from 'react';
 import { BackSide } from 'three';
-import { Room } from '../data/tourData';
+import { Room, Hotspot } from '../data/tourData';
+import { Navigation, Edit3 } from 'lucide-react';
 
 interface HotspotEditorProps {
   room: Room;
   onAddHotspot: (position: [number, number, number]) => void;
+  onEditHotspot?: (hotspot: Hotspot) => void;
 }
 
 function EditableSphere({ imageUrl, onClick }: { imageUrl: string; onClick: (p: [number, number, number]) => void }) {
-  const texture = useTexture(imageUrl);
+  const safeUrl = encodeURI(imageUrl);
+  const texture = useTexture(safeUrl);
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
@@ -27,7 +30,7 @@ function EditableSphere({ imageUrl, onClick }: { imageUrl: string; onClick: (p: 
   );
 }
 
-export function HotspotEditor3D({ room, onAddHotspot }: HotspotEditorProps) {
+export function HotspotEditor3D({ room, onAddHotspot, onEditHotspot }: HotspotEditorProps) {
   const [addingPoint, setAddingPoint] = useState(false);
 
   if (!room) return null;
@@ -76,12 +79,26 @@ export function HotspotEditor3D({ room, onAddHotspot }: HotspotEditorProps) {
           )}
         </Suspense>
         
-        {/* Render existing hotspots as ghost markers */}
+        {/* Render existing hotspots with full interactive click-to-edit capability */}
         {(room.hotspots || []).filter(Boolean).map((hotspot) => (
           <Html key={hotspot.id} position={hotspot.position} center>
-            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm border border-white flex items-center justify-center opacity-50 pointer-events-none">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onEditHotspot) onEditHotspot(hotspot);
+              }}
+              className="group flex flex-col items-center justify-center cursor-pointer pointer-events-auto"
+              title={`Clic para editar texto o eliminar: "${hotspot.label || 'Botón interactivo'}"`}
+            >
+              <div className="w-10 h-10 rounded-full bg-black/80 backdrop-blur-md border-2 border-lime-400 text-lime-400 flex items-center justify-center shadow-[0_0_15px_rgba(156,208,26,0.6)] group-hover:scale-125 group-hover:bg-lime-500 group-hover:text-black transition-all">
+                <Navigation className="w-4 h-4 -rotate-45" />
+              </div>
+              <div className="mt-1.5 bg-black/90 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full border border-lime-400/50 shadow-2xl whitespace-nowrap group-hover:border-lime-400 flex items-center gap-1.5 transition-all">
+                <span>{hotspot.label || 'Punto interactivo'}</span>
+                <Edit3 className="w-3 h-3 text-lime-400" />
+              </div>
+            </button>
           </Html>
         ))}
 

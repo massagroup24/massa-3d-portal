@@ -23,6 +23,7 @@ export function PortalLayout({
   activeTab,
   onSelectTab,
   projectName = 'RESIDENCIA JEJÉN',
+
   userRole = 'client',
   onLogout,
   hideNav = false,
@@ -31,6 +32,8 @@ export function PortalLayout({
   onContact,
   onBackToPortfolio,
 }: PortalLayoutProps) {
+  const isF22 = Boolean(projectName?.includes('F22') || projectName?.includes('HACIENDA') || projectName?.includes('Hacienda'));
+  const primaryColor = isF22 ? '#DFC47B' : '#9CD01A';
   return (
     <div className="relative min-h-screen w-full bg-[#0D0D0E] text-[#F5F5F5] flex flex-col overflow-x-hidden selection:bg-[#9CD01A] selection:text-[#0D0D0E]">
       {/* Fondo de Orbes Ambientales */}
@@ -57,11 +60,11 @@ export function PortalLayout({
         <>
           {/* Dock centrado en escritorio */}
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-            <Dock activeTab={activeTab} onSelectTab={onSelectTab} userRole={userRole} />
+            <Dock activeTab={activeTab} onSelectTab={onSelectTab} userRole={userRole} brandColor={primaryColor} />
           </div>
 
           {/* Barra inferior de vidrio en móvil */}
-          <MobileNavBar activeTab={activeTab} onSelectTab={onSelectTab} userRole={userRole} />
+          <MobileNavBar activeTab={activeTab} onSelectTab={onSelectTab} userRole={userRole} brandColor={primaryColor} />
         </>
       )}
     </div>

@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, ProjectRender } from '../../config/projectIdentityConfig';
 import { TourContainer } from '../TourContainer';
-import { projectsData, Project } from '../../data/tourData';
+import { projectsData, Project, Room, resolveCanonicalProjectId, normalizeProject } from '../../data/tourData';
 import { SkiperArchitecturalCarousel } from './SkiperArchitecturalCarousel';
 import { SkiperParallaxGallery } from './SkiperParallaxGallery';
 
@@ -38,45 +38,45 @@ interface LevelInfo {
 const RESIDENCE_LEVELS_F22: LevelInfo[] = [
   {
     id: 'nivel-1',
-    name: 'Planta Nivel 1',
-    area: '290 m²',
-    role: 'Zona Social & Recreativa Exterior',
+    name: 'Planta Piso 1',
+    area: '290 m² + 220 m² Exteriores',
+    role: 'Zona Social, Gastronomía & Piscina Infinity',
     spaces: [
       'Pórtico monumental de acceso con puerta pivotante sobredimensionada y atrio de recibo',
       'Gran salón con doble altura (6.8 m) y chimenea lineal de bioetanol',
       'Comedor formal para 10 puestos integrado al paisaje verde exterior',
-      'Cocina de chef con isla en cuarcita Taj Mahal y despensa oculta',
+      'Cocina de chef con isla curva en mármol y despensa oculta',
       'Cava vertical climatizada para vinos selectos',
-      'Family Lounge acústico y Home Office / Estudio privado',
-      'Piscina infinity desbordante (48 m²) con jacuzzi hidromasaje y deck asoleadero',
+      'Estudio privado ejecutivo para teletrabajo y reuniones',
+      'Piscina infinity desbordante (48 m²) con jacuzzi hidromasaje y deck en teca',
       'Pabellón quincho gourmet con asador BBQ empotrado y barra exterior',
       'Garaje cubierto para 4 vehículos y cuartos técnicos'
     ]
   },
   {
     id: 'nivel-2',
-    name: 'Planta Nivel 2',
+    name: 'Planta Piso 2',
     area: '210 m²',
-    role: 'Zona Privada de Suites Familiares',
+    role: 'Zona Privada de Suites Familiares & Mezzanine',
     spaces: [
       'Puente pasarela acristalado sobre el salón central con visuales cenitales',
       'Master Suite Presidencial con terraza privada panorámica',
       'Walk-in Closet Boutique con vitrinas ahumadas e iluminación perimetral LED',
-      'Master Bath & Spa con tina exenta monolítica, doble tocador y doble ducha pluvial',
+      'Master Bath & Spa con tina exenta monolítica, claraboya cenital y doble tocador flotante',
       '3 Suites secundarias completas con baño privado y clóset en roble',
-      'Estar íntimo nocturno y estación de servicio'
+      'Estar íntimo nocturno y galería de distribución'
     ]
   },
   {
     id: 'nivel-3',
-    name: 'Nivel 3 • Rooftop',
-    area: '60 m²',
-    role: 'Sky Lounge & Cubierta Mirador',
+    name: 'Planta Piso 3',
+    area: '60 m² Cubiertos + 110 m² Terraza',
+    role: 'Sky Lounge, Sala de Juegos & Terraza Mirador 360°',
     spaces: [
-      'Mirador 360° con vistas despejadas a las colinas y atardeceres',
-      'Lounge a cielo abierto para veladas privadas y fogata de diseño',
-      'Pérgola bioclimática con cubierta vegetal viva',
-      'Barra de apoyo exterior para eventos nocturnos'
+      'Salón de entretenimiento y ocio con mesa de ping pong y estar de autor',
+      'Gran terraza mirador 360° con vistas despejadas a las colinas y atardeceres',
+      'Lounge a cielo abierto para veladas privadas y fogata de diseño (fire pit)',
+      'Jardineras perimetrales integradas y barra de apoyo exterior para eventos nocturnos'
     ]
   }
 ];
@@ -146,64 +146,150 @@ interface Room360Info {
 
 const ROOMS_360_F22: Room360Info[] = [
   {
-    id: 'salon',
-    name: 'Gran Salón & Atrio Monumental',
+    id: 'room_f22_zona_social',
+    name: 'Oasis Exterior & Piscina Infinity',
     levelId: 'nivel-1',
-    cota: 'Cota +0.00 m • Nivel 1',
-    image: '/HACIENDA F22/SALA.jpg',
-    description: 'Espacio central de 6.8 m de doble altura con chimenea lineal, atrio de recibo y pasarela mezzanine.',
+    cota: 'Cota +0.00 m • Exterior',
+    image: '/HACIENDA F22/360/ZONA SOCIAL.jpg',
+    description: 'Deck exterior en madera teca, jardín paisajístico y piscina con jacuzzi integrado.',
     hotspots: [
-      { id: 'h1', title: 'Atrio & Puerta Pivotante', desc: 'Acceso monumental sobredimensionado con recibidor de gran formato.', x: 26, y: 50 },
-      { id: 'h2', title: 'Chimenea Lineal de Bioetanol', desc: 'Muro central en piedra sinterizada e iluminación perimetral.', x: 50, y: 58 },
-      { id: 'h3', title: 'Pasarela Mezzanine', desc: 'Puente acristalado de conexión al Nivel 2 sobre el vacío central.', x: 72, y: 36 },
+      { id: 'h-zs-1', title: 'Piscina Infinity & Jacuzzi', desc: 'Borde desbordante con hidromasaje y asoleadero.', x: 38, y: 64 },
+      { id: 'h-zs-2', title: 'Pabellón Quincho BBQ', desc: 'Cocina exterior cubierta para asados gourmet.', x: 22, y: 52 },
+      { id: 'h-zs-3', title: 'Gran Salón Principal', desc: 'Apertura hacia el salón de doble altura.', x: 74, y: 52 },
     ]
   },
   {
-    id: 'cocina',
+    id: 'room_f22_bbq',
+    name: 'Pabellón BBQ & Quincho Gourmet',
+    levelId: 'nivel-1',
+    cota: 'Cota +0.00 m • Exterior Gourmet',
+    image: '/HACIENDA F22/360/BBQ.jpg',
+    description: 'Cocina exterior cubierta con asador empotrado, comedor y vistas a la piscina.',
+    hotspots: [
+      { id: 'h-bbq-1', title: 'Estación de Asados', desc: 'Parrilla empotrada en acero inoxidable con campana.', x: 86, y: 54 },
+      { id: 'h-bbq-2', title: 'Deck & Piscina', desc: 'Salida al jardín y área de piscina.', x: 52, y: 60 },
+    ]
+  },
+  {
+    id: 'room_f22_sala',
+    name: 'Gran Salón de Doble Altura & Comedor',
+    levelId: 'nivel-1',
+    cota: 'Cota +0.00 m • Nivel 1 Social',
+    image: '/HACIENDA F22/360/SALA.jpg',
+    description: 'Salón monumental a doble altura con chimenea lineal, atrio de recibo y ventanales al jardín.',
+    hotspots: [
+      { id: 'h-sala-1', title: 'Chimenea Lineal', desc: 'Muro central en piedra sinterizada e iluminación perimetral.', x: 50, y: 58 },
+      { id: 'h-sala-2', title: 'Puente Mezzanine', desc: 'Pasarela acristalada hacia suites de Nivel 2.', x: 34, y: 32 },
+      { id: 'h-sala-3', title: 'Cocina de Chef', desc: 'Isla monolítica en cuarcita y cava de vinos.', x: 20, y: 52 },
+    ]
+  },
+  {
+    id: 'room_f22_cocina',
     name: 'Cocina de Chef & Cava Climatizada',
     levelId: 'nivel-1',
-    cota: 'Cota +0.00 m • Nivel 1',
-    image: '/HACIENDA F22/COCINA.jpg',
-    description: 'Isla monolítica en cuarcita Taj Mahal, despensa oculta y cava vertical de vinos selectos.',
+    cota: 'Cota +0.00 m • Gastronomía',
+    image: '/HACIENDA F22/360/COCINA_1.jpg',
+    description: 'Isla monolítica en cuarcita Taj Mahal, vitrina de vinos con vidrio bronce y carpintería soft-close.',
     hotspots: [
-      { id: 'h4', title: 'Isla Central Taj Mahal', desc: 'Cuarcita exótica de alta resistencia con barra de servicio.', x: 38, y: 56 },
-      { id: 'h5', title: 'Cava de Vinos Vertical', desc: 'Control bioclimático digital y carpintería en roble.', x: 68, y: 46 },
+      { id: 'h-coc-1', title: 'Isla Monolítica Curva', desc: 'Cuarcita exótica con estufa de inducción.', x: 50, y: 68 },
+      { id: 'h-coc-2', title: 'Cava de Vinos', desc: 'Vitrina climatizada con iluminación cálida.', x: 28, y: 46 },
     ]
   },
   {
-    id: 'piscina',
-    name: 'Terraza Piscina Infinity & Quincho',
+    id: 'room_f22_estudio',
+    name: 'Estudio & Home Office Ejecutivo',
     levelId: 'nivel-1',
-    cota: 'Cota -0.15 m • Exterior',
-    image: '/HACIENDA F22/PISCINA.jpg',
-    description: 'Piscina infinity desbordante (48 m²) con jacuzzi hidromasaje, deck asoleadero y pabellón BBQ.',
+    cota: 'Cota +0.00 m • Despacho',
+    image: '/HACIENDA F22/360/ESTUDIO.jpg',
+    description: 'Despacho privado con escritorio curvo, estantería retroiluminada y visual al frente.',
     hotspots: [
-      { id: 'h6', title: 'Piscina Infinity Desbordante', desc: '48 m² con borde infinito hacia las colinas y jacuzzi integrado.', x: 44, y: 62 },
-      { id: 'h7', title: 'Pabellón Quincho Gourmet', desc: 'Asador BBQ empotrado, barra exterior y pérgola protectora.', x: 78, y: 48 },
+      { id: 'h-est-1', title: 'Escritorio de Autor', desc: 'Mobiliario ergonómico curvo con conexiones integradas.', x: 26, y: 64 },
+      { id: 'h-est-2', title: 'Biblioteca Iluminada', desc: 'Estantes curvos con luz indirecta 2700K.', x: 48, y: 50 },
     ]
   },
   {
-    id: 'master',
-    name: 'Master Suite Presidencial & Spa',
+    id: 'room_f22_escaleras',
+    name: 'Atrio Escultórico & Escalera Flotante',
+    levelId: 'nivel-1',
+    cota: 'Cota +1.50 m • Transición',
+    image: '/HACIENDA F22/360/ESCALERAS.jpg',
+    description: 'Escalera flotante de autor con peldaños macizos en madera y baranda de cristal bajo doble altura.',
+    hotspots: [
+      { id: 'h-esc-1', title: 'Peldaños en Voladizo', desc: 'Estructura metálica interna oculta y madera termo-tratada.', x: 50, y: 46 },
+      { id: 'h-esc-2', title: 'Acceso a Suites Nivel 2', desc: 'Puente distribuidor mezzanine hacia el área privada.', x: 50, y: 32 },
+    ]
+  },
+  {
+    id: 'room_f22_pasillo',
+    name: 'Puente Mezzanine & Galería Nivel 2',
     levelId: 'nivel-2',
-    cota: 'Cota +3.60 m • Nivel 2',
-    image: '/HACIENDA F22/DORMITORIO.jpg',
-    description: 'Suite principal con terraza privada panorámica, vestidor boutique y spa con tina exenta.',
+    cota: 'Cota +3.60 m • Distribución Nivel 2',
+    image: '/HACIENDA F22/360/PASILLO 2P.jpg',
+    description: 'Puente acristalado mezzanine con visual panorámica a la doble altura y distribución de suites.',
     hotspots: [
-      { id: 'h8', title: 'Terraza Privada Panorámica', desc: 'Visuales abiertas 180° hacia el paisaje natural circundante.', x: 32, y: 42 },
-      { id: 'h9', title: 'Master Bath & Spa Privado', desc: 'Tina monolítica, doble tocador flotante y doble ducha pluvial.', x: 66, y: 54 },
+      { id: 'h-pas-1', title: 'Visual Vacío Central', desc: 'Vista sobre el gran salón y piscina exterior.', x: 32, y: 64 },
+      { id: 'h-pas-2', title: 'Master Suite Presidencial', desc: 'Suite de autor con vestier boutique.', x: 50, y: 44 },
+      { id: 'h-pas-3', title: 'Family Lounge', desc: 'Sala de estar y juegos familiares.', x: 24, y: 48 },
     ]
   },
   {
-    id: 'rooftop',
-    name: 'Sky Lounge & Cubierta Mirador',
+    id: 'room_f22_sala_tv',
+    name: 'Sky Lounge, Juegos & Mirador 360°',
     levelId: 'nivel-3',
-    cota: 'Cota +7.20 m • Nivel 3',
-    image: '/HACIENDA F22/FACHADA DRON.png',
-    description: 'Mirador 360° con vistas despejadas, fire pit a cielo abierto y barra de apoyo para eventos.',
+    cota: 'Cota +7.20 m • Piso 3 (Rooftop)',
+    image: '/HACIENDA F22/360/SALA TV.jpg',
+    description: 'Salón de entretenimiento en tercer piso con mesa de ping pong, estar de autor y ventanales panorámicos hacia la gran terraza mirador 360°.',
     hotspots: [
-      { id: 'h10', title: 'Mirador 360° Panorámico', desc: 'Vistas despejadas hacia los atardeceres y colinas de Cúcuta.', x: 50, y: 38 },
-      { id: 'h11', title: 'Fire Pit & Lounge Exterior', desc: 'Zona de fogata a cielo abierto con asientos monolíticos.', x: 74, y: 62 },
+      { id: 'h-tv-1', title: 'Mesa de Ping Pong / Ocio', desc: 'Área de juegos con iluminación perimetral suspendida.', x: 50, y: 56 },
+      { id: 'h-tv-2', title: 'Gran Terraza Mirador 360°', desc: 'Salida directa a la cubierta mirador hacia el horizonte.', x: 68, y: 48 },
+    ]
+  },
+  {
+    id: 'room_f22_master',
+    name: 'Master Suite Presidencial',
+    levelId: 'nivel-2',
+    cota: 'Cota +3.60 m • Suite Principal',
+    image: '/HACIENDA F22/360/HAB PPAL 1.jpg',
+    description: 'Suite principal con cama king, panelado en roble, terraza privada y acceso al vestier boutique.',
+    hotspots: [
+      { id: 'h-m-1', title: 'Cama King & Panelado Roble', desc: 'Cabecero acústico de autor con luces rasantes.', x: 50, y: 58 },
+      { id: 'h-m-2', title: 'Vestier Boutique', desc: 'Walk-in closet en vidrio ahumado y tocador.', x: 82, y: 50 },
+    ]
+  },
+  {
+    id: 'room_f22_vestier',
+    name: 'Vestier Boutique & Walk-In Closet',
+    levelId: 'nivel-2',
+    cota: 'Cota +3.60 m • Vestier',
+    image: '/HACIENDA F22/360/VESTIER.jpg',
+    description: 'Armarios y vitrinas en vidrio ahumado retroiluminado con tocador de gran formato.',
+    hotspots: [
+      { id: 'h-v-1', title: 'Vitrinas Boutique', desc: 'Mobiliario iluminado de alta costura.', x: 74, y: 52 },
+      { id: 'h-v-2', title: 'Master Bath & Spa', desc: 'Tina exenta y claraboya cenital natural.', x: 50, y: 48 },
+    ]
+  },
+  {
+    id: 'room_f22_wc_ppal',
+    name: 'Master Bath & Spa Privado',
+    levelId: 'nivel-2',
+    cota: 'Cota +3.60 m • Spa Privado',
+    image: '/HACIENDA F22/360/WCPPAL.jpg',
+    description: 'Baño de lujo con tina exenta, claraboya cenital natural, doble tocador flotante y ducha spa.',
+    hotspots: [
+      { id: 'h-wc-1', title: 'Tina Escultórica Exenta', desc: 'Bañera bajo luz cenital natural de claraboya.', x: 26, y: 72 },
+      { id: 'h-wc-2', title: 'Doble Tocador Flotante', desc: 'Mesón suspendido con grifería negra y espejo iluminado.', x: 54, y: 50 },
+    ]
+  },
+  {
+    id: 'room_f22_hab_aux',
+    name: 'Suite Auxiliar / Huéspedes',
+    levelId: 'nivel-2',
+    cota: 'Cota +3.60 m • Suite',
+    image: '/HACIENDA F22/360/HAB AUX.jpg',
+    description: 'Dormitorio secundario con cama central, carpintería a medida y visual abierta.',
+    hotspots: [
+      { id: 'h-aux-1', title: 'Cama Circular Vanguardista', desc: 'Diseño exclusivo en tonos neutros y maderas claras.', x: 50, y: 64 },
+      { id: 'h-aux-2', title: 'Ventanales Panorámicos', desc: 'Luz natural y visual a jardines.', x: 66, y: 48 },
     ]
   }
 ];
@@ -301,10 +387,126 @@ export function ProjectDedicatedView() {
     return isHaciendaF22 ? RESIDENCE_LEVELS_F22 : RESIDENCE_LEVELS_A14;
   }, [isHaciendaF22]);
 
-  // Ambientes 360° del escenario protagonista
+  const [projectUpdateCounter, setProjectUpdateCounter] = useState(0);
+
+  // Escuchar sincronización en tiempo real desde el editor de recorridos
+  useEffect(() => {
+    const handleUpdate = () => {
+      setProjectUpdateCounter(prev => prev + 1);
+    };
+    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('massa_project_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('massa_project_updated', handleUpdate);
+    };
+  }, []);
+
+  const canonicalId = resolveCanonicalProjectId(identity?.id || id || 'project_hacienda_f22');
+
+  // Sincronizar con datos oficiales + cambios guardados en el editor (localStorage: massa_custom_projects)
+  const rawProjectData = useMemo<Project | null>(() => {
+    const baseData = (canonicalId && projectsData[canonicalId]) 
+      ? projectsData[canonicalId] 
+      : (identity?.id && projectsData[identity.id]) || null;
+
+    try {
+      // 1. Clave principal del editor: massa_custom_projects
+      const storedMassa = localStorage.getItem('massa_custom_projects');
+      if (storedMassa) {
+        const parsed = JSON.parse(storedMassa);
+        const customObj = parsed[canonicalId] || (identity?.id && parsed[identity.id]);
+        if (customObj) {
+          // Fusión defensiva de habitaciones conservando texturas 360 y planos canónicos
+          const baseRooms = baseData?.rooms || {};
+          const customRooms = customObj.rooms || {};
+          const mergedRooms: Record<string, Room> = {};
+          const allRoomKeys = new Set([...Object.keys(baseRooms), ...Object.keys(customRooms)]);
+          for (const key of allRoomKeys) {
+            const bR = baseRooms[key];
+            const cR = customRooms[key];
+            if (cR && bR) {
+              mergedRooms[key] = {
+                ...bR,
+                ...cR,
+                imageUrl: cR.imageUrl || bR.imageUrl,
+                floorPlanImage: cR.floorPlanImage || bR.floorPlanImage,
+                floorLevel: cR.floorLevel || bR.floorLevel || 'Piso 1',
+                hotspots: (cR.hotspots && cR.hotspots.length > 0) ? cR.hotspots : (bR.hotspots || [])
+              };
+            } else if (cR) {
+              mergedRooms[key] = { ...cR };
+            } else if (bR) {
+              mergedRooms[key] = { ...bR };
+            }
+          }
+
+          return normalizeProject({
+            ...(baseData || {}),
+            ...customObj,
+            rooms: mergedRooms,
+            floorPlans: {
+              ...(baseData?.floorPlans || {}),
+              ...(customObj.floorPlans || {})
+            },
+            id: canonicalId
+          });
+        }
+      }
+
+      // 2. Resguardo por compatibilidad histórica
+      const savedV4 = localStorage.getItem('custom_projects_v4');
+      if (savedV4) {
+        const parsedV4 = JSON.parse(savedV4);
+        const customObjV4 = parsedV4[canonicalId];
+        if (customObjV4) {
+          return normalizeProject({
+            ...(baseData || {}),
+            ...customObjV4,
+            rooms: {
+              ...(baseData?.rooms || {}),
+              ...(customObjV4.rooms || {})
+            },
+            id: canonicalId
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Error leyendo proyectos de localStorage:", err);
+    }
+
+    return baseData ? normalizeProject(baseData) : null;
+  }, [canonicalId, identity?.id, projectUpdateCounter]);
+
+  // Ambientes 360° del escenario protagonista (sincronizados con el editor)
   const rooms360List = useMemo<Room360Info[]>(() => {
+    if (rawProjectData?.rooms && Object.keys(rawProjectData.rooms).length > 0) {
+      return Object.values(rawProjectData.rooms).map((r) => {
+        const levelId = (r.floorLevel === 'Piso 3' || r.floorLevel === 'Nivel 3' || r.floorLevel === 'Rooftop')
+          ? 'nivel-3'
+          : (r.floorLevel === 'Piso 2' || r.floorLevel === 'Nivel 2')
+          ? 'nivel-2'
+          : 'nivel-1';
+        
+        return {
+          id: r.id,
+          name: r.name,
+          levelId,
+          cota: r.floorLevel ? `Nivel ${r.floorLevel}` : 'Cota +0.00 m',
+          image: r.imageUrl,
+          description: r.description || `Ambiente ${r.name}`,
+          hotspots: (r.hotspots || []).map((h, i) => ({
+            id: h.id || `h-${i}`,
+            title: h.label || 'Navegación 360°',
+            desc: `Conectar con ${rawProjectData.rooms[h.targetRoom]?.name || 'ambiente'}`,
+            x: 50,
+            y: 50
+          }))
+        };
+      });
+    }
     return isHaciendaF22 ? ROOMS_360_F22 : ROOMS_360_A14;
-  }, [isHaciendaF22]);
+  }, [rawProjectData, isHaciendaF22]);
 
   // Lightbox Modal para ampliar cualquier render en alta definición
   const [lightboxRender, setLightboxRender] = useState<ProjectRender | null>(null);
@@ -319,7 +521,7 @@ export function ProjectDedicatedView() {
   const [activeTourRoomId, setActiveTourRoomId] = useState<string>('');
 
   // Estados para el Escenario Protagonista 360° Integrado en la Sección
-  const [active360RoomId, setActive360RoomId] = useState<string>(() => (isHaciendaF22 ? 'salon' : 'a14-salon'));
+  const [active360RoomId, setActive360RoomId] = useState<string>(() => (isHaciendaF22 ? 'room_f22_zona_social' : 'a14-salon'));
   const [is360AutoRotating, setIs360AutoRotating] = useState(true);
   const [cameraRotationX, setCameraRotationX] = useState(0); // Pan horizontal
   const [cameraRotationY, setCameraRotationY] = useState(0); // Tilt vertical
@@ -513,29 +715,12 @@ export function ProjectDedicatedView() {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Sincronizar con escenas 360° guardadas en el Estudio de Recorridos 360° (localStorage + tourData)
-  const rawProjectData = useMemo<Project | null>(() => {
-    const baseData = identity.id && projectsData[identity.id] ? projectsData[identity.id] : null;
-    try {
-      const saved = localStorage.getItem('custom_projects_v4');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (identity.id && parsed[identity.id]) {
-          return parsed[identity.id] as Project;
-        }
-      }
-    } catch {
-      // ignore storage read error
-    }
-    return baseData;
-  }, [identity.id, is360Active]);
-
   useEffect(() => {
     if (rawProjectData?.rooms) {
       const firstId = Object.keys(rawProjectData.rooms)[0] || '';
-      setActiveTourRoomId(firstId);
+      if (!activeTourRoomId) setActiveTourRoomId(firstId);
     }
-  }, [rawProjectData]);
+  }, [rawProjectData, activeTourRoomId]);
 
   const brand = identity.clientBrand;
   const primaryColor = identity.theme.primaryColor || '#DFC47B';
@@ -622,8 +807,13 @@ export function ProjectDedicatedView() {
                 >
                   <span className="text-white">{titlePrefix}</span>{' '}
                   <span 
-                    className="bg-clip-text text-transparent"
-                    style={{ backgroundImage: metallicAccentGradient }}
+                    className="inline-block bg-clip-text text-transparent font-black"
+                    style={{
+                      backgroundImage: metallicAccentGradient,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      color: primaryColor
+                    }}
                   >
                     {titleHighlight}
                   </span>
@@ -839,9 +1029,12 @@ export function ProjectDedicatedView() {
             >
               {titlePrefix}{' '}
               <span 
-                className="inline sm:block bg-clip-text text-transparent"
+                className="inline sm:block bg-clip-text text-transparent font-black"
                 style={{
                   backgroundImage: metallicAccentGradient,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  color: primaryColor,
                   filter: `drop-shadow(0 0 35px ${primaryColor}48)`
                 }}
               >
@@ -1070,7 +1263,10 @@ export function ProjectDedicatedView() {
                 )}
                 <span className="truncate">{brand?.companyName || identity.brandName}</span>
               </span>
-              <span className="font-bold shrink-0" style={{ color: primaryHover }}>{identity.name}</span>
+              <span className="font-bold shrink-0">
+                <span className="text-white">{titlePrefix}</span>{' '}
+                <span style={{ color: primaryHover }}>{titleHighlight}</span>
+              </span>
             </div>
 
           </div>
@@ -1158,7 +1354,7 @@ export function ProjectDedicatedView() {
                     </span>
                   </h2>
                   <p className="text-xs sm:text-sm text-white/70 leading-relaxed mb-4 sm:mb-5">
-                    La residencia <strong className="text-white">{identity.name}</strong> sintetiza la visión constructiva de <strong style={{ color: primaryHover }}>{brand.companyName}</strong>: diseño arquitectónico bioclimático, estructuras de alta precisión, selección curada de materiales nobles y ejecución con rigor milimétrico en {identity.urbanization}.
+                    La residencia <strong className="text-white">{titlePrefix} <span style={{ color: primaryHover }}>{titleHighlight}</span></strong> sintetiza la visión constructiva de <strong style={{ color: primaryHover }}>{brand.companyName}</strong>: diseño arquitectónico bioclimático, estructuras de alta precisión, selección curada de materiales nobles y ejecución con rigor milimétrico en {identity.urbanization}.
                   </p>
 
                   <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
@@ -1319,8 +1515,26 @@ export function ProjectDedicatedView() {
               </span>
             </h2>
             <p className="text-xs sm:text-sm text-white/60 mt-2 sm:mt-3 leading-relaxed max-w-2xl">
-              Navegue e interactúe libremente por los ambientes de <strong className="text-white">{identity.name}</strong> diseñada por <strong style={{ color: primaryHover }}>{brand?.companyName || identity.brandName}</strong>. Arrastre en cualquier dirección para rotar en 360 grados, explore los puntos de interés arquitectónicos y cambie de nivel en tiempo real.
+              Navegue e interactúe libremente por los ambientes de <strong className="text-white">{titlePrefix} <span style={{ color: primaryHover }}>{titleHighlight}</span></strong> diseñada por <strong style={{ color: primaryHover }}>{brand?.companyName || identity.brandName}</strong>. Arrastre en cualquier dirección para rotar en 360 grados, explore los puntos de interés arquitectónicos y cambie de nivel en tiempo real.
             </p>
+          </div>
+
+          {/* ACCIÓN PRINCIPAL PROTAGONISTA: ENTRAR AL RECORRIDO 360° INMERSIVO */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIs360Active(true)}
+              style={{
+                backgroundImage: metallicAccentGradient,
+                boxShadow: `0 12px 35px ${primaryColor}55`,
+                color: '#060608'
+              }}
+              className="group relative px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-mono text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-3 transition-all duration-300 hover:scale-[1.03] active:scale-95 cursor-pointer shadow-2xl"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-black animate-ping" />
+              <Compass className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" />
+              <span>Entrar al Recorrido 360° Inmersivo</span>
+            </button>
           </div>
         </div>
 
@@ -1562,28 +1776,35 @@ export function ProjectDedicatedView() {
 
             </div>
 
-            {/* GUÍA DE INTERACCIÓN CENTRAL */}
+            {/* GUÍA DE INTERACCIÓN CENTRAL / ACCESO RÁPIDO AL TOUR INMERSIVO */}
             {!hasInteractedWith360 && !activeHotspot && (
-              <div className="self-center flex flex-col items-center text-center animate-bounce pointer-events-none">
-                <div
-                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/70 border backdrop-blur-md flex items-center justify-center mb-1.5 sm:mb-2"
-                  style={{
-                    borderColor: `${primaryColor}90`,
-                    boxShadow: `0 0 25px ${primaryColor}55`
-                  }}
+              <div className="self-center flex flex-col items-center text-center pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={() => setIs360Active(true)}
+                  className="group flex flex-col items-center cursor-pointer transition-transform hover:scale-105 active:scale-95"
                 >
-                  {brand?.logoIcon ? (
-                    <img src={encodeURI(brand.logoIcon)} alt="" className="w-5 h-5 sm:w-7 sm:h-7 object-contain" />
-                  ) : (
-                    <Compass className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: primaryColor }} />
-                  )}
-                </div>
-                <span
-                  className="text-[9px] sm:text-[11px] font-mono font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-white/95 bg-black/75 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full border backdrop-blur-md"
-                  style={{ borderColor: `${primaryColor}55` }}
-                >
-                  ARRASTRA O TOCA PUNTOS 360°
-                </span>
+                  <div
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-black/80 border backdrop-blur-xl flex items-center justify-center mb-2 transition-all duration-300 shadow-2xl"
+                    style={{
+                      borderColor: primaryColor,
+                      boxShadow: `0 0 30px ${primaryColor}70`
+                    }}
+                  >
+                    {brand?.logoIcon ? (
+                      <img src={encodeURI(brand.logoIcon)} alt="" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
+                    ) : (
+                      <Compass className="w-6 h-6 sm:w-7 sm:h-7 group-hover:rotate-45 transition-transform" style={{ color: primaryColor }} />
+                    )}
+                  </div>
+                  <span
+                    className="text-[10px] sm:text-xs font-mono font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-white bg-black/85 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border backdrop-blur-xl shadow-2xl flex items-center gap-2 group-hover:border-white transition-colors"
+                    style={{ borderColor: `${primaryColor}80` }}
+                  >
+                    <span>INICIAR RECORRIDO INMERSIVO 360°</span>
+                    <Maximize2 className="w-3.5 h-3.5" style={{ color: primaryColor }} />
+                  </span>
+                </button>
               </div>
             )}
 
@@ -1664,14 +1885,14 @@ export function ProjectDedicatedView() {
                 type="button"
                 onClick={() => setIs360Active(true)}
                 style={{
-                  backgroundColor: `${primaryColor}33`,
-                  borderColor: `${primaryColor}80`,
-                  color: primaryHover
+                  backgroundImage: metallicAccentGradient,
+                  boxShadow: `0 0 25px ${primaryColor}75`,
+                  color: '#060608'
                 }}
-                className="group px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shrink-0 hover:scale-105"
+                className="group px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-mono text-[11px] sm:text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xl shrink-0 hover:scale-105 active:scale-95"
               >
                 <span>Tour Inmersivo Total</span>
-                <Compass className="w-3.5 h-3.5 group-hover:rotate-45 transition-transform" />
+                <Compass className="w-4 h-4 group-hover:rotate-45 transition-transform" />
               </button>
 
             </div>
@@ -1849,8 +2070,13 @@ export function ProjectDedicatedView() {
               <div className="text-sm font-black uppercase tracking-tight">
                 <span className="text-white">RESIDENCIA {titlePrefix}</span>{' '}
                 <span
-                  className="bg-clip-text text-transparent"
-                  style={{ backgroundImage: metallicAccentGradient }}
+                  className="inline-block bg-clip-text text-transparent font-black"
+                  style={{
+                    backgroundImage: metallicAccentGradient,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    color: primaryColor
+                  }}
                 >
                   {titleHighlight}
                 </span>
@@ -2050,18 +2276,24 @@ export function ProjectDedicatedView() {
           7. RECORRIDO 360° INTEGRADO (CONECTADO CON EL ESTUDIO 360°)
           ========================================================================= */}
       {is360Active && rawProjectData && (
-        <div className="fixed inset-0 z-50 bg-black">
+        <div className="fixed inset-0 z-50 bg-black h-[100dvh] w-full overflow-hidden touch-none overscroll-none">
           <TourContainer
             currentRoom={
               rawProjectData.rooms
-                ? rawProjectData.rooms[activeTourRoomId] || Object.values(rawProjectData.rooms)[0]
+                ? rawProjectData.rooms[activeTourRoomId || active360RoomId] || Object.values(rawProjectData.rooms)[0]
                 : undefined
             }
             rooms={rawProjectData.rooms || {}}
             minimapImage={rawProjectData.minimapImage}
-            onNavigate={(targetId) => setActiveTourRoomId(targetId)}
+            floorPlans={rawProjectData.floorPlans}
+            onNavigate={(targetId) => {
+              setActiveTourRoomId(targetId);
+              setActive360RoomId(targetId);
+            }}
             onBackToHome={() => setIs360Active(false)}
-            projectName={`${identity.name} • ${brand?.companyName || identity.brandName}`}
+            projectName={isHaciendaF22 ? 'HACIENDA F22 • AMHO CONSTRUCCIONES' : `${identity.name} • ${brand?.companyName || identity.brandName}`}
+            brandLogo={brand?.logoHorizontalWhite || brand?.logoIcon || (isHaciendaF22 ? '/HACIENDA F22/LOGO AMHO.png' : undefined)}
+            brandColor={isHaciendaF22 ? '#DFC47B' : primaryColor}
           />
         </div>
       )}

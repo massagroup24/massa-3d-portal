@@ -85,12 +85,16 @@ export function ProjectsManagementPortal({
   // Renderizador de tarjeta de proyecto personalizada con la identidad de marca propia de cada proyecto
   const renderProjectCard = (project: Project, mode: 'create' | 'saved') => {
     const identity = getProjectIdentity(project.id);
+    const isHacienda = project.id === 'project_hacienda_f22';
+    const isIbiza = project.id === 'project_ibiza_a14' || project.name?.includes('A14');
     const brand = identity.clientBrand;
-    const isCustomBrand = Boolean(brand);
-    const primaryColor = identity.theme.primaryColor || '#9CD01A';
-    const metallicGradient =
-      brand?.metallicGradient ||
-      `linear-gradient(135deg, ${primaryColor} 0%, ${identity.theme.primaryHover || primaryColor} 100%)`;
+    // Solo Hacienda F22 tiene marca de cliente externo (AMHO Construcciones con acentos champagne gold)
+    // Ibiza A14 y los demás proyectos de autor conservan la identidad insigne verde de MASSA (#9CD01A)
+    const isCustomBrand = Boolean(brand && isHacienda);
+    const primaryColor = isHacienda ? '#DFC47B' : '#9CD01A';
+    const metallicGradient = isHacienda
+      ? (brand?.metallicGradient || 'linear-gradient(135deg, #B89752 0%, #DFC47B 32%, #F7E8A8 50%, #D1B16B 74%, #9E7D3B 100%)')
+      : 'linear-gradient(135deg, #729B0E 0%, #9CD01A 35%, #D4FF5E 52%, #8CBF14 76%, #5B7E08 100%)';
 
     const rooms = Object.values(project.rooms || {});
     const roomCount = rooms.length;
@@ -104,6 +108,8 @@ export function ProjectsManagementPortal({
         className={`group relative rounded-3xl overflow-hidden transition-all duration-300 flex flex-col justify-between border ${
           isCustomBrand
             ? 'bg-[#09090D] border-[#DFC47B]/35 hover:border-[#DFC47B]/80 shadow-[0_25px_65px_rgba(0,0,0,0.9),0_0_40px_rgba(223,196,123,0.14)]'
+            : isIbiza
+            ? 'bg-[#0b0d09] border-[#9CD01A]/30 hover:border-[#9CD01A]/80 shadow-[0_25px_65px_rgba(0,0,0,0.9),0_0_40px_rgba(156,208,26,0.18)]'
             : 'bg-[#121318] border-white/10 hover:border-[#9CD01A]/60 shadow-2xl'
         }`}
       >
@@ -125,7 +131,7 @@ export function ProjectsManagementPortal({
 
             {/* Barra Superior de Identidad de Marca & Estado 360° */}
             <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
-              {brand?.logoHorizontalWhite ? (
+              {isCustomBrand && brand?.logoHorizontalWhite ? (
                 <div className="px-3.5 py-1.5 rounded-2xl bg-black/75 backdrop-blur-xl border border-[#DFC47B]/45 flex items-center gap-2 shadow-xl">
                   <img
                     src={encodeURI(brand.logoHorizontalWhite)}
@@ -133,6 +139,11 @@ export function ProjectsManagementPortal({
                     className="h-5 sm:h-6 w-auto object-contain"
                   />
                 </div>
+              ) : isIbiza ? (
+                <span className="px-3 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-[#9CD01A]/40 text-[#9CD01A] text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_rgba(156,208,26,0.25)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A] animate-pulse" />
+                  <span>MASSA HOME • ACTIVO</span>
+                </span>
               ) : (
                 <span className="px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-[#9CD01A]/40 text-[#9CD01A] text-[10px] font-mono font-bold uppercase tracking-wider">
                   {mode === 'saved' && isArchivedTour ? 'RECORRIDO 360° GUARDADO' : `${identity.brandName} • ACTIVO`}
@@ -166,17 +177,41 @@ export function ProjectsManagementPortal({
                   </span>
                 </div>
 
-                {project.id === 'project_hacienda_f22' ? (
+                {isHacienda ? (
                   <h2
                     style={{ fontFamily: identity.theme.fontFamilyTitle }}
                     className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-none"
                   >
                     <span className="text-white">HACIENDA</span>{' '}
                     <span
-                      className="bg-clip-text text-transparent"
-                      style={{ backgroundImage: metallicGradient }}
+                      className="inline-block bg-clip-text text-transparent font-black"
+                      style={{
+                        backgroundImage: metallicGradient,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        color: '#DFC47B'
+                      }}
                     >
                       F22
+                    </span>
+                  </h2>
+                ) : isIbiza ? (
+                  <h2
+                    style={{ fontFamily: identity.theme.fontFamilyTitle }}
+                    className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-none"
+                  >
+                    <span className="text-white">IBIZA</span>{' '}
+                    <span
+                      className="inline-block bg-clip-text text-transparent font-black"
+                      style={{
+                        backgroundImage: 'linear-gradient(135deg, #729B0E 0%, #9CD01A 35%, #D4FF5E 52%, #8CBF14 76%, #5B7E08 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        color: '#9CD01A',
+                        filter: 'drop-shadow(0 0 16px rgba(156,208,26,0.65))'
+                      }}
+                    >
+                      A14
                     </span>
                   </h2>
                 ) : (
@@ -189,7 +224,7 @@ export function ProjectsManagementPortal({
                 )}
               </div>
 
-              {brand?.logoIcon && (
+              {isCustomBrand && brand?.logoIcon ? (
                 <div className="hidden sm:flex w-10 h-10 rounded-xl bg-black/70 backdrop-blur-md border border-[#DFC47B]/40 items-center justify-center p-1.5 shrink-0 shadow-lg">
                   <img
                     src={encodeURI(brand.logoIcon)}
@@ -197,7 +232,15 @@ export function ProjectsManagementPortal({
                     className="w-full h-full object-contain"
                   />
                 </div>
-              )}
+              ) : isIbiza ? (
+                <div className="hidden sm:flex w-10 h-10 rounded-xl bg-black/70 backdrop-blur-md border border-[#9CD01A]/40 items-center justify-center p-1.5 shrink-0 shadow-lg">
+                  <img
+                    src="/massa-cube-transparent.png"
+                    alt="MASSA"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : null}
             </div>
           </div>
 

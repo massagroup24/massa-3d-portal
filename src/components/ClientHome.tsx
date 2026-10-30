@@ -44,14 +44,19 @@ export function ClientHome({
   },
   onContactArchitect
 }: ClientHomeProps) {
+  const isF22 = Boolean(projectName?.includes('F22') || projectName?.includes('HACIENDA') || projectName?.includes('Hacienda'));
+  const primaryColor = isF22 ? '#DFC47B' : '#9CD01A';
+  const heroImageSrc = isF22 
+    ? '/HACIENDA F22/FACHADA.png' 
+    : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop';
   return (
     <div className="w-full flex flex-col gap-6 sm:gap-8 pb-10">
       
       {/* Saludo y Título del Proyecto con Badge de Fase */}
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_8px_#9CD01A]" />
-          <span className="text-xs sm:text-sm font-medium text-[#9CD01A] tracking-wide">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor, boxShadow: `0 0 8px ${primaryColor}` }} />
+          <span className="text-xs sm:text-sm font-medium tracking-wide" style={{ color: primaryColor }}>
             Hola, {clientName}
           </span>
         </div>
@@ -72,7 +77,7 @@ export function ClientHome({
         {/* Imagen Héroe con gradiente de superposición */}
         <div className="relative w-full h-[260px] sm:h-[380px] md:h-[440px] overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop"
+            src={heroImageSrc}
             alt={projectName}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
@@ -81,7 +86,7 @@ export function ClientHome({
           {/* Badge Superior: "• ACTUALIZADO HOY" */}
           <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 text-xs font-bold text-white tracking-wide shadow-xl">
-              <span className="w-2 h-2 rounded-full bg-[#9CD01A] shadow-[0_0_8px_#9CD01A] animate-pulse" />
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor, boxShadow: `0 0 8px ${primaryColor}` }} />
               <span>ACTUALIZADO HOY</span>
             </div>
           </div>
@@ -91,7 +96,7 @@ export function ClientHome({
         <div className="p-5 sm:p-7 bg-[#171717]/95 backdrop-blur-2xl border-t border-white/[0.08] flex flex-col gap-2.5">
           <div className="flex items-center justify-between text-sm sm:text-base font-semibold">
             <span className="text-[#A3A3A3] font-medium">Avance de obra</span>
-            <span className="text-[#9CD01A] font-bold text-base sm:text-lg">
+            <span className="font-bold text-base sm:text-lg" style={{ color: primaryColor }}>
               {progressPercentage}%
             </span>
           </div>
@@ -99,8 +104,8 @@ export function ClientHome({
           {/* Barra de Progreso en Verde Lima */}
           <div className="w-full h-2 sm:h-2.5 rounded-full bg-white/10 overflow-hidden p-0.5">
             <div
-              className="h-full rounded-full bg-[#9CD01A] shadow-[0_0_12px_rgba(156,208,26,0.8)] transition-all duration-1000 ease-out"
-              style={{ width: `${progressPercentage}%` }}
+              className="h-full rounded-full transition-all duration-1000 ease-out"
+              style={{ width: `${progressPercentage}%`, backgroundColor: primaryColor, boxShadow: `0 0 12px ${primaryColor}` }}
             />
           </div>
         </div>

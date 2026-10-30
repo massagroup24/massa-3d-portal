@@ -5,6 +5,7 @@ interface MobileNavBarProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
   userRole?: 'client' | 'architect' | 'guest';
+  brandColor?: string;
   className?: string;
 }
 
@@ -25,7 +26,7 @@ const GUEST_NAV_ITEMS = [
   { id: 'contact' as NavTab, label: 'Contacto', icon: Phone },
 ];
 
-export function MobileNavBar({ activeTab, onSelectTab, userRole = 'client', className = '' }: MobileNavBarProps) {
+export function MobileNavBar({ activeTab, onSelectTab, userRole = 'client', brandColor = '#9CD01A', className = '' }: MobileNavBarProps) {
   const items = userRole === 'guest' ? GUEST_NAV_ITEMS : CLIENT_NAV_ITEMS;
   return (
     <nav
@@ -49,15 +50,16 @@ export function MobileNavBar({ activeTab, onSelectTab, userRole = 'client', clas
             key={item.id}
             type="button"
             onClick={() => onSelectTab(item.id)}
+            style={isActive ? { color: brandColor } : undefined}
             className={`
               relative flex flex-col items-center justify-center py-1 px-1 sm:px-2 rounded-2xl
               min-w-[48px] min-h-[44px] transition-all duration-200 cursor-pointer select-none active:scale-95
-              ${isActive ? 'text-[#9CD01A]' : 'text-[#8E8E93] hover:text-[#F5F5F5]'}
+              ${isActive ? '' : 'text-[#8E8E93] hover:text-[#F5F5F5]'}
             `}
           >
             {/* Fondo activo sutil */}
             {isActive && (
-              <span className="absolute inset-0 bg-[#9CD01A]/12 rounded-2xl border border-[#9CD01A]/25 shadow-[0_0_12px_rgba(156,208,26,0.2)]" />
+              <span className="absolute inset-0 rounded-2xl border" style={{ backgroundColor: `${brandColor}1F`, borderColor: `${brandColor}40`, boxShadow: `0 0 12px ${brandColor}33` }} />
             )}
 
             {/* Ícono */}

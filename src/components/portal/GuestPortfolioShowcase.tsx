@@ -130,14 +130,22 @@ function getShowcaseTitleData(activeWork: PortfolioWork | null): ShowcaseTitleDa
   return {
     key: `work-${activeWork.id}`,
     fontSize,
-    lines: words.map((w) => ({
-      words: [
-        {
-          text: w,
-          className: 'text-[#9CD01A] filter drop-shadow-[0_10px_35px_rgba(156,208,26,0.35)]'
-        }
-      ]
-    }))
+    lines: words.map((w) => {
+      const isA14 = w.toUpperCase() === 'A14';
+      const isF22 = w.toUpperCase() === 'F22';
+      return {
+        words: [
+          {
+            text: w,
+            className: isA14
+              ? 'text-[#9CD01A] filter drop-shadow-[0_10px_35px_rgba(156,208,26,0.6)] font-black'
+              : isF22
+              ? 'text-[#DFC47B] filter drop-shadow-[0_10px_35px_rgba(223,196,123,0.6)] font-black'
+              : 'text-white filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]'
+          }
+        ]
+      };
+    })
   };
 }
 
@@ -554,7 +562,19 @@ export function GuestPortfolioShowcase({
                               {itemNumber}
                             </span>
                             <span className="text-xs sm:text-sm tracking-wide truncate">
-                              {work.name}
+                              {work.name.includes('A14') ? (
+                                <>
+                                  <span className="text-white">IBIZA</span>{' '}
+                                  <span className="text-[#9CD01A] font-bold">A14</span>
+                                </>
+                              ) : work.name.includes('F22') ? (
+                                <>
+                                  <span className="text-white">HACIENDA</span>{' '}
+                                  <span className="text-[#DFC47B] font-bold">F22</span>
+                                </>
+                              ) : (
+                                work.name
+                              )}
                             </span>
                           </div>
 

@@ -10,24 +10,55 @@ interface TourContainerProps {
   currentRoom?: Room;
   rooms: Record<string, Room>;
   minimapImage: string;
+  floorPlans?: Record<string, string>;
   onNavigate: (roomId: string, position?: [number, number, number]) => void;
   onBackToHome?: () => void;
   tourEmbedUrl?: string;
   projectName?: string;
+  brandLogo?: string;
+  brandColor?: string;
 }
 
 export function TourContainer({
   currentRoom,
   rooms,
   minimapImage,
+  floorPlans,
   onNavigate,
   onBackToHome,
   tourEmbedUrl,
-  projectName = 'Recorrido Virtual MASSA'
+  projectName = 'Recorrido Virtual MASSA',
+  brandLogo,
+  brandColor
 }: TourContainerProps) {
   const [isIdle, setIsIdle] = useState(false);
   const [transitionPhase, setTransitionPhase] = useState<'idle' | 'zooming' | 'fading-in'>('idle');
   const [targetPos, setTargetPos] = useState<[number, number, number] | null>(null);
+  const [isGyroEnabled, setIsGyroEnabled] = useState(false);
+  const [isGyroSupported, setIsGyroSupported] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
+      setIsGyroSupported(true);
+    }
+  }, []);
+
+  const handleToggleGyro = async () => {
+    if (typeof (window as any).DeviceOrientationEvent?.requestPermission === 'function') {
+      try {
+        const response = await (window as any).DeviceOrientationEvent.requestPermission();
+        if (response === 'granted') {
+          setIsGyroEnabled(prev => !prev);
+        } else {
+          alert('Permiso de sensores/giroscopio denegado en este dispositivo.');
+        }
+      } catch (err) {
+        console.warn('Error al solicitar permiso de giroscopio:', err);
+      }
+    } else {
+      setIsGyroEnabled(prev => !prev);
+    }
+  };
   
   const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -35,9 +66,9 @@ export function TourContainer({
   // Soporte directo para Recorrido 3D Externo / Gemelo Digital (Matterport / Spline / Kuula)
   if (tourEmbedUrl && tourEmbedUrl.trim()) {
     return (
-      <div className="relative w-full h-screen overflow-hidden bg-black flex flex-col">
+      <div className="relative w-full h-[100dvh] h-screen overflow-hidden bg-black flex flex-col">
         {/* Floating Topbar */}
-        <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between pointer-events-none">
+        <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-40 flex items-center justify-between pointer-events-none pt-[calc(env(safe-area-inset-top,8px)+4px)]">
           <div className="pointer-events-auto flex items-center gap-3 bg-[#0D0D0E]/85 backdrop-blur-2xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
             {onBackToHome && (
               <button
@@ -51,7 +82,21 @@ export function TourContainer({
             )}
             <div className="flex items-center gap-2 pl-1 border-l border-white/10">
               <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
-              <span className="text-xs font-black tracking-wider text-white uppercase">{projectName}</span>
+              <span className="text-xs font-black tracking-wider uppercase">
+                {projectName?.includes('A14') ? (
+                  <>
+                    <span className="text-white">IBIZA</span>{' '}
+                    <span className="text-[#9CD01A]">A14</span>
+                  </>
+                ) : projectName?.includes('F22') ? (
+                  <>
+                    <span className="text-white">HACIENDA</span>{' '}
+                    <span className="text-[#DFC47B]">F22</span>
+                  </>
+                ) : (
+                  <span className="text-white">{projectName}</span>
+                )}
+              </span>
             </div>
           </div>
 
@@ -183,7 +228,7 @@ export function TourContainer({
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
+    <div className="relative w-full h-[100dvh] h-screen overflow-hidden bg-black touch-none overscroll-none select-none">
       {/* 3D Canvas Layer */}
       <div className="absolute inset-0 z-0">
         <TourViewer 
@@ -192,6 +237,9 @@ export function TourContainer({
           isTransitioning={transitionPhase === 'zooming'}
           targetPosition={targetPos}
           isIdle={isIdle && transitionPhase === 'idle'}
+          isGyroEnabled={isGyroEnabled}
+          brandColor={brandColor}
+          brandName={projectName?.includes('F22') ? 'AMHO CONSTRUCCIONES' : 'MASSA HOME'}
         />
       </div>
 
@@ -208,16 +256,22 @@ export function TourContainer({
 
       {/* Indicador elegante de Modo Cinemático / Auto-Rotación */}
       <div 
-        className={`absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 z-15 pointer-events-none transition-all duration-700 ${
+        className={`absolute top-16 sm:top-24 left-1/2 -translate-x-1/2 z-15 pointer-events-none transition-all duration-700 ${
           isIdle && transitionPhase === 'idle'
             ? 'opacity-100 translate-y-0' 
             : 'opacity-0 -translate-y-4'
         }`}
       >
-        <div className="bg-black/60 backdrop-blur-xl border border-white/20 text-white/90 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-light tracking-wide shadow-2xl flex items-center gap-2.5">
-          <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse shadow-[0_0_8px_rgba(163,230,53,0.8)]" />
+        <div className="bg-black/70 backdrop-blur-xl border border-white/20 text-white/90 px-3.5 py-1 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-light tracking-wide shadow-2xl flex items-center gap-2">
+          <span 
+            className="w-2 h-2 rounded-full animate-pulse" 
+            style={{ 
+              backgroundColor: brandColor || '#9CD01A', 
+              boxShadow: `0 0 8px ${brandColor || 'rgba(163,230,53,0.8)'}` 
+            }} 
+          />
           <span>Vista Cinemática 360</span>
-          <span className="text-white/40 text-[10px] uppercase tracking-wider hidden sm:inline">• Mueve el ratón o toca para explorar</span>
+          <span className="text-white/40 text-[10px] uppercase tracking-wider hidden sm:inline">• Toca o arrastra para explorar</span>
         </div>
       </div>
 
@@ -227,8 +281,14 @@ export function TourContainer({
           currentRoom={safeRoom} 
           rooms={rooms}
           minimapImage={minimapImage}
+          floorPlans={floorPlans}
           onNavigate={handleNavigate} 
           onBackToHome={onBackToHome}
+          brandLogo={brandLogo}
+          brandColor={brandColor}
+          isGyroEnabled={isGyroEnabled}
+          isGyroSupported={isGyroSupported}
+          onToggleGyro={handleToggleGyro}
         />
       </div>
     </div>
