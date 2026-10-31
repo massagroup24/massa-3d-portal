@@ -330,6 +330,11 @@ export function VipCommercialLanding({
             setIntroPhase('settled');
           }
         }}
+        style={{
+          paddingTop: 'max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))',
+          paddingLeft: 'max(1.5rem, env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(1.5rem, env(safe-area-inset-right, 0px))',
+        }}
         className="relative min-h-[100dvh] w-full flex flex-col justify-between overflow-hidden p-6 sm:p-10 lg:p-14 pb-24 sm:pb-28 lg:pb-32"
       >
         
@@ -368,7 +373,8 @@ export function VipCommercialLanding({
                 e.stopPropagation();
                 setIntroPhase('settled');
               }}
-              className="absolute top-6 right-6 sm:top-10 sm:right-10 z-40 px-4 py-1.5 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 hover:border-[#9CD01A]/60 text-white/80 hover:text-white font-mono text-[11px] font-bold tracking-widest uppercase backdrop-blur-md transition-all shadow-xl cursor-pointer"
+              style={{ top: "max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))", right: "max(1.5rem, env(safe-area-inset-right, 0px))" }}
+              className="absolute z-40 px-4 py-1.5 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 hover:border-[#9CD01A]/60 text-white/80 hover:text-white font-mono text-[11px] font-bold tracking-widest uppercase backdrop-blur-md transition-all shadow-xl cursor-pointer"
             >
               Omitir intro ✕
             </m.button>

@@ -120,7 +120,14 @@ export function OverlayUI({
   const resolvedLogo = brandLogo || (isAmho ? '/HACIENDA F22/LOGO AMHO.png' : '/MASSA_REBRANDING.png');
 
   return (
-    <div className="w-full h-full flex flex-col justify-between p-3 sm:p-6 select-none pt-[calc(env(safe-area-inset-top,8px)+6px)] pb-[calc(env(safe-area-inset-bottom,8px)+6px)] pl-[calc(env(safe-area-inset-left,8px)+6px)] pr-[calc(env(safe-area-inset-right,8px)+6px)]">
+    <div
+      style={{
+        paddingTop: 'max(0.75rem, calc(env(safe-area-inset-top, 0px) + 0.5rem))',
+        paddingBottom: 'max(0.75rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem))',
+        paddingLeft: 'max(0.75rem, calc(env(safe-area-inset-left, 0px) + 0.25rem))',
+        paddingRight: 'max(0.75rem, calc(env(safe-area-inset-right, 0px) + 0.25rem))',
+      }}
+      className="w-full h-full flex flex-col justify-between p-3 sm:p-6 select-none">
       
       {/* =========================================================================
           1. HEADER ADAPTATIVO:

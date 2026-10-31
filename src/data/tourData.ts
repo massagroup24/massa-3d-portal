@@ -549,306 +549,554 @@ export const projectsData: Record<string, Project> = {
       { id: 'h22-r-14', title: 'Master Bath & Spa', storage_path: '/HACIENDA F22/BANO.jpg', category: 'Interiores', description: 'Baño principal en mármol con doble lavamanos flotante.', order_index: 17 }
     ],
     rooms: {
-      room_f22_zona_social: {
-        id: 'room_f22_zona_social',
-        name: 'OASIS EXTERIOR & PISCINA INFINITY',
-        description: 'Deck exterior en madera teca, jardín paisajístico y piscina con jacuzzi integrado.',
-        imageUrl: '/HACIENDA F22/360/ZONA SOCIAL.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-1.png',
-        floorLevel: 'Piso 1',
-        minimapPosition: { x: 44, y: 68 },
-        hotspots: [
-          {
-            id: 'hs_zs_to_bbq',
-            position: [-420, 20, 180],
-            targetRoom: 'room_f22_bbq',
-            label: 'Ir al Pabellón BBQ'
+          "room_f22_bbq": {
+                "id": "room_f22_bbq",
+                "name": "PABELLÓN BBQ & QUINCHO GOURMET",
+                "hotspots": [
+                      {
+                            "id": "h_glvxmaf",
+                            "label": "Ir a la piscina",
+                            "position": [
+                                  -499.06107755189845,
+                                  0.99300519194504,
+                                  17.171298920411896
+                            ],
+                            "targetRoom": "room_f22_zona_social"
+                      },
+                      {
+                            "id": "h_46xp8ig",
+                            "label": "Ir al gran salon",
+                            "position": [
+                                  -250.59402346795596,
+                                  1.265061099060452,
+                                  432.56774748572457
+                            ],
+                            "targetRoom": "room_f22_sala"
+                      },
+                      {
+                            "id": "h_iehevi4",
+                            "label": "Ir a la cocina",
+                            "position": [
+                                  -132.29211753547028,
+                                  -6.290743912355308,
+                                  481.2255862162269
+                            ],
+                            "targetRoom": "room_f22_cocina"
+                      },
+                      {
+                            "id": "hs_1793391645885",
+                            "label": "Ir al atrio y escaleras",
+                            "position": [
+                                  -310.6800484074483,
+                                  8.67360110251959,
+                                  390.4764064739457
+                            ],
+                            "targetRoom": "room_f22_escaleras"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/BBQ.jpg",
+                "floorLevel": "Piso 1",
+                "description": "Cocina exterior cubierta con asador empotrado, comedor y vistas a la piscina.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
+                "minimapPosition": {
+                      "x": 22,
+                      "y": 56
+                }
           },
-          {
-            id: 'hs_zs_to_sala',
-            position: [350, 10, 320],
-            targetRoom: 'room_f22_sala',
-            label: 'Ingresar al Gran Salón'
+          "room_f22_sala": {
+                "id": "room_f22_sala",
+                "name": "GRAN SALÓN & COMEDOR PRINCIPAL",
+                "hotspots": [
+                      {
+                            "id": "h_kc4zzv9",
+                            "label": "Ir al OASIS",
+                            "position": [
+                                  -186.02177100035593,
+                                  -4.761910374068354,
+                                  -463.2313187003349
+                            ],
+                            "targetRoom": "room_f22_zona_social"
+                      },
+                      {
+                            "id": "h_0btup6y",
+                            "label": "Ir al BBQ",
+                            "position": [
+                                  325.29111548426545,
+                                  3.0669951430915647,
+                                  -378.9276640532475
+                            ],
+                            "targetRoom": "room_f22_bbq"
+                      },
+                      {
+                            "id": "h_cvymuew",
+                            "label": "Ir a la COCINA",
+                            "position": [
+                                  480.91298927531767,
+                                  27.92086623541604,
+                                  -130.17970765073844
+                            ],
+                            "targetRoom": "room_f22_cocina"
+                      },
+                      {
+                            "id": "h_b50r7fw",
+                            "label": "Ir al atrio y escaleras",
+                            "position": [
+                                  -463.14737905956116,
+                                  -152.23031159747325,
+                                  -108.77163427317974
+                            ],
+                            "targetRoom": "room_f22_escaleras"
+                      },
+                      {
+                            "id": "h_4hjyngz",
+                            "label": "Ir al PASILLO",
+                            "position": [
+                                  -80.00263220709938,
+                                  361.53986797485084,
+                                  335.15490316968885
+                            ],
+                            "targetRoom": "room_f22_pasillo"
+                      },
+                      {
+                            "id": "hs_1793392230836",
+                            "label": "Ir a LA OFICINA",
+                            "position": [
+                                  233.71717881275356,
+                                  26.70439774219842,
+                                  440.13325766877966
+                            ],
+                            "targetRoom": "room_f22_estudio"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/SALA.jpg",
+                "floorLevel": "Piso 1",
+                "description": "Salón monumental a doble altura con chimenea lineal, atrio y ventanales al jardín.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
+                "minimapPosition": {
+                      "x": 65,
+                      "y": 47
+                }
           },
-          {
-            id: 'hs_zs_to_cocina',
-            position: [420, 0, 100],
-            targetRoom: 'room_f22_cocina',
-            label: 'Entrar a Cocina de Chef'
+          "room_f22_cocina": {
+                "id": "room_f22_cocina",
+                "name": "COCINA DE CHEF & CAVA DE VINOS",
+                "hotspots": [
+                      {
+                            "id": "h_reta5a2",
+                            "label": "Ir al BBQ",
+                            "position": [
+                                  94.71680805787072,
+                                  2.926609040105913,
+                                  -490.4208535662594
+                            ],
+                            "targetRoom": "room_f22_bbq"
+                      },
+                      {
+                            "id": "h_9n07qye",
+                            "label": "Ir al OASIS",
+                            "position": [
+                                  -291.5919309507895,
+                                  -0.4339181531015907,
+                                  -405.9822807908227
+                            ],
+                            "targetRoom": "room_f22_zona_social"
+                      },
+                      {
+                            "id": "hs_1793392124081",
+                            "label": "Ir al SALON",
+                            "position": [
+                                  -498.4834646094203,
+                                  38.27973079964997,
+                                  0.2391382903824097
+                            ],
+                            "targetRoom": "room_f22_sala"
+                      },
+                      {
+                            "id": "hs_1793392203867",
+                            "label": "Ir a LA OFICINA",
+                            "position": [
+                                  -375.375527780687,
+                                  35.381560293405556,
+                                  327.66289196470973
+                            ],
+                            "targetRoom": "room_f22_estudio"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/COCINA_1.jpg",
+                "floorLevel": "Piso 1",
+                "description": "Isla monolítica en mármol, vitrina climatizada de vinos y carpintería de autor.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
+                "minimapPosition": {
+                      "x": 58,
+                      "y": 34
+                }
+          },
+          "room_f22_master": {
+                "id": "room_f22_master",
+                "name": "MASTER SUITE PRESIDENCIAL",
+                "hotspots": [
+                      {
+                            "id": "hs_master_to_pasillo",
+                            "label": "Salir al Pasillo Mezzanine",
+                            "position": [
+                                  360,
+                                  0,
+                                  -300
+                            ],
+                            "targetRoom": "room_f22_pasillo"
+                      },
+                      {
+                            "id": "hs_1793392863713",
+                            "label": "Ir al BAÑO",
+                            "position": [
+                                  142.74629741941365,
+                                  36.909670945125825,
+                                  -477.18065871078466
+                            ],
+                            "targetRoom": "room_f22_wc_ppal"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/HAB PPAL 1.jpg",
+                "floorLevel": "Piso 2",
+                "description": "Suite principal con cama king, panelado en roble, terraza privada y acceso al vestier boutique.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
+                "minimapPosition": {
+                      "x": 43,
+                      "y": 28
+                }
+          },
+          "room_f22_estudio": {
+                "id": "room_f22_estudio",
+                "name": "ESTUDIO & HOME OFFICE EJECUTIVO",
+                "hotspots": [
+                      {
+                            "id": "hs_estudio_to_sala",
+                            "label": "Salir a LA COCINA",
+                            "position": [
+                                  400,
+                                  0,
+                                  -250
+                            ],
+                            "targetRoom": "room_f22_cocina"
+                      },
+                      {
+                            "id": "hs_1793392301147",
+                            "label": "Ir al SALON",
+                            "position": [
+                                  -249.1337994833862,
+                                  15.568464309884106,
+                                  -432.7684747419175
+                            ],
+                            "targetRoom": "room_f22_sala"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/ESTUDIO.jpg",
+                "floorLevel": "Piso 1",
+                "description": "Despacho privado de diseño con escritorio curvo, estantería retroiluminada y visual al frente.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
+                "minimapPosition": {
+                      "x": 76,
+                      "y": 36
+                }
+          },
+          "room_f22_hab_aux": {
+                "id": "room_f22_hab_aux",
+                "name": "SUITE AUXILIAR / HUÉSPEDES",
+                "hotspots": [
+                      {
+                            "id": "hs_1793393168255",
+                            "label": "Ir al PASILLO",
+                            "position": [
+                                  174.37522905650488,
+                                  46.979726782350426,
+                                  -465.27220311849305
+                            ],
+                            "targetRoom": "room_f22_pasillo"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/HAB AUX.jpg",
+                "floorLevel": "Piso 2",
+                "description": "Dormitorio secundario con cama central, carpintería a medida y visual abierta.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
+                "minimapPosition": {
+                      "x": 76,
+                      "y": 22
+                }
+          },
+          "room_f22_pasillo": {
+                "id": "room_f22_pasillo",
+                "name": "PASILLO MEZZANINE & PUENTE FLOTANTE",
+                "hotspots": [
+                      {
+                            "id": "h_ffcbnzy",
+                            "label": "IR AL ATRIO",
+                            "position": [
+                                  83.59060967481176,
+                                  -399.58665175489676,
+                                  287.8997132355779
+                            ],
+                            "targetRoom": "room_f22_escaleras"
+                      },
+                      {
+                            "id": "h_5m358lt",
+                            "label": "IR AL SALON",
+                            "position": [
+                                  -251.42670651995158,
+                                  -379.41843244857483,
+                                  206.1450636081993
+                            ],
+                            "targetRoom": "room_f22_sala"
+                      },
+                      {
+                            "id": "hs_1793392613168",
+                            "label": "Ir a SUITE PRINCIPAL",
+                            "position": [
+                                  -499.03248600261344,
+                                  19.97111008910205,
+                                  -3.4890583548107537
+                            ],
+                            "targetRoom": "room_f22_master"
+                      },
+                      {
+                            "id": "hs_1793392678962",
+                            "label": "Ir a SUITE AUXILIAR",
+                            "position": [
+                                  -490.6271653315362,
+                                  39.361977101067474,
+                                  -84.20888184835394
+                            ],
+                            "targetRoom": "room_f22_hab_aux"
+                      },
+                      {
+                            "id": "hs_1793392805602",
+                            "label": "Ir a FAMILY ROOM",
+                            "position": [
+                                  -270.1179689932901,
+                                  397.0935051575432,
+                                  -137.02040083459997
+                            ],
+                            "targetRoom": "room_f22_sala_tv"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/PASILLO 2P.jpg",
+                "floorLevel": "Piso 2",
+                "description": "Puente acristalado mezzanine con visual panorámica al vacío del salón y distribución de suites.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
+                "minimapPosition": {
+                      "x": 71,
+                      "y": 42
+                }
+          },
+          "room_f22_sala_tv": {
+                "id": "room_f22_sala_tv",
+                "name": "FAMILY ROOM & SALA DE ENTRETENIMIENTO",
+                "hotspots": [
+                      {
+                            "id": "hs_1793392765220",
+                            "label": "Ir a PASILLO",
+                            "position": [
+                                  -82.03345056023956,
+                                  -167.47426640881747,
+                                  462.9668261557807
+                            ],
+                            "targetRoom": "room_f22_pasillo"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/SALA TV.jpg",
+                "floorLevel": "Piso 3",
+                "description": "Espacio de ocio con mesa de juego, living lounge y ventanales panorámicos a la terraza alta.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-3.png",
+                "minimapPosition": {
+                      "x": 72,
+                      "y": 34
+                }
+          },
+          "room_f22_vestier": {
+                "id": "room_f22_vestier",
+                "name": "VESTIER BOUTIQUE & WALK-IN CLOSET",
+                "hotspots": [
+                      {
+                            "id": "hs_1793393033295",
+                            "label": "Ir al BAÑO",
+                            "position": [
+                                  -347.9331637377707,
+                                  -31.980618316994363,
+                                  -356.4299811001023
+                            ],
+                            "targetRoom": "room_f22_wc_ppal"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/VESTIER.jpg",
+                "floorLevel": "Piso 2",
+                "description": "Armarios y vitrinas en vidrio ahumado retroiluminado con tocador de gran formato.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
+                "minimapPosition": {
+                      "x": 63,
+                      "y": 8
+                }
+          },
+          "room_f22_wc_ppal": {
+                "id": "room_f22_wc_ppal",
+                "name": "MASTER BATH & SPA PRIVADO",
+                "hotspots": [
+                      {
+                            "id": "hs_1793392983634",
+                            "label": "Ir a SUITE PRINCIPAL",
+                            "position": [
+                                  -309.4919639907384,
+                                  26.747194546281918,
+                                  -390.52599465617976
+                            ],
+                            "targetRoom": "room_f22_master"
+                      },
+                      {
+                            "id": "hs_1793393115100",
+                            "label": "Ir a VESTIER",
+                            "position": [
+                                  -399.746945454499,
+                                  10.604409267640113,
+                                  299.1114956422322
+                            ],
+                            "targetRoom": "room_f22_vestier"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/WCPPAL.jpg",
+                "floorLevel": "Piso 2",
+                "description": "Baño de lujo con tina exenta, claraboya cenital natural, doble tocador flotante y ducha spa.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
+                "minimapPosition": {
+                      "x": 58,
+                      "y": 15
+                }
+          },
+          "room_f22_escaleras": {
+                "id": "room_f22_escaleras",
+                "name": "ATRIO ESCULTÓRICO & ESCALERAS",
+                "hotspots": [
+                      {
+                            "id": "h_oiy80pm",
+                            "label": "Ir al SALON",
+                            "position": [
+                                  90.11466831195486,
+                                  -86.40054931486605,
+                                  483.39620944995704
+                            ],
+                            "targetRoom": "room_f22_sala"
+                      },
+                      {
+                            "id": "h_nznqps9",
+                            "label": "IR AL OASIS",
+                            "position": [
+                                  491.1164226523422,
+                                  2.9414870700836846,
+                                  -90.32144902033704
+                            ],
+                            "targetRoom": "room_f22_zona_social"
+                      },
+                      {
+                            "id": "h_t1lo0sk",
+                            "label": "IR AL BBQ",
+                            "position": [
+                                  407.28655498608896,
+                                  4.506111675664135,
+                                  289.29016049605985
+                            ],
+                            "targetRoom": "room_f22_bbq"
+                      },
+                      {
+                            "id": "h_tc94zcs",
+                            "label": "Ir a la COCINA",
+                            "position": [
+                                  170.7094188817507,
+                                  30.688067690090513,
+                                  468.01956556243255
+                            ],
+                            "targetRoom": "room_f22_cocina"
+                      },
+                      {
+                            "id": "h_fkf8mww",
+                            "label": "Ir al pasillo",
+                            "position": [
+                                  -223.37698184940584,
+                                  441.89152171857114,
+                                  67.0698584556831
+                            ],
+                            "targetRoom": "room_f22_pasillo"
+                      },
+                      {
+                            "id": "hs_1793392416440",
+                            "label": "Ir a LA OFICINA",
+                            "position": [
+                                  -318.2483647517061,
+                                  50.29577737457333,
+                                  381.12193408687676
+                            ],
+                            "targetRoom": "room_f22_estudio"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/ESCALERAS.jpg",
+                "floorLevel": "Piso 1",
+                "description": "Escalera flotante de autor con peldaños en madera y baranda de cristal bajo la doble altura.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
+                "minimapPosition": {
+                      "x": 74,
+                      "y": 54
+                }
+          },
+          "room_f22_zona_social": {
+                "id": "room_f22_zona_social",
+                "name": "OASIS EXTERIOR & PISCINA INFINITY",
+                "hotspots": [
+                      {
+                            "id": "hs_zs_to_bbq",
+                            "label": "Ir al Pabellón BBQ",
+                            "position": [
+                                  -420,
+                                  20,
+                                  180
+                            ],
+                            "targetRoom": "room_f22_bbq"
+                      },
+                      {
+                            "id": "h_2ze4u8i",
+                            "label": "Ir al gran salon",
+                            "position": [
+                                  -53.207299949871036,
+                                  7.100782529476604,
+                                  -496.82950630028654
+                            ],
+                            "targetRoom": "room_f22_sala"
+                      },
+                      {
+                            "id": "h_mzk5vt6",
+                            "label": "Ir a la cocina",
+                            "position": [
+                                  -289.65761144521156,
+                                  8.297106946572814,
+                                  -406.87057520457773
+                            ],
+                            "targetRoom": "room_f22_cocina"
+                      },
+                      {
+                            "id": "hs_1793391565836",
+                            "label": "Ir al atrio y escaleras",
+                            "position": [
+                                  87.76054160423945,
+                                  20.48155164890381,
+                                  -490.8252464808392
+                            ],
+                            "targetRoom": "room_f22_escaleras"
+                      }
+                ],
+                "imageUrl": "/HACIENDA F22/360/ZONA SOCIAL.jpg",
+                "floorLevel": "Piso 1",
+                "description": "Deck exterior en madera teca, jardín paisajístico y piscina con jacuzzi integrado.",
+                "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
+                "minimapPosition": {
+                      "x": 48,
+                      "y": 78
+                }
           }
-        ]
-      },
-      room_f22_bbq: {
-        id: 'room_f22_bbq',
-        name: 'PABELLÓN BBQ & QUINCHO GOURMET',
-        description: 'Cocina exterior cubierta con asador empotrado, comedor y vistas a la piscina.',
-        imageUrl: '/HACIENDA F22/360/BBQ.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-1.png',
-        floorLevel: 'Piso 1',
-        minimapPosition: { x: 18, y: 52 },
-        hotspots: [
-          {
-            id: 'hs_bbq_to_zs',
-            position: [380, -20, 260],
-            targetRoom: 'room_f22_zona_social',
-            label: 'Ir al Jardín & Piscina'
-          },
-          {
-            id: 'hs_bbq_to_sala',
-            position: [240, 10, 420],
-            targetRoom: 'room_f22_sala',
-            label: 'Ingresar al Gran Salón'
-          }
-        ]
-      },
-      room_f22_sala: {
-        id: 'room_f22_sala',
-        name: 'GRAN SALÓN & COMEDOR PRINCIPAL',
-        description: 'Salón monumental a doble altura con chimenea lineal, atrio y ventanales al jardín.',
-        imageUrl: '/HACIENDA F22/360/SALA.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-1.png',
-        floorLevel: 'Piso 1',
-        minimapPosition: { x: 72, y: 54 },
-        hotspots: [
-          {
-            id: 'hs_sala_to_zs',
-            position: [440, -10, 160],
-            targetRoom: 'room_f22_zona_social',
-            label: 'Salir al Deck & Piscina'
-          },
-          {
-            id: 'hs_sala_to_cocina',
-            position: [-380, 0, -260],
-            targetRoom: 'room_f22_cocina',
-            label: 'Pasar a la Cocina de Chef'
-          },
-          {
-            id: 'hs_sala_to_escaleras',
-            position: [40, 10, 480],
-            targetRoom: 'room_f22_escaleras',
-            label: 'Ir a Escaleras & Acceso Nivel 2'
-          },
-          {
-            id: 'hs_sala_to_estudio',
-            position: [-420, 0, 220],
-            targetRoom: 'room_f22_estudio',
-            label: 'Entrar al Estudio Privado'
-          }
-        ]
-      },
-      room_f22_cocina: {
-        id: 'room_f22_cocina',
-        name: 'COCINA DE CHEF & CAVA DE VINOS',
-        description: 'Isla monolítica en mármol, vitrina climatizada de vinos y carpintería de autor.',
-        imageUrl: '/HACIENDA F22/360/COCINA_1.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-1.png',
-        floorLevel: 'Piso 1',
-        minimapPosition: { x: 58, y: 34 },
-        hotspots: [
-          {
-            id: 'hs_cocina_to_sala',
-            position: [360, 0, 320],
-            targetRoom: 'room_f22_sala',
-            label: 'Volver al Salón Social'
-          },
-          {
-            id: 'hs_cocina_to_zs',
-            position: [450, 0, -120],
-            targetRoom: 'room_f22_zona_social',
-            label: 'Salir a la Terraza & Piscina'
-          }
-        ]
-      },
-      room_f22_estudio: {
-        id: 'room_f22_estudio',
-        name: 'ESTUDIO & HOME OFFICE EJECUTIVO',
-        description: 'Despacho privado de diseño con escritorio curvo, estantería retroiluminada y visual al frente.',
-        imageUrl: '/HACIENDA F22/360/ESTUDIO.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-1.png',
-        floorLevel: 'Piso 1',
-        minimapPosition: { x: 75, y: 30 },
-        hotspots: [
-          {
-            id: 'hs_estudio_to_sala',
-            position: [400, 0, -250],
-            targetRoom: 'room_f22_sala',
-            label: 'Salir al Salón Principal'
-          },
-          {
-            id: 'hs_estudio_to_escaleras',
-            position: [450, 0, 150],
-            targetRoom: 'room_f22_escaleras',
-            label: 'Ir hacia las Escaleras'
-          }
-        ]
-      },
-      room_f22_escaleras: {
-        id: 'room_f22_escaleras',
-        name: 'ATRIO ESCULTÓRICO & ESCALERAS',
-        description: 'Escalera flotante de autor con peldaños en madera y baranda de cristal bajo la doble altura.',
-        imageUrl: '/HACIENDA F22/360/ESCALERAS.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-1.png',
-        floorLevel: 'Piso 1',
-        minimapPosition: { x: 82, y: 40 },
-        hotspots: [
-          {
-            id: 'hs_esc_to_sala',
-            position: [-300, -80, -360],
-            targetRoom: 'room_f22_sala',
-            label: 'Bajar al Gran Salón'
-          },
-          {
-            id: 'hs_esc_to_pasillo',
-            position: [0, 280, 400],
-            targetRoom: 'room_f22_pasillo',
-            label: 'Subir al Nivel 2 (Suites)'
-          }
-        ]
-      },
-      room_f22_pasillo: {
-        id: 'room_f22_pasillo',
-        name: 'PASILLO MEZZANINE & PUENTE FLOTANTE',
-        description: 'Puente acristalado mezzanine con visual panorámica al vacío del salón y distribución de suites.',
-        imageUrl: '/HACIENDA F22/360/PASILLO 2P.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-2.png',
-        floorLevel: 'Piso 2',
-        minimapPosition: { x: 68, y: 44 },
-        hotspots: [
-          {
-            id: 'hs_pasillo_to_esc',
-            position: [320, -220, -320],
-            targetRoom: 'room_f22_escaleras',
-            label: 'Bajar al Nivel 1'
-          },
-          {
-            id: 'hs_pasillo_to_tv',
-            position: [-380, 20, 260],
-            targetRoom: 'room_f22_sala_tv',
-            label: 'Subir a Piso 3 (Sky Lounge & Mirador)'
-          },
-          {
-            id: 'hs_pasillo_to_master',
-            position: [-40, 20, 480],
-            targetRoom: 'room_f22_master',
-            label: 'Ingresar a Master Suite'
-          },
-          {
-            id: 'hs_pasillo_to_aux',
-            position: [420, 10, 180],
-            targetRoom: 'room_f22_hab_aux',
-            label: 'Ir a Suite Auxiliar'
-          }
-        ]
-      },
-      room_f22_sala_tv: {
-        id: 'room_f22_sala_tv',
-        name: 'SKY LOUNGE, JUEGOS & MIRADOR 360°',
-        description: 'Salón de entretenimiento en tercer piso con mesa de ping pong, estar bouclé y ventanales panorámicos hacia la gran terraza mirador 360°.',
-        imageUrl: '/HACIENDA F22/360/SALA TV.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-3.png',
-        floorLevel: 'Piso 3',
-        minimapPosition: { x: 70, y: 32 },
-        hotspots: [
-          {
-            id: 'hs_tv_to_pasillo',
-            position: [380, 0, -280],
-            targetRoom: 'room_f22_pasillo',
-            label: 'Bajar a Piso 2 (Suites)'
-          },
-          {
-            id: 'hs_tv_to_master',
-            position: [-360, 0, 300],
-            targetRoom: 'room_f22_master',
-            label: 'Ir a Master Suite (Piso 2)'
-          }
-        ]
-      },
-      room_f22_master: {
-        id: 'room_f22_master',
-        name: 'MASTER SUITE PRESIDENCIAL',
-        description: 'Suite principal con cama king, panelado en roble, terraza privada y acceso al vestier boutique.',
-        imageUrl: '/HACIENDA F22/360/HAB PPAL 1.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-2.png',
-        floorLevel: 'Piso 2',
-        minimapPosition: { x: 40, y: 24 },
-        hotspots: [
-          {
-            id: 'hs_master_to_pasillo',
-            position: [360, 0, -300],
-            targetRoom: 'room_f22_pasillo',
-            label: 'Salir al Pasillo Mezzanine'
-          },
-          {
-            id: 'hs_master_to_vestier',
-            position: [420, 0, 220],
-            targetRoom: 'room_f22_vestier',
-            label: 'Entrar al Walk-in Closet Boutique'
-          }
-        ]
-      },
-      room_f22_vestier: {
-        id: 'room_f22_vestier',
-        name: 'VESTIER BOUTIQUE & WALK-IN CLOSET',
-        description: 'Armarios y vitrinas en vidrio ahumado retroiluminado con tocador de gran formato.',
-        imageUrl: '/HACIENDA F22/360/VESTIER.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-2.png',
-        floorLevel: 'Piso 2',
-        minimapPosition: { x: 58, y: 16 },
-        hotspots: [
-          {
-            id: 'hs_vestier_to_master',
-            position: [-380, 0, -280],
-            targetRoom: 'room_f22_master',
-            label: 'Volver al Dormitorio Principal'
-          },
-          {
-            id: 'hs_vestier_to_wc',
-            position: [0, 20, 480],
-            targetRoom: 'room_f22_wc_ppal',
-            label: 'Pasar al Master Bath & Spa'
-          }
-        ]
-      },
-      room_f22_wc_ppal: {
-        id: 'room_f22_wc_ppal',
-        name: 'MASTER BATH & SPA PRIVADO',
-        description: 'Baño de lujo con tina exenta, claraboya cenital natural, doble tocador flotante y ducha spa.',
-        imageUrl: '/HACIENDA F22/360/WCPPAL.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-2.png',
-        floorLevel: 'Piso 2',
-        minimapPosition: { x: 66, y: 12 },
-        hotspots: [
-          {
-            id: 'hs_wc_to_vestier',
-            position: [0, 0, -480],
-            targetRoom: 'room_f22_vestier',
-            label: 'Regresar al Vestier Boutique'
-          },
-          {
-            id: 'hs_wc_to_master',
-            position: [-300, 0, -360],
-            targetRoom: 'room_f22_master',
-            label: 'Ir a Master Suite'
-          }
-        ]
-      },
-      room_f22_hab_aux: {
-        id: 'room_f22_hab_aux',
-        name: 'SUITE AUXILIAR / HUÉSPEDES',
-        description: 'Dormitorio secundario con cama central, carpintería a medida y visual abierta.',
-        imageUrl: '/HACIENDA F22/360/HAB AUX.jpg',
-        floorPlanImage: '/HACIENDA F22/360/PLANOS/P1-2.png',
-        floorLevel: 'Piso 2',
-        minimapPosition: { x: 76, y: 22 },
-        hotspots: [
-          {
-            id: 'hs_aux_to_pasillo',
-            position: [400, 0, -260],
-            targetRoom: 'room_f22_pasillo',
-            label: 'Volver al Pasillo Mezzanine'
-          }
-        ]
-      }
     }
   }
 };

@@ -81,7 +81,13 @@ export function ArchitectHeader({
   return (
     <>
       {/* Executive Studio Navbar Universal */}
-      <header className="sticky top-0 z-40 w-full bg-[#0D0D0E]/90 backdrop-blur-2xl border-b border-white/[0.08] transition-all">
+      <header
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+        }}
+        className="sticky top-0 z-40 w-full bg-[#0D0D0E]/90 backdrop-blur-2xl border-b border-white/[0.08] transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* LADO IZQUIERDO (flex-1): Botón de Menú Isotipo MASSA para abrir la barra de navegación */}

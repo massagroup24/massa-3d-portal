@@ -23,6 +23,7 @@ import {
 import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, ProjectRender } from '../../config/projectIdentityConfig';
 import { TourContainer } from '../TourContainer';
 import { projectsData, Project, Room, resolveCanonicalProjectId, normalizeProject } from '../../data/tourData';
+import { getProjectsFromSupabase } from '../../supabase';
 import { SkiperArchitecturalCarousel } from './SkiperArchitecturalCarousel';
 import { SkiperParallaxGallery } from './SkiperParallaxGallery';
 
@@ -404,11 +405,48 @@ export function ProjectDedicatedView() {
 
   const canonicalId = resolveCanonicalProjectId(identity?.id || id || 'project_hacienda_f22');
 
+  const [supabaseProject, setSupabaseProject] = useState<Project | null>(null);
+
+  // Sincronizar dinámicamente con Supabase en tiempo real (para celulares y dispositivos remotos)
+  useEffect(() => {
+    let isCancelled = false;
+    getProjectsFromSupabase()
+      .then((supaProjects) => {
+        if (isCancelled || !supaProjects || supaProjects.length === 0) return;
+        const matched = supaProjects.find(
+          (p) => resolveCanonicalProjectId(p.id) === canonicalId || p.id === identity?.id
+        );
+        if (matched) {
+          setSupabaseProject(matched);
+        }
+      })
+      .catch((err) => console.warn("[ProjectDedicatedView] Supabase sync fallback a local:", err));
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [canonicalId, identity?.id, projectUpdateCounter]);
+
   // Sincronizar con datos oficiales + cambios guardados en el editor (localStorage: massa_custom_projects)
   const rawProjectData = useMemo<Project | null>(() => {
-    const baseData = (canonicalId && projectsData[canonicalId]) 
+    const initialBase = (canonicalId && projectsData[canonicalId]) 
       ? projectsData[canonicalId] 
       : (identity?.id && projectsData[identity.id]) || null;
+
+    const baseData = supabaseProject 
+      ? normalizeProject({
+          ...(initialBase || {}),
+          ...supabaseProject,
+          rooms: {
+            ...(initialBase?.rooms || {}),
+            ...(supabaseProject.rooms || {})
+          },
+          floorPlans: {
+            ...(initialBase?.floorPlans || {}),
+            ...(supabaseProject.floorPlans || {})
+          }
+        })
+      : initialBase;
 
     try {
       // 1. Clave principal del editor: massa_custom_projects
@@ -476,7 +514,7 @@ export function ProjectDedicatedView() {
     }
 
     return baseData ? normalizeProject(baseData) : null;
-  }, [canonicalId, identity?.id, projectUpdateCounter]);
+  }, [canonicalId, identity?.id, projectUpdateCounter, supabaseProject]);
 
   // Ambientes 360° del escenario protagonista (sincronizados con el editor)
   const rooms360List = useMemo<Room360Info[]>(() => {
@@ -495,13 +533,32 @@ export function ProjectDedicatedView() {
           cota: r.floorLevel ? `Nivel ${r.floorLevel}` : 'Cota +0.00 m',
           image: r.imageUrl,
           description: r.description || `Ambiente ${r.name}`,
-          hotspots: (r.hotspots || []).map((h, i) => ({
-            id: h.id || `h-${i}`,
-            title: h.label || 'Navegación 360°',
-            desc: `Conectar con ${rawProjectData.rooms[h.targetRoom]?.name || 'ambiente'}`,
-            x: 50,
-            y: 50
-          }))
+          hotspots: (r.hotspots || []).map((h, i) => {
+            // Convertir coordenadas esféricas 3D [x, y, z] a coordenadas porcentuales 2D para el preview
+            let posX = 50;
+            let posY = 50;
+            if (h.position && Array.isArray(h.position) && h.position.length === 3) {
+              const [px, py, pz] = h.position;
+              const lon = Math.atan2(px, -pz);
+              posX = Math.round(((lon + Math.PI) / (2 * Math.PI)) * 100);
+              const radius = Math.hypot(px, py, pz) || 500;
+              const lat = Math.asin(Math.max(-1, Math.min(1, py / radius)));
+              posY = Math.round(((Math.PI / 2 - lat) / Math.PI) * 100);
+              posX = Math.max(14, Math.min(86, posX));
+              posY = Math.max(22, Math.min(78, posY));
+            } else if (typeof (h as any).x === 'number' && typeof (h as any).y === 'number') {
+              posX = (h as any).x;
+              posY = (h as any).y;
+            }
+
+            return {
+              id: h.id || `h-${i}`,
+              title: h.label || 'Navegación 360°',
+              desc: `Conectar con ${rawProjectData.rooms[h.targetRoom]?.name || 'ambiente'}`,
+              x: posX,
+              y: posY
+            };
+          })
         };
       });
     }
@@ -759,7 +816,12 @@ export function ProjectDedicatedView() {
           ========================================================================= */}
       <header
         className="sticky top-0 z-40 w-full border-b bg-[#060608]/95 backdrop-blur-2xl transition-all shadow-[0_10px_30px_rgba(0,0,0,0.65)]"
-        style={{ borderColor: `${primaryColor}33` }}
+        style={{
+          borderColor: `${primaryColor}33`,
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+        }}
       >
         {/* Fila principal del Header */}
         <div className="w-full px-3.5 sm:px-8 lg:px-12 py-2.5 sm:py-3.5 flex items-center justify-between gap-2">
@@ -1545,7 +1607,13 @@ export function ProjectDedicatedView() {
           ref={stageRef}
           style={{
             borderColor: `${primaryColor}58`,
-            boxShadow: `0 25px 80px rgba(0,0,0,0.95), 0 0 50px ${primaryColor}24`
+            boxShadow: `0 25px 80px rgba(0,0,0,0.95), 0 0 50px ${primaryColor}24`,
+            ...(isStageFullscreen ? {
+              paddingTop: 'env(safe-area-inset-top, 0px)',
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              paddingLeft: 'env(safe-area-inset-left, 0px)',
+              paddingRight: 'env(safe-area-inset-right, 0px)',
+            } : {})
           }}
           className={`relative w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-[#070709] border transition-all select-none mb-8 sm:mb-12 ${
             isStageFullscreen ? 'fixed inset-0 z-50 rounded-none h-screen w-screen' : 'h-[430px] sm:h-[600px] lg:h-[680px]'
@@ -2044,7 +2112,12 @@ export function ProjectDedicatedView() {
           ========================================================================= */}
       <footer
         className="relative z-10 w-full px-4 sm:px-8 lg:px-12 py-10 sm:py-12 border-t bg-[#050507]"
-        style={{ borderColor: `${primaryColor}40` }}
+        style={{
+          borderColor: `${primaryColor}40`,
+          paddingBottom: 'max(2.5rem, calc(2.5rem + env(safe-area-inset-bottom, 0px)))',
+          paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))'
+        }}
       >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
           {/* Logo Horizontal Blanco + Identidad Residencial */}
@@ -2108,6 +2181,12 @@ export function ProjectDedicatedView() {
       {lightboxRender && renders.length > 0 && (
         <div
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-6 animate-fadeIn select-none"
+          style={{
+            paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))',
+            paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+            paddingLeft: 'max(0.75rem, env(safe-area-inset-left, 0px))',
+            paddingRight: 'max(0.75rem, env(safe-area-inset-right, 0px))',
+          }}
           onTouchStart={(e) => {
             if (e.touches.length === 1) {
               lightboxTouchStartX.current = e.touches[0].clientX;

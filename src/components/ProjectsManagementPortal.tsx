@@ -457,7 +457,13 @@ export function ProjectsManagementPortal({
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none z-0" />
 
       {/* Header Minimalista Exclusivo del Estudio de Recorridos 360° */}
-      <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#090A0E]/90 backdrop-blur-2xl">
+      <header
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+        }}
+        className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#090A0E]/90 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-2xl bg-[#9CD01A]/15 border border-[#9CD01A]/40 flex items-center justify-center text-[#9CD01A] shadow-[0_0_20px_rgba(156,208,26,0.2)] shrink-0">

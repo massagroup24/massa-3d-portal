@@ -10,61 +10,63 @@ interface HotspotMarkerProps {
 }
 
 export function HotspotMarker({ hotspot, onClick, brandColor = '#9CD01A' }: HotspotMarkerProps) {
-  const pointerStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const isDraggingRef = useRef(false);
+  const startPosRef = useRef<{ x: number; y: number } | null>(null);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    pointerStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      time: Date.now()
-    };
+    startPosRef.current = { x: e.clientX, y: e.clientY };
+    isDraggingRef.current = false;
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (!pointerStartRef.current) return;
-    const dx = e.clientX - pointerStartRef.current.x;
-    const dy = e.clientY - pointerStartRef.current.y;
-    const dist = Math.hypot(dx, dy);
-    const duration = Date.now() - pointerStartRef.current.time;
-    pointerStartRef.current = null;
-
-    // Solo activar si fue un tap/clic intencional y no un arrastre de rotación (< 12px y < 600ms)
-    if (dist < 12 && duration < 600) {
-      onClick();
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!startPosRef.current) return;
+    const dist = Math.hypot(e.clientX - startPosRef.current.x, e.clientY - startPosRef.current.y);
+    if (dist > 14) {
+      isDraggingRef.current = true;
     }
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isDraggingRef.current) {
+      onClick();
+    }
+    startPosRef.current = null;
+    isDraggingRef.current = false;
+  };
+
   return (
-    <Html position={hotspot.position} center>
+    <Html position={hotspot.position} center zIndexRange={[100, 0]}>
       <button 
         type="button"
         onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-        className="group relative flex flex-col items-center justify-center cursor-pointer pointer-events-auto touch-manipulation select-none p-2 -m-2 outline-none focus:outline-none"
+        onPointerMove={handlePointerMove}
+        onClick={handleClick}
+        className="group relative flex flex-col items-center justify-center cursor-pointer pointer-events-auto touch-manipulation select-none p-3 -m-3 outline-none focus:outline-none"
         title={hotspot.label || 'Moverse a este ambiente'}
       >
         {/* Botón flotante arquitectónico con efecto glow */}
         <div 
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 sm:bg-white/10 backdrop-blur-md border flex items-center justify-center text-white shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:bg-white/25 active:scale-90"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/80 backdrop-blur-xl border-2 flex items-center justify-center text-white shadow-2xl transition-all duration-300 group-hover:scale-115 active:scale-95"
           style={{
-            borderColor: 'rgba(255,255,255,0.4)',
-            boxShadow: `0 0 20px ${brandColor}40`
+            borderColor: brandColor,
+            boxShadow: `0 0 20px ${brandColor}70`
           }}
         >
           <Navigation 
-            className="w-4 h-4 sm:w-5 sm:h-5 -rotate-45 drop-shadow-md text-white transition-colors" 
+            className="w-5 h-5 -rotate-45 drop-shadow-md text-white transition-colors" 
           />
         </div>
         
-        {/* Etiqueta adaptativa con tipografía pulida */}
+        {/* Etiqueta adaptativa bajo el botón */}
         {hotspot.label && (
-          <div className="absolute top-11 sm:top-14 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 pointer-events-none z-20">
+          <div className="mt-1.5 transition-all duration-300 pointer-events-none z-20">
             <div 
-              className="bg-black/90 backdrop-blur-md text-white px-2.5 py-0.5 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap border shadow-xl shadow-black/60 tracking-wide max-w-[140px] sm:max-w-none truncate"
-              style={{ borderColor: `${brandColor}66` }}
+              className="bg-black/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap border shadow-2xl tracking-wide max-w-[150px] sm:max-w-none truncate"
+              style={{ 
+                borderColor: `${brandColor}80`,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.85)'
+              }}
             >
               {hotspot.label}
             </div>
@@ -73,10 +75,10 @@ export function HotspotMarker({ hotspot, onClick, brandColor = '#9CD01A' }: Hots
         
         {/* Anillo de pulso sutil personalizado con el color de marca */}
         <div 
-          className="absolute w-10 h-10 sm:w-12 sm:h-12 rounded-full animate-ping opacity-30 pointer-events-none" 
+          className="absolute top-3 w-11 h-11 sm:w-12 sm:h-12 rounded-full animate-ping opacity-35 pointer-events-none" 
           style={{
             borderColor: brandColor,
-            borderWidth: 1,
+            borderWidth: 1.5,
             borderStyle: 'solid'
           }}
         />

@@ -331,7 +331,13 @@ export function AdminProjectEditor({
     <div className="relative min-h-screen w-full bg-[#090A0D] text-white font-sans selection:bg-[#9CD01A] selection:text-[#090A0D] flex flex-col">
       
       {/* 1. TOPBAR DEL EDITOR EJECUTIVO */}
-      <header className="sticky top-0 z-30 w-full bg-[#0D0D11]/90 backdrop-blur-2xl border-b border-white/10 px-4 sm:px-6 h-18 sm:h-20 flex items-center justify-between gap-3">
+      <header
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+        }}
+        className="sticky top-0 z-30 w-full bg-[#0D0D11]/90 backdrop-blur-2xl border-b border-white/10 px-4 sm:px-6 min-h-[4.5rem] sm:min-h-[5rem] flex items-center justify-between gap-3">
         
         {/* Izquierda: Volver & Nombre del Proyecto */}
         <div className="flex items-center gap-3 min-w-0">

@@ -256,7 +256,8 @@ export function TourContainer({
 
       {/* Indicador elegante de Modo Cinemático / Auto-Rotación */}
       <div 
-        className={`absolute top-16 sm:top-24 left-1/2 -translate-x-1/2 z-15 pointer-events-none transition-all duration-700 ${
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 3.75rem)" }}
+        className={`absolute left-1/2 -translate-x-1/2 z-15 pointer-events-none transition-all duration-700 ${
           isIdle && transitionPhase === 'idle'
             ? 'opacity-100 translate-y-0' 
             : 'opacity-0 -translate-y-4'

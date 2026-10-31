@@ -12,40 +12,29 @@ interface CameraControllerProps {
 }
 
 function CameraController({ isTransitioning, targetPosition, room }: CameraControllerProps) {
-  const { camera, size } = useThree();
-  const initialFovRef = useRef<number>(75);
+  const { camera } = useThree();
   const targetVecRef = useRef<THREE.Vector3 | null>(null);
 
-  // Ajuste responsivo ultra-preciso del FOV para móviles y pantallas táctiles
+  // Mantener un FOV óptimo y fiel (75°) tanto en PC como en móviles sin distorsión ojo de pez
   useEffect(() => {
-    const aspect = size.width / size.height;
-    if (aspect < 1) {
-      // En celulares (vertical/portrait), ampliamos el campo visual para que no se sienta encerrado
-      initialFovRef.current = Math.max(88, Math.min(102, (75 / aspect) * 0.62));
-    } else {
-      initialFovRef.current = 75;
-    }
-    if (!isTransitioning) {
-      (camera as any).fov = initialFovRef.current;
-      camera.position.set(0, 0, 0.1);
-      camera.updateProjectionMatrix();
-    }
-  }, [camera, size.width, size.height, room.id, isTransitioning]);
+    (camera as any).fov = 75;
+    camera.position.set(0, 0, 0.1);
+    camera.updateProjectionMatrix();
+  }, [camera, room.id]);
 
-  // Manejo del objetivo y reinicio de cámara en transiciones cinemáticas
+  // Manejo de transiciones cinemáticas fluidas hacia el hotspot seleccionado
   useEffect(() => {
     if (!isTransitioning) {
       camera.position.set(0, 0, 0.1);
-      (camera as any).fov = initialFovRef.current;
+      (camera as any).fov = 75;
       camera.updateProjectionMatrix();
       targetVecRef.current = null;
     } else {
       if (targetPosition && targetPosition.length === 3) {
-        // Moverse hacia el hotspot seleccionado en el 3D
+        // Moverse hacia el hotspot en 3D
         const vec = new THREE.Vector3(...targetPosition).normalize().multiplyScalar(35);
         targetVecRef.current = vec;
       } else {
-        // Moverse hacia adelante según la mirada actual (ej. si se hace clic en minimapa)
         const forward = new THREE.Vector3();
         camera.getWorldDirection(forward);
         targetVecRef.current = forward.normalize().multiplyScalar(35);
@@ -55,12 +44,9 @@ function CameraController({ isTransitioning, targetPosition, room }: CameraContr
 
   useFrame(() => {
     if (isTransitioning && targetVecRef.current) {
-      // Lerp suave de posición para simular caminata
       camera.position.lerp(targetVecRef.current, 0.08);
-      
-      // Lerp de FOV para efecto cinemático Dolly/Zoom Warp
       const currentFov = (camera as any).fov;
-      const targetFov = 35;
+      const targetFov = 42;
       if (Math.abs(currentFov - targetFov) > 0.1) {
         (camera as any).fov = THREE.MathUtils.lerp(currentFov, targetFov, 0.08);
         camera.updateProjectionMatrix();
