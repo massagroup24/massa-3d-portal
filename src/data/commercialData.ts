@@ -1,3 +1,5 @@
+import { F22_AREA_BUILT, F22_LOT_AREA, F22_SUMMARY, F22_HIGHLIGHTS, HACIENDA_F22_TECHNICAL } from './haciendaF22Specs';
+
 export interface CommercialResidence {
   id: string;
   projectId?: string; // Links to projectsData key if 360 tour is available
@@ -9,9 +11,9 @@ export interface CommercialResidence {
   zone: string;
   areaBuilt: string;
   areaLot?: string;
-  bedrooms: number;
-  bathrooms: number;
-  parkingSpaces: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  parkingSpaces?: number;
   priceCOP: string;
   priceUSD: string;
   status: 'disponible' | 'en_obra' | 'entregado';
@@ -30,20 +32,17 @@ export const COMMERCIAL_RESIDENCES: CommercialResidence[] = [
     id: 'project_hacienda_f22',
     projectId: 'project_hacienda_f22',
     name: 'HACIENDA F22',
-    tagline: 'Residencia campestre de autor con arquitectura escultórica en Condominio Hacienda • Lote F22',
+    tagline: F22_SUMMARY,
     category: 'villa',
-    categoryLabel: 'Residencia Campestre Luxury',
+    categoryLabel: HACIENDA_F22_TECHNICAL.typology,
     location: 'Cúcuta / Norte de Santander',
     zone: 'Condominio Hacienda • Lote F22',
-    areaBuilt: '560 m²',
-    areaLot: '1.200 m² (Lote F22)',
-    bedrooms: 4,
-    bathrooms: 5,
-    parkingSpaces: 4,
+    areaBuilt: F22_AREA_BUILT,
+    areaLot: F22_LOT_AREA,
     priceCOP: 'Inversión Privada',
     priceUSD: 'Dossier Confidencial',
     status: 'disponible',
-    statusLabel: 'Proyecto Ejecutivo Aprobado',
+    statusLabel: 'Proyecto residencial',
     progressPercentage: 25,
     hasTour360: true,
     featured: true,
@@ -58,16 +57,8 @@ export const COMMERCIAL_RESIDENCES: CommercialResidence[] = [
       '/HACIENDA F22/DORMITORIO.jpg',
       '/HACIENDA F22/TERRAZA.png',
     ],
-    highlights: [
-      '33 Renders de autor fotorrealistas en ultra definición (diurnos, nocturnos y aéreos)',
-      'Perspectiva aérea monumental con dron capturando la volumetría y el entorno de golf',
-      'Piscina turquesa con jacuzzi integrado y muros perimetrales en travertino',
-      'Gran salón con doble altura monumental y escalera flotante en madera',
-      'Cocina de chef con isla monolítica en cuarcita exótica y cava vertical',
-      'Pabellón exterior cubierto con quincho BBQ y lounge apergolado',
-      'Master suite presidencial con vestier boutique y baño spa en piedra',
-    ],
-    description: 'Escultura habitable de 560 m² concebida en Condominio Hacienda. Diálogo entre volúmenes puros en concreto arquitectónico, maderas nobles y grandes paños vidriados.',
+    highlights: F22_HIGHLIGHTS,
+    description: F22_SUMMARY,
   },
   {
     id: 'project_ibiza_a14',

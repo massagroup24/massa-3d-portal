@@ -68,6 +68,18 @@ reforzar el recorrido 360° en su PWA de iPhone 16e y en otros dispositivos.
 La implementación y las pruebas específicas se documentan en
 [video y recorrido móvil](video-f22-y-recorrido-movil.md). Estos cambios no
 sustituyen las etapas de guardado, organización, datos y rendimiento pendientes.
+Tras el reporte de pantalla blanca en iPhone se corrigió la creación del material
+sin textura, con regresión reproducida antes del cambio. Se añadieron 12 copias
+ligeras de panoramas F22 para móvil. Verificación actual: 39 pruebas de recorrido,
+TypeScript y build completo aprobados; pendiente probar la nueva versión en el
+iPhone del usuario tras desplegarla.
+
+El usuario aportó el cuadro real de áreas y ocupaciones de F22. Se reemplazaron
+las especificaciones provisionales del catálogo, portada, niveles, planos,
+renders y ficha por los valores transcritos en una fuente compartida. Los campos
+no confirmados se retiraron. El SQL de actualización de contenido está preparado;
+su ejecución en Supabase y la publicación siguen pendientes. Detalles y resultados:
+[especificaciones reales F22](especificaciones-reales-hacienda-f22.md).
 
 Estado: pendiente.
 

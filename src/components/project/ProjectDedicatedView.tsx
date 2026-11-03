@@ -22,12 +22,15 @@ import {
   ZoomOut,
   Video
 } from 'lucide-react';
-import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, ProjectRender } from '../../config/projectIdentityConfig';
+import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, HACIENDA_F22_ROOMS_360, ProjectRender } from '../../config/projectIdentityConfig';
+import { F22_LEVELS, HACIENDA_F22_TECHNICAL, formatArea } from '../../data/haciendaF22Specs';
+import { ProjectTechnicalSheet } from './ProjectTechnicalSheet';
 import { TourContainer } from '../TourContainer';
 import { Project, resolveCanonicalProjectId } from '../../data/tourData';
 import { getProjectsFromSupabase } from '../../supabase';
 import { SkiperArchitecturalCarousel } from './SkiperArchitecturalCarousel';
 import { SkiperParallaxGallery } from './SkiperParallaxGallery';
+import { getPanoramaSource } from '../../utils/panoramaSource';
 
 // Distribución simplificada por Niveles (formato minimalista)
 interface LevelInfo {
@@ -38,51 +41,7 @@ interface LevelInfo {
   spaces: string[];
 }
 
-const RESIDENCE_LEVELS_F22: LevelInfo[] = [
-  {
-    id: 'nivel-1',
-    name: 'Planta Piso 1',
-    area: '290 m² + 220 m² Exteriores',
-    role: 'Zona Social, Gastronomía & Piscina Infinity',
-    spaces: [
-      'Pórtico monumental de acceso con puerta pivotante sobredimensionada y atrio de recibo',
-      'Gran salón con doble altura (6.8 m) y chimenea lineal de bioetanol',
-      'Comedor formal para 10 puestos integrado al paisaje verde exterior',
-      'Cocina de chef con isla curva en mármol y despensa oculta',
-      'Cava vertical climatizada para vinos selectos',
-      'Estudio privado ejecutivo para teletrabajo y reuniones',
-      'Piscina infinity desbordante (48 m²) con jacuzzi hidromasaje y deck en teca',
-      'Pabellón quincho gourmet con asador BBQ empotrado y barra exterior',
-      'Garaje cubierto para 4 vehículos y cuartos técnicos'
-    ]
-  },
-  {
-    id: 'nivel-2',
-    name: 'Planta Piso 2',
-    area: '210 m²',
-    role: 'Zona Privada de Suites Familiares & Mezzanine',
-    spaces: [
-      'Puente pasarela acristalado sobre el salón central con visuales cenitales',
-      'Master Suite Presidencial con terraza privada panorámica',
-      'Walk-in Closet Boutique con vitrinas ahumadas e iluminación perimetral LED',
-      'Master Bath & Spa con tina exenta monolítica, claraboya cenital y doble tocador flotante',
-      '3 Suites secundarias completas con baño privado y clóset en roble',
-      'Estar íntimo nocturno y galería de distribución'
-    ]
-  },
-  {
-    id: 'nivel-3',
-    name: 'Planta Piso 3',
-    area: '60 m² Cubiertos + 110 m² Terraza',
-    role: 'Sky Lounge, Sala de Juegos & Terraza Mirador 360°',
-    spaces: [
-      'Salón de entretenimiento y ocio con mesa de ping pong y estar de autor',
-      'Gran terraza mirador 360° con vistas despejadas a las colinas y atardeceres',
-      'Lounge a cielo abierto para veladas privadas y fogata de diseño (fire pit)',
-      'Jardineras perimetrales integradas y barra de apoyo exterior para eventos nocturnos'
-    ]
-  }
-];
+const RESIDENCE_LEVELS_F22: LevelInfo[] = F22_LEVELS;
 
 const RESIDENCE_LEVELS_A14: LevelInfo[] = [
   {
@@ -147,155 +106,7 @@ interface Room360Info {
   hotspots: Hotspot360[];
 }
 
-const ROOMS_360_F22: Room360Info[] = [
-  {
-    id: 'room_f22_zona_social',
-    name: 'Oasis Exterior & Piscina Infinity',
-    levelId: 'nivel-1',
-    cota: 'Cota +0.00 m • Exterior',
-    image: '/HACIENDA F22/360/ZONA SOCIAL.jpg',
-    description: 'Deck exterior en madera teca, jardín paisajístico y piscina con jacuzzi integrado.',
-    hotspots: [
-      { id: 'h-zs-1', title: 'Piscina Infinity & Jacuzzi', desc: 'Borde desbordante con hidromasaje y asoleadero.', x: 38, y: 64 },
-      { id: 'h-zs-2', title: 'Pabellón Quincho BBQ', desc: 'Cocina exterior cubierta para asados gourmet.', x: 22, y: 52 },
-      { id: 'h-zs-3', title: 'Gran Salón Principal', desc: 'Apertura hacia el salón de doble altura.', x: 74, y: 52 },
-    ]
-  },
-  {
-    id: 'room_f22_bbq',
-    name: 'Pabellón BBQ & Quincho Gourmet',
-    levelId: 'nivel-1',
-    cota: 'Cota +0.00 m • Exterior Gourmet',
-    image: '/HACIENDA F22/360/BBQ.jpg',
-    description: 'Cocina exterior cubierta con asador empotrado, comedor y vistas a la piscina.',
-    hotspots: [
-      { id: 'h-bbq-1', title: 'Estación de Asados', desc: 'Parrilla empotrada en acero inoxidable con campana.', x: 86, y: 54 },
-      { id: 'h-bbq-2', title: 'Deck & Piscina', desc: 'Salida al jardín y área de piscina.', x: 52, y: 60 },
-    ]
-  },
-  {
-    id: 'room_f22_sala',
-    name: 'Gran Salón de Doble Altura & Comedor',
-    levelId: 'nivel-1',
-    cota: 'Cota +0.00 m • Nivel 1 Social',
-    image: '/HACIENDA F22/360/SALA.jpg',
-    description: 'Salón monumental a doble altura con chimenea lineal, atrio de recibo y ventanales al jardín.',
-    hotspots: [
-      { id: 'h-sala-1', title: 'Chimenea Lineal', desc: 'Muro central en piedra sinterizada e iluminación perimetral.', x: 50, y: 58 },
-      { id: 'h-sala-2', title: 'Puente Mezzanine', desc: 'Pasarela acristalada hacia suites de Nivel 2.', x: 34, y: 32 },
-      { id: 'h-sala-3', title: 'Cocina de Chef', desc: 'Isla monolítica en cuarcita y cava de vinos.', x: 20, y: 52 },
-    ]
-  },
-  {
-    id: 'room_f22_cocina',
-    name: 'Cocina de Chef & Cava Climatizada',
-    levelId: 'nivel-1',
-    cota: 'Cota +0.00 m • Gastronomía',
-    image: '/HACIENDA F22/360/COCINA_1.jpg',
-    description: 'Isla monolítica en cuarcita Taj Mahal, vitrina de vinos con vidrio bronce y carpintería soft-close.',
-    hotspots: [
-      { id: 'h-coc-1', title: 'Isla Monolítica Curva', desc: 'Cuarcita exótica con estufa de inducción.', x: 50, y: 68 },
-      { id: 'h-coc-2', title: 'Cava de Vinos', desc: 'Vitrina climatizada con iluminación cálida.', x: 28, y: 46 },
-    ]
-  },
-  {
-    id: 'room_f22_estudio',
-    name: 'Estudio & Home Office Ejecutivo',
-    levelId: 'nivel-1',
-    cota: 'Cota +0.00 m • Despacho',
-    image: '/HACIENDA F22/360/ESTUDIO.jpg',
-    description: 'Despacho privado con escritorio curvo, estantería retroiluminada y visual al frente.',
-    hotspots: [
-      { id: 'h-est-1', title: 'Escritorio de Autor', desc: 'Mobiliario ergonómico curvo con conexiones integradas.', x: 26, y: 64 },
-      { id: 'h-est-2', title: 'Biblioteca Iluminada', desc: 'Estantes curvos con luz indirecta 2700K.', x: 48, y: 50 },
-    ]
-  },
-  {
-    id: 'room_f22_escaleras',
-    name: 'Atrio Escultórico & Escalera Flotante',
-    levelId: 'nivel-1',
-    cota: 'Cota +1.50 m • Transición',
-    image: '/HACIENDA F22/360/ESCALERAS.jpg',
-    description: 'Escalera flotante de autor con peldaños macizos en madera y baranda de cristal bajo doble altura.',
-    hotspots: [
-      { id: 'h-esc-1', title: 'Peldaños en Voladizo', desc: 'Estructura metálica interna oculta y madera termo-tratada.', x: 50, y: 46 },
-      { id: 'h-esc-2', title: 'Acceso a Suites Nivel 2', desc: 'Puente distribuidor mezzanine hacia el área privada.', x: 50, y: 32 },
-    ]
-  },
-  {
-    id: 'room_f22_pasillo',
-    name: 'Puente Mezzanine & Galería Nivel 2',
-    levelId: 'nivel-2',
-    cota: 'Cota +3.60 m • Distribución Nivel 2',
-    image: '/HACIENDA F22/360/PASILLO 2P.jpg',
-    description: 'Puente acristalado mezzanine con visual panorámica a la doble altura y distribución de suites.',
-    hotspots: [
-      { id: 'h-pas-1', title: 'Visual Vacío Central', desc: 'Vista sobre el gran salón y piscina exterior.', x: 32, y: 64 },
-      { id: 'h-pas-2', title: 'Master Suite Presidencial', desc: 'Suite de autor con vestier boutique.', x: 50, y: 44 },
-      { id: 'h-pas-3', title: 'Family Lounge', desc: 'Sala de estar y juegos familiares.', x: 24, y: 48 },
-    ]
-  },
-  {
-    id: 'room_f22_sala_tv',
-    name: 'Sky Lounge, Juegos & Mirador 360°',
-    levelId: 'nivel-3',
-    cota: 'Cota +7.20 m • Piso 3 (Rooftop)',
-    image: '/HACIENDA F22/360/SALA TV.jpg',
-    description: 'Salón de entretenimiento en tercer piso con mesa de ping pong, estar de autor y ventanales panorámicos hacia la gran terraza mirador 360°.',
-    hotspots: [
-      { id: 'h-tv-1', title: 'Mesa de Ping Pong / Ocio', desc: 'Área de juegos con iluminación perimetral suspendida.', x: 50, y: 56 },
-      { id: 'h-tv-2', title: 'Gran Terraza Mirador 360°', desc: 'Salida directa a la cubierta mirador hacia el horizonte.', x: 68, y: 48 },
-    ]
-  },
-  {
-    id: 'room_f22_master',
-    name: 'Master Suite Presidencial',
-    levelId: 'nivel-2',
-    cota: 'Cota +3.60 m • Suite Principal',
-    image: '/HACIENDA F22/360/HAB PPAL 1.jpg',
-    description: 'Suite principal con cama king, panelado en roble, terraza privada y acceso al vestier boutique.',
-    hotspots: [
-      { id: 'h-m-1', title: 'Cama King & Panelado Roble', desc: 'Cabecero acústico de autor con luces rasantes.', x: 50, y: 58 },
-      { id: 'h-m-2', title: 'Vestier Boutique', desc: 'Walk-in closet en vidrio ahumado y tocador.', x: 82, y: 50 },
-    ]
-  },
-  {
-    id: 'room_f22_vestier',
-    name: 'Vestier Boutique & Walk-In Closet',
-    levelId: 'nivel-2',
-    cota: 'Cota +3.60 m • Vestier',
-    image: '/HACIENDA F22/360/VESTIER.jpg',
-    description: 'Armarios y vitrinas en vidrio ahumado retroiluminado con tocador de gran formato.',
-    hotspots: [
-      { id: 'h-v-1', title: 'Vitrinas Boutique', desc: 'Mobiliario iluminado de alta costura.', x: 74, y: 52 },
-      { id: 'h-v-2', title: 'Master Bath & Spa', desc: 'Tina exenta y claraboya cenital natural.', x: 50, y: 48 },
-    ]
-  },
-  {
-    id: 'room_f22_wc_ppal',
-    name: 'Master Bath & Spa Privado',
-    levelId: 'nivel-2',
-    cota: 'Cota +3.60 m • Spa Privado',
-    image: '/HACIENDA F22/360/WCPPAL.jpg',
-    description: 'Baño de lujo con tina exenta, claraboya cenital natural, doble tocador flotante y ducha spa.',
-    hotspots: [
-      { id: 'h-wc-1', title: 'Tina Escultórica Exenta', desc: 'Bañera bajo luz cenital natural de claraboya.', x: 26, y: 72 },
-      { id: 'h-wc-2', title: 'Doble Tocador Flotante', desc: 'Mesón suspendido con grifería negra y espejo iluminado.', x: 54, y: 50 },
-    ]
-  },
-  {
-    id: 'room_f22_hab_aux',
-    name: 'Suite Auxiliar / Huéspedes',
-    levelId: 'nivel-2',
-    cota: 'Cota +3.60 m • Suite',
-    image: '/HACIENDA F22/360/HAB AUX.jpg',
-    description: 'Dormitorio secundario con cama central, carpintería a medida y visual abierta.',
-    hotspots: [
-      { id: 'h-aux-1', title: 'Cama Circular Vanguardista', desc: 'Diseño exclusivo en tonos neutros y maderas claras.', x: 50, y: 64 },
-      { id: 'h-aux-2', title: 'Ventanales Panorámicos', desc: 'Luz natural y visual a jardines.', x: 66, y: 48 },
-    ]
-  }
-];
+const ROOMS_360_F22: Room360Info[] = HACIENDA_F22_ROOMS_360.map(room => ({ id: room.id, name: room.name, levelId: room.level.includes('3') ? 'nivel-3' : room.level.includes('2') ? 'nivel-2' : 'nivel-1', cota: room.level, image: room.previewUrl, description: 'Recorrido 360° de Hacienda F22.', hotspots: room.hotspots.map(hotspot => ({ id: hotspot.id, title: hotspot.label, desc: hotspot.detail, x: hotspot.x, y: hotspot.y })) }));
 
 const ROOMS_360_A14: Room360Info[] = [
   {
@@ -495,12 +306,12 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
 
   // Auto-rotación panorámica suave cuando no se arrastra manualmente
   useEffect(() => {
-    if (!is360AutoRotating || isDragging360) return;
+    if (!is360AutoRotating || isDragging360 || is360Active) return;
     const interval = setInterval(() => {
       setCameraRotationX(prev => (prev + 0.12) % 360);
     }, 25);
     return () => clearInterval(interval);
-  }, [is360AutoRotating, isDragging360]);
+  }, [is360AutoRotating, isDragging360, is360Active]);
 
   // Manejadores táctiles y de ratón para el arrastre 360
   const handleStageMouseDown = (e: React.MouseEvent) => {
@@ -986,8 +797,7 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
             {/* Breve Memoria Conceptual */}
             {isHaciendaF22 ? (
               <p className="text-xs sm:text-base text-white/75 leading-relaxed font-normal mb-4 sm:mb-5 max-w-xl">
-                Escultura habitable concebida por <strong className="text-[#F1E29B] font-semibold">AMHO Construcciones</strong> en diálogo entre volúmenes en voladizo, travertino romano, 
-                cuarcita exótica Taj Mahal y un oasis exterior con piscina desbordante y spa.
+                {identity.tagline}
               </p>
             ) : (
               <p className="text-xs sm:text-base text-white/75 leading-relaxed font-normal mb-4 sm:mb-5 max-w-xl">
@@ -1018,16 +828,16 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                 className="p-2.5 rounded-xl bg-black/50 border border-white/5 border-t-2"
                 style={{ borderTopColor: `${primaryColor}68` }}
               >
-                <span className="text-[9px] sm:text-[10px] font-mono text-white/45 block">SUITES</span>
-                <span className="text-sm sm:text-lg font-black text-white">{identity.specs.suitesLabel || `${identity.specs.bedrooms} Suites`}</span>
+                <span className="text-[9px] sm:text-[10px] font-mono text-white/45 block">{isHaciendaF22 ? 'PISOS' : 'SUITES'}</span>
+                <span className="text-sm sm:text-lg font-black text-white">{isHaciendaF22 ? '3 pisos' : identity.specs.suitesLabel || `${identity.specs.bedrooms} Suites`}</span>
               </div>
               <div
                 className="p-2.5 rounded-xl bg-black/50 border border-white/5 border-t-2"
                 style={{ borderTopColor: `${primaryColor}68` }}
               >
-                <span className="text-[9px] sm:text-[10px] font-mono text-white/45 block">WELLNESS</span>
+                <span className="text-[9px] sm:text-[10px] font-mono text-white/45 block">{isHaciendaF22 ? 'ZONA PISCINA' : 'WELLNESS'}</span>
                 <span className="text-sm sm:text-lg font-black" style={{ color: primaryHover }}>
-                  {identity.specs.wellnessLabel || 'Piscina + Spa'}
+                  {isHaciendaF22 ? formatArea(HACIENDA_F22_TECHNICAL.areas.poolZone) : identity.specs.wellnessLabel || 'Piscina + Spa'}
                 </span>
               </div>
             </div>
@@ -1325,7 +1135,7 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                     </span>
                   </h2>
                   <p className="text-xs sm:text-sm text-white/70 leading-relaxed mb-4 sm:mb-5">
-                    La residencia <strong className="text-white">{titlePrefix} <span style={{ color: primaryHover }}>{titleHighlight}</span></strong> sintetiza la visión constructiva de <strong style={{ color: primaryHover }}>{brand.companyName}</strong>: diseño arquitectónico bioclimático, estructuras de alta precisión, selección curada de materiales nobles y ejecución con rigor milimétrico en {identity.urbanization}.
+                    {isHaciendaF22 ? identity.tagline : <>La residencia <strong className="text-white">{titlePrefix} <span style={{ color: primaryHover }}>{titleHighlight}</span></strong> sintetiza la visión constructiva de <strong style={{ color: primaryHover }}>{brand.companyName}</strong>: diseño arquitectónico bioclimático, estructuras de alta precisión, selección curada de materiales nobles y ejecución con rigor milimétrico en {identity.urbanization}.</>}
                   </p>
 
                   <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
@@ -1340,15 +1150,15 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                       className="p-2.5 sm:p-3 rounded-xl bg-white/[0.03] border"
                       style={{ borderColor: `${primaryColor}33` }}
                     >
-                      <span className="text-[8px] sm:text-[9px] font-mono uppercase block" style={{ color: primaryColor }}>ESTRUCTURA</span>
-                      <span className="text-[11px] sm:text-xs font-bold text-white leading-tight block mt-0.5">Alta Ingeniería</span>
+                      <span className="text-[8px] sm:text-[9px] font-mono uppercase block" style={{ color: primaryColor }}>{isHaciendaF22 ? 'USO' : 'ESTRUCTURA'}</span>
+                      <span className="text-[11px] sm:text-xs font-bold text-white leading-tight block mt-0.5">{isHaciendaF22 ? 'Residencial R1' : 'Alta Ingeniería'}</span>
                     </div>
                     <div
                       className="p-2.5 sm:p-3 rounded-xl bg-white/[0.03] border"
                       style={{ borderColor: `${primaryColor}33` }}
                     >
-                      <span className="text-[8px] sm:text-[9px] font-mono uppercase block" style={{ color: primaryColor }}>ENTREGA</span>
-                      <span className="text-[11px] sm:text-xs font-bold text-white leading-tight block mt-0.5">Llave en Mano</span>
+                      <span className="text-[8px] sm:text-[9px] font-mono uppercase block" style={{ color: primaryColor }}>{isHaciendaF22 ? 'TIPOLOGÍA' : 'ENTREGA'}</span>
+                      <span className="text-[11px] sm:text-xs font-bold text-white leading-tight block mt-0.5">{isHaciendaF22 ? 'Unifamiliar no VIS' : 'Llave en Mano'}</span>
                     </div>
                   </div>
                 </div>
@@ -1363,7 +1173,7 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                 >
                   <div className="flex items-center justify-between border-b border-black/15 pb-2.5 sm:pb-3 mb-3 sm:mb-4">
                     <span className="text-[9px] font-mono font-black uppercase tracking-widest text-black/80">
-                      CERTIFICACIÓN DE OBRA
+                      {isHaciendaF22 ? 'FICHA DEL PROYECTO' : 'CERTIFICACIÓN DE OBRA'}
                     </span>
                     <span
                       className="px-2 py-0.5 rounded bg-black text-[9px] font-mono font-bold"
@@ -1550,17 +1360,22 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
             >
               {/* Capa de imagen panorámica ultra-HD o retícula 360° interactiva si está en configuración */}
               <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none">
-                {current360Room.image ? (
-                  <img
-                    src={encodeURI(current360Room.image)}
-                    alt={current360Room.name}
-                    className="w-full h-full object-cover select-none transition-transform duration-100 ease-out"
-                    style={{
-                      transform: `scale(${cameraZoom * 1.15}) translate3d(${Math.sin((cameraRotationX * Math.PI) / 180) * 10}%, ${cameraRotationY * 0.35}px, 0)`,
-                      transformOrigin: 'center center',
-                      filter: 'brightness(0.92) contrast(1.06)',
-                    }}
-                  />
+                {current360Room.image && !is360Active ? (
+                  <picture>
+                    <source media="(pointer: coarse)" srcSet={getPanoramaSource(current360Room.image, true)} />
+                    <img
+                      src={current360Room.image}
+                      alt={current360Room.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover select-none transition-transform duration-100 ease-out"
+                      style={{
+                        transform: `scale(${cameraZoom * 1.15}) translate3d(${Math.sin((cameraRotationX * Math.PI) / 180) * 10}%, ${cameraRotationY * 0.35}px, 0)`,
+                        transformOrigin: 'center center',
+                        filter: 'brightness(0.92) contrast(1.06)',
+                      }}
+                    />
+                  </picture>
                 ) : (
                   <div
                     className="w-full h-full flex items-center justify-center transition-transform duration-100 ease-out"
@@ -1971,13 +1786,13 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                     className="text-[10px] font-mono uppercase tracking-widest font-bold block mb-1"
                     style={{ color: primaryHover }}
                   >
-                    CERTIFICACIÓN DE AUTOR • {brand.shortName}
+                    {isHaciendaF22 ? 'PROYECTO RESIDENCIAL' : 'CERTIFICACIÓN DE AUTOR'} • {brand.shortName}
                   </span>
                   <h3 className="text-base sm:text-lg font-bold uppercase text-white mb-1.5">
                     {brand.companyName}
                   </h3>
                   <p className="text-xs text-white/65 leading-relaxed">
-                    Arquitectura de precisión, ingeniería estructural certificada y acabados de colección en {identity.urbanization}.
+                    {isHaciendaF22 ? `Vivienda no VIS unifamiliar en ${identity.urbanization}, lote F22.` : `Arquitectura de precisión, ingeniería estructural certificada y acabados de colección en ${identity.urbanization}.`}
                   </p>
                 </div>
               </div>
@@ -2001,11 +1816,11 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                 <span className="text-white font-bold">{identity.specs.lotArea}</span>
               </div>
               <div className="flex items-center justify-between pb-2 border-b border-white/5">
-                <span className="text-white/40">Configuración</span>
-                <span className="text-white font-bold">{identity.specs.bedrooms} Suites • {identity.specs.bathrooms} Baños</span>
+                <span className="text-white/40">{isHaciendaF22 ? 'Pisos' : 'Configuración'}</span>
+                <span className="text-white font-bold">{isHaciendaF22 ? '3 pisos' : `${identity.specs.bedrooms} Suites • ${identity.specs.bathrooms} Baños`}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/40">Modalidad</span>
+                <span className="text-white/40">{isHaciendaF22 ? 'Tipología' : 'Modalidad'}</span>
                 <span className="font-bold" style={{ color: primaryHover }}>{identity.specs.modality}</span>
               </div>
             </div>
@@ -2014,6 +1829,7 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
 
         </div>
 
+        {identity.technicalSpecs && <div className="mt-8 sm:mt-12"><ProjectTechnicalSheet specs={identity.technicalSpecs} accentColor={primaryColor} /></div>}
       </section>
 
       {/* =========================================================================

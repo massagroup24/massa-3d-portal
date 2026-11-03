@@ -34,7 +34,7 @@ basadas en capacidades del navegador, compartidas por móvil y escritorio:
   controles táctiles y se actualiza el diseño cuando cambia el ancho.
 - El giroscopio se ofrece en entornos seguros con capacidad táctil y se activa
   mediante una acción del usuario. Un permiso rechazado conserva el arrastre.
-- Las texturas se ajustan al límite real de GPU. Se acotan a 4096 píxeles en
+- Las texturas se ajustan al límite real de GPU. Se acotan a 2048 píxeles en
   dispositivos con puntero grueso y a 8192 en escritorio, conservando proporción.
   El límite del dispositivo prevalece cuando es menor. La densidad de dibujo
   máxima es 1.5 en el perfil táctil y 2 en escritorio.
@@ -53,23 +53,52 @@ basadas en capacidades del navegador, compartidas por móvil y escritorio:
 Estas medidas no añaden funcionamiento sin conexión. La PWA necesita red para
 consultar el catálogo, renovar firmas y descargar panoramas no disponibles.
 
+## Corrección de la pantalla blanca reportada en iPhone
+
+El usuario informó que el recorrido sí carga en PC pero queda blanco tanto en
+la PWA como en el navegador móvil. Se reprodujo un defecto de `RoomSphere` en
+una prueba de integración con React Three Fiber: el material se montaba con
+`map = null` y recibía la foto después sin cambiar de material ni incrementar
+su versión. Three.js necesita recompilar al pasar de ausencia a presencia de
+textura ([documentación oficial](https://threejs.org/manual/pages/materials.html)).
+La disponibilidad de la imagen antes o después del primer dibujo explicaba una
+diferencia posible entre equipos; no se ha inspeccionado la consola del iPhone.
+
+La esfera y su material ahora se montan cuando la textura ya está disponible.
+La prueba de descarga retrasada falló antes de la corrección y pasa después.
+También se comprueba la liberación de la textura al cambiar de ambiente.
+
+Para reducir la descarga se incluyen copias JPEG de los 12 panoramas locales F22
+a 2048 × 1024 en `public/panoramas/mobile/hacienda-f22/`, seleccionadas mediante
+`src/config/mobilePanoramas.json`. El total pasa de 75.242.223 a 3.443.605 bytes;
+Zona Social pasa de 9.747.254 a 545.571 bytes. El escritorio conserva su resolución
+original. Las URLs privadas/remotas y sus firmas no se sustituyen por copias
+públicas. Si una copia móvil no está disponible, el cargador prueba su original.
+La vista previa de la página usa las mismas copias móviles y se desmonta, con su
+animación detenida, mientras el modal inmersivo está abierto.
+
+Si se actualizan las fotos originales de F22, regenerar las copias con
+`node scripts/prepare-mobile-panoramas.mjs` y versionar las imágenes y el manifiesto.
+La conversión se hace localmente; no se añade trabajo de conversión al build.
+
 ## Validación y límites
 
 `npm.cmd run test:tour` verifica reducción de resolución, límites de GPU,
 preservación de firmas URL, fallos de red, tiempo de espera y cancelación de
 cargas. TypeScript verifica la integración de componentes y controles.
 
-Resultado local: 16 pruebas del recorrido aprobadas y 106 pruebas aprobadas al
-ejecutarlas junto con la suite de seguridad; TypeScript aprobado. También se
+Resultado actual: 39 pruebas del recorrido aprobadas; TypeScript y build completo
+`npm.cmd run build` aprobados (17,19 segundos en esta ejecución). El build incluye
+las 12 imágenes móviles. Se mantiene el aviso previo de bundle JavaScript grande,
+que corresponde al trabajo de rendimiento pendiente. En la revisión anterior se
+aprobaron 106 pruebas al combinar recorrido y seguridad. También se
 consultó el catálogo público real de Supabase: F22 contiene 12 ambientes y las
 12 referencias de imagen corresponden a archivos presentes en `public/` del
 proyecto. Esto no equivale a verificar su despliegue HTTP en el dominio de Vercel.
 
-El build completo local encontró un error de espacio insuficiente al copiar
-`public/`. Se retiró la salida parcial generada y se validó la compilación del
-código con `build({ publicDir: false })`. Ese resultado no incluye los assets
-estáticos y no debe desplegarse como sustituto del build normal. Vercel debe
-ejecutar `npm run build` con los archivos públicos del repositorio.
+Un build anterior encontró falta de espacio local al copiar `public/`; el build
+completo actual sí finaliza. Vercel debe ejecutar `npm run build` con los archivos
+públicos del repositorio.
 
 La herramienta de revisión visual se detuvo al no poder verificar la URL de
 Chrome en Windows. No se ha realizado una prueba en un iPhone físico ni se

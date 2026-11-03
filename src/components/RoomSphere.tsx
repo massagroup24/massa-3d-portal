@@ -38,10 +38,12 @@ export function RoomSphere({ room, onNavigate, brandColor = '#9CD01A' }: RoomSph
   }, [room.id, room.imageUrl, maxTextureSize, retry]);
 
   return <group>
-    <mesh scale={[-1, 1, 1]}>
+    {/* Crear el material con su mapa desde el primer dibujo. Añadir map después
+        de compilarlo sin textura deja el shader sin USE_MAP en cargas lentas. */}
+    {texture && status === 'ready' && <mesh scale={[-1, 1, 1]}>
       <sphereGeometry args={[500, 60, 40]} />
-      <meshBasicMaterial map={texture} color={texture ? '#FFFFFF' : '#0D0D0E'} side={THREE.DoubleSide} toneMapped={false} />
-    </mesh>
+      <meshBasicMaterial map={texture} color="#FFFFFF" side={THREE.DoubleSide} toneMapped={false} />
+    </mesh>}
     {status !== 'ready' && <Html center zIndexRange={[20, 0]}>
       <div className="w-64 max-w-[80vw] rounded-2xl border border-white/20 bg-black/90 p-5 text-center text-white shadow-xl">
         <p role="status" className="text-sm font-semibold">{status === 'loading' ? 'Cargando ambiente 360°…' : 'No se pudo cargar este ambiente'}</p>

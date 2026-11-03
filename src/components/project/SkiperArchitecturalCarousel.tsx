@@ -95,7 +95,7 @@ export function SkiperArchitecturalCarousel({
 
   // Categorías con conteo para selector minimalista
   const categories = useMemo(() => {
-    const list = ['Todos', 'Fachada & Exteriores', 'Bienvenida & Salón', 'Cocina de Autor', 'Piscina & BBQ', 'Entretenimiento & Estudio', 'Suites & Baños Spa'];
+    const list = ['Todos', ...new Set(effectiveRenders.map(render => render.category))];
     return list.map(cat => ({
       name: cat,
       count: cat === 'Todos' ? effectiveRenders.length : effectiveRenders.filter(r => r.category === cat).length

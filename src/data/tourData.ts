@@ -1,3 +1,5 @@
+import { applyF22VerifiedSpecs, F22_AREA_BUILT, F22_LOT_AREA, F22_SUMMARY, F22_HIGHLIGHTS, HACIENDA_F22_TECHNICAL, type ProjectTechnicalSpecs } from './haciendaF22Specs';
+
 export interface Hotspot {
   id: string;
   position: [number, number, number];
@@ -49,6 +51,7 @@ export interface Project {
   zone?: string;
   areaBuilt?: string;
   areaLot?: string;
+  technicalSpecs?: ProjectTechnicalSpecs;
   bedrooms?: number;
   bathrooms?: number;
   parkingSpaces?: number;
@@ -477,20 +480,18 @@ export const projectsData: Record<string, Project> = {
   'project_hacienda_f22': {
     id: 'project_hacienda_f22',
     name: 'HACIENDA F22',
-    tagline: 'Residencia campestre de alto estándar en Hacienda • Lote F22',
+    tagline: F22_SUMMARY,
     category: 'villa',
-    categoryLabel: 'Residencia Campestre Luxury',
+    categoryLabel: HACIENDA_F22_TECHNICAL.typology,
     location: 'Cúcuta / Norte de Santander',
     zone: 'Condominio Hacienda • Lote F22',
-    areaBuilt: '560 m²',
-    areaLot: '1.200 m² (Lote F22)',
-    bedrooms: 4,
-    bathrooms: 5,
-    parkingSpaces: 4,
+    areaBuilt: F22_AREA_BUILT,
+    areaLot: F22_LOT_AREA,
+    technicalSpecs: HACIENDA_F22_TECHNICAL,
     priceCOP: 'Inversión Privada',
     priceUSD: 'Dossier Confidencial',
     status: 'disponible',
-    statusLabel: 'Proyecto Ejecutivo Aprobado',
+    statusLabel: 'Proyecto residencial',
     progress: 25,
     hasTour360: true,
     featured: true,
@@ -504,22 +505,8 @@ export const projectsData: Record<string, Project> = {
     },
     initialRoomId: 'room_f22_zona_social',
     tourType: '360_spheres',
-    highlights: [
-      'Recorrido virtual inmersivo 360° con 12 ambientes capturados en alta definición',
-      'Planos axonométricos 3D arquitectónicos integrados por nivel (Nivel 1, Nivel 2 y Rooftop)',
-      'Oasis exterior con piscina infinity, jacuzzi hidromasaje y deck en teca',
-      'Pabellón exterior cubierto con asador BBQ empotrado y quincho de autor',
-      'Gran salón social de doble altura monumental con sofá curvo y chimenea lineal',
-      'Cocina de chef con isla curva monolítica en mármol, cava de vinos climatizada y despensa',
-      'Estudio privado ejecutivo para teletrabajo y reuniones con vista exterior',
-      'Escalera flotante escultórica con peldaños en madera y baranda en cristal templado',
-      'Pasarela puente mezzanine con visual panorámica hacia la doble altura del salón',
-      'Family lounge y sala de juegos con mesa de ping pong y visual a la terraza alta',
-      'Master suite presidencial con terraza privada y cabecero en roble natural',
-      'Walk-in closet boutique con vitrinas retroiluminadas en vidrio ahumado y tocador doble',
-      'Master bath & spa con tina exenta, claraboya cenital natural y ducha doble'
-    ],
-    description: 'Obra de autor con impronta escultórica en Condominio Hacienda. Diálogo entre volúmenes puros en concreto arquitectónico, maderas nobles y grandes paños vidriados.',
+    highlights: F22_HIGHLIGHTS,
+    description: F22_SUMMARY,
     galleryImages: [
       '/HACIENDA F22/FACHADA.png',
       '/HACIENDA F22/FACHADA DRON.png',
@@ -531,32 +518,32 @@ export const projectsData: Record<string, Project> = {
       '/HACIENDA F22/TERRAZA.png'
     ],
     renders: [
-      { id: 'h22-r-dron', title: 'Vista Aérea Panorámica Dron & Entorno', storage_path: '/HACIENDA F22/FACHADA DRON.png', category: 'Fachada', description: 'Toma aérea monumental con dron mostrando implantación, piscina y paisaje.', order_index: 1 },
-      { id: 'h22-r-1', title: 'Fachada Principal & Emblema F22', storage_path: '/HACIENDA F22/FACHADA.png', category: 'Fachada', description: 'Volumetría monumental en piedra sinterizada e iluminación cálida.', order_index: 2 },
-      { id: 'h22-r-2', title: 'Perspectiva Escultórica Frontal', storage_path: '/HACIENDA F22/FACHADA 2.png', category: 'Fachada', description: 'Geometría pura de volúmenes desfasados y celosías.', order_index: 3 },
-      { id: 'h22-r-3', title: 'Iluminación Crepuscular & Paisajismo', storage_path: '/HACIENDA F22/FACHADA 3.png', category: 'Fachada', description: 'Diseño lumínico rasante al atardecer.', order_index: 4 },
-      { id: 'h22-r-n1', title: 'Fachada Nocturna & Iluminación Escénica', storage_path: '/HACIENDA F22/FACHADA NOCHE.png', category: 'Fachada', description: 'Iluminación cálida 2700K y relieve arquitectónico nocturno.', order_index: 5 },
-      { id: 'h22-r-n2', title: 'Perspectiva Nocturna Frontal', storage_path: '/HACIENDA F22/FACHADA NOCHE 2.png', category: 'Fachada', description: 'Composición nocturna con diálogo con el cielo estrellado.', order_index: 6 },
-      { id: 'h22-r-4', title: 'Fachada Posterior & Apertura al Patio', storage_path: '/HACIENDA F22/FACHADA TRASERA.jpg', category: 'Fachada', description: 'Grandes paños acristalados hacia la piscina.', order_index: 7 },
-      { id: 'h22-r-5', title: 'Perspectiva Posterior & Deck Superior', storage_path: '/HACIENDA F22/FACHADA TRASERA 2.jpg', category: 'Fachada', description: 'Vista diagonal de terrazas y entorno natural.', order_index: 8 },
-      { id: 'h22-r-6', title: 'Atrio y Vestíbulo de Acceso', storage_path: '/HACIENDA F22/VESTIBULO.jpg', category: 'Interiores', description: 'Pórtico monumental con puerta pivotante.', order_index: 9 },
-      { id: 'h22-r-7', title: 'Gran Salón Monumental & Doble Altura', storage_path: '/HACIENDA F22/SALA.jpg', category: 'Interiores', description: 'Salón con sofá bouclé y escalera flotante en madera.', order_index: 10 },
-      { id: 'h22-r-8', title: 'Cocina de Chef con Isla de Cuarcita', storage_path: '/HACIENDA F22/COCINA.jpg', category: 'Interiores', description: 'Isla en cuarcita exótica y lámpara escultórica.', order_index: 11 },
-      { id: 'h22-r-9', title: 'Piscina Turquesa & Muros de Travertino', storage_path: '/HACIENDA F22/PISCINA.jpg', category: 'Zonas Comunes', description: 'Piscina desbordante con jacuzzi y muros retroiluminados.', order_index: 12 },
-      { id: 'h22-r-10', title: 'Pabellón Gourmet / Quincho de Chef', storage_path: '/HACIENDA F22/TERRAZA.png', category: 'Zonas Comunes', description: 'Cocina exterior cubierta con asador BBQ empotrado.', order_index: 13 },
-      { id: 'h22-r-11', title: 'Family Lounge & Media Room', storage_path: '/HACIENDA F22/SALA TV.jpg', category: 'Interiores', description: 'Ambiente íntimo con panelado en roble acústico.', order_index: 14 },
-      { id: 'h22-r-12', title: 'Master Suite Presidencial', storage_path: '/HACIENDA F22/DORMITORIO.jpg', category: 'Interiores', description: 'Habitación principal con luz lineal 2700K y terraza.', order_index: 15 },
-      { id: 'h22-r-13', title: 'Walk-in Closet Presidencial', storage_path: '/HACIENDA F22/VESTIER.jpg', category: 'Interiores', description: 'Vestier tipo boutique en vidrio ahumado.', order_index: 16 },
-      { id: 'h22-r-14', title: 'Master Bath & Spa', storage_path: '/HACIENDA F22/BANO.jpg', category: 'Interiores', description: 'Baño principal en mármol con doble lavamanos flotante.', order_index: 17 }
+      { id: 'h22-r-dron', title: "Vista aérea", storage_path: '/HACIENDA F22/FACHADA DRON.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 1 },
+      { id: 'h22-r-1', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 2 },
+      { id: 'h22-r-2', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA 2.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 3 },
+      { id: 'h22-r-3', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA 3.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 4 },
+      { id: 'h22-r-n1', title: "Fachada nocturna", storage_path: '/HACIENDA F22/FACHADA NOCHE.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 5 },
+      { id: 'h22-r-n2', title: "Fachada nocturna", storage_path: '/HACIENDA F22/FACHADA NOCHE 2.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 6 },
+      { id: 'h22-r-4', title: "Fachada posterior", storage_path: '/HACIENDA F22/FACHADA TRASERA.jpg', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 7 },
+      { id: 'h22-r-5', title: "Fachada posterior", storage_path: '/HACIENDA F22/FACHADA TRASERA 2.jpg', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 8 },
+      { id: 'h22-r-6', title: "Vestíbulo", storage_path: '/HACIENDA F22/VESTIBULO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 9 },
+      { id: 'h22-r-7', title: "Sala y comedor", storage_path: '/HACIENDA F22/SALA.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 10 },
+      { id: 'h22-r-8', title: "Cocina", storage_path: '/HACIENDA F22/COCINA.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 11 },
+      { id: 'h22-r-9', title: "Piscina", storage_path: '/HACIENDA F22/PISCINA.jpg', category: 'Zonas Comunes', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 12 },
+      { id: 'h22-r-10', title: "Terraza y kiosco", storage_path: '/HACIENDA F22/TERRAZA.png', category: 'Zonas Comunes', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 13 },
+      { id: 'h22-r-11', title: "Sala de TV", storage_path: '/HACIENDA F22/SALA TV.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 14 },
+      { id: 'h22-r-12', title: "Habitación principal", storage_path: '/HACIENDA F22/DORMITORIO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 15 },
+      { id: 'h22-r-13', title: "Vestier", storage_path: '/HACIENDA F22/VESTIER.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 16 },
+      { id: 'h22-r-14', title: "Baño", storage_path: '/HACIENDA F22/BANO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 17 }
     ],
     rooms: {
           "room_f22_bbq": {
                 "id": "room_f22_bbq",
-                "name": "PABELLÓN BBQ & QUINCHO GOURMET",
+                "name": "Kiosco",
                 "hotspots": [
                       {
                             "id": "h_glvxmaf",
-                            "label": "Ir a la piscina",
+                            "label": "Ir a Zona piscina",
                             "position": [
                                   -499.06107755189845,
                                   0.99300519194504,
@@ -566,7 +553,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_46xp8ig",
-                            "label": "Ir al gran salon",
+                            "label": "Ir a Sala",
                             "position": [
                                   -250.59402346795596,
                                   1.265061099060452,
@@ -576,7 +563,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_iehevi4",
-                            "label": "Ir a la cocina",
+                            "label": "Ir a Cocina",
                             "position": [
                                   -132.29211753547028,
                                   -6.290743912355308,
@@ -586,7 +573,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793391645885",
-                            "label": "Ir al atrio y escaleras",
+                            "label": "Ir a Escaleras",
                             "position": [
                                   -310.6800484074483,
                                   8.67360110251959,
@@ -597,7 +584,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/BBQ.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Cocina exterior cubierta con asador empotrado, comedor y vistas a la piscina.",
+                "description": "Recorrido 360° de Hacienda F22: kiosco.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 22,
@@ -606,11 +593,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_sala": {
                 "id": "room_f22_sala",
-                "name": "GRAN SALÓN & COMEDOR PRINCIPAL",
+                "name": "Sala",
                 "hotspots": [
                       {
                             "id": "h_kc4zzv9",
-                            "label": "Ir al OASIS",
+                            "label": "Ir a Zona piscina",
                             "position": [
                                   -186.02177100035593,
                                   -4.761910374068354,
@@ -620,7 +607,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_0btup6y",
-                            "label": "Ir al BBQ",
+                            "label": "Ir a Kiosco",
                             "position": [
                                   325.29111548426545,
                                   3.0669951430915647,
@@ -630,7 +617,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_cvymuew",
-                            "label": "Ir a la COCINA",
+                            "label": "Ir a Cocina",
                             "position": [
                                   480.91298927531767,
                                   27.92086623541604,
@@ -640,7 +627,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_b50r7fw",
-                            "label": "Ir al atrio y escaleras",
+                            "label": "Ir a Escaleras",
                             "position": [
                                   -463.14737905956116,
                                   -152.23031159747325,
@@ -650,7 +637,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_4hjyngz",
-                            "label": "Ir al PASILLO",
+                            "label": "Ir a Pasillo del segundo piso",
                             "position": [
                                   -80.00263220709938,
                                   361.53986797485084,
@@ -660,7 +647,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392230836",
-                            "label": "Ir a LA OFICINA",
+                            "label": "Ir a Estudio",
                             "position": [
                                   233.71717881275356,
                                   26.70439774219842,
@@ -671,7 +658,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/SALA.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Salón monumental a doble altura con chimenea lineal, atrio y ventanales al jardín.",
+                "description": "Recorrido 360° de Hacienda F22: sala.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 65,
@@ -680,11 +667,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_cocina": {
                 "id": "room_f22_cocina",
-                "name": "COCINA DE CHEF & CAVA DE VINOS",
+                "name": "Cocina",
                 "hotspots": [
                       {
                             "id": "h_reta5a2",
-                            "label": "Ir al BBQ",
+                            "label": "Ir a Kiosco",
                             "position": [
                                   94.71680805787072,
                                   2.926609040105913,
@@ -694,7 +681,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_9n07qye",
-                            "label": "Ir al OASIS",
+                            "label": "Ir a Zona piscina",
                             "position": [
                                   -291.5919309507895,
                                   -0.4339181531015907,
@@ -704,7 +691,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392124081",
-                            "label": "Ir al SALON",
+                            "label": "Ir a Sala",
                             "position": [
                                   -498.4834646094203,
                                   38.27973079964997,
@@ -714,7 +701,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392203867",
-                            "label": "Ir a LA OFICINA",
+                            "label": "Ir a Estudio",
                             "position": [
                                   -375.375527780687,
                                   35.381560293405556,
@@ -725,7 +712,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/COCINA_1.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Isla monolítica en mármol, vitrina climatizada de vinos y carpintería de autor.",
+                "description": "Recorrido 360° de Hacienda F22: cocina.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 58,
@@ -734,11 +721,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_master": {
                 "id": "room_f22_master",
-                "name": "MASTER SUITE PRESIDENCIAL",
+                "name": "Habitación principal",
                 "hotspots": [
                       {
                             "id": "hs_master_to_pasillo",
-                            "label": "Salir al Pasillo Mezzanine",
+                            "label": "Ir a Pasillo del segundo piso",
                             "position": [
                                   360,
                                   0,
@@ -748,7 +735,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392863713",
-                            "label": "Ir al BAÑO",
+                            "label": "Ir a Baño principal",
                             "position": [
                                   142.74629741941365,
                                   36.909670945125825,
@@ -759,7 +746,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/HAB PPAL 1.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Suite principal con cama king, panelado en roble, terraza privada y acceso al vestier boutique.",
+                "description": "Recorrido 360° de Hacienda F22: habitación principal.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 43,
@@ -768,11 +755,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_estudio": {
                 "id": "room_f22_estudio",
-                "name": "ESTUDIO & HOME OFFICE EJECUTIVO",
+                "name": "Estudio",
                 "hotspots": [
                       {
                             "id": "hs_estudio_to_sala",
-                            "label": "Salir a LA COCINA",
+                            "label": "Ir a Cocina",
                             "position": [
                                   400,
                                   0,
@@ -782,7 +769,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392301147",
-                            "label": "Ir al SALON",
+                            "label": "Ir a Sala",
                             "position": [
                                   -249.1337994833862,
                                   15.568464309884106,
@@ -793,7 +780,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/ESTUDIO.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Despacho privado de diseño con escritorio curvo, estantería retroiluminada y visual al frente.",
+                "description": "Recorrido 360° de Hacienda F22: estudio.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 76,
@@ -802,11 +789,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_hab_aux": {
                 "id": "room_f22_hab_aux",
-                "name": "SUITE AUXILIAR / HUÉSPEDES",
+                "name": "Habitación auxiliar",
                 "hotspots": [
                       {
                             "id": "hs_1793393168255",
-                            "label": "Ir al PASILLO",
+                            "label": "Ir a Pasillo del segundo piso",
                             "position": [
                                   174.37522905650488,
                                   46.979726782350426,
@@ -817,7 +804,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/HAB AUX.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Dormitorio secundario con cama central, carpintería a medida y visual abierta.",
+                "description": "Recorrido 360° de Hacienda F22: habitación auxiliar.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 76,
@@ -826,11 +813,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_pasillo": {
                 "id": "room_f22_pasillo",
-                "name": "PASILLO MEZZANINE & PUENTE FLOTANTE",
+                "name": "Pasillo del segundo piso",
                 "hotspots": [
                       {
                             "id": "h_ffcbnzy",
-                            "label": "IR AL ATRIO",
+                            "label": "Ir a Escaleras",
                             "position": [
                                   83.59060967481176,
                                   -399.58665175489676,
@@ -840,7 +827,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_5m358lt",
-                            "label": "IR AL SALON",
+                            "label": "Ir a Sala",
                             "position": [
                                   -251.42670651995158,
                                   -379.41843244857483,
@@ -850,7 +837,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392613168",
-                            "label": "Ir a SUITE PRINCIPAL",
+                            "label": "Ir a Habitación principal",
                             "position": [
                                   -499.03248600261344,
                                   19.97111008910205,
@@ -860,7 +847,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392678962",
-                            "label": "Ir a SUITE AUXILIAR",
+                            "label": "Ir a Habitación auxiliar",
                             "position": [
                                   -490.6271653315362,
                                   39.361977101067474,
@@ -870,7 +857,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392805602",
-                            "label": "Ir a FAMILY ROOM",
+                            "label": "Ir a Sala de TV",
                             "position": [
                                   -270.1179689932901,
                                   397.0935051575432,
@@ -881,7 +868,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/PASILLO 2P.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Puente acristalado mezzanine con visual panorámica al vacío del salón y distribución de suites.",
+                "description": "Recorrido 360° de Hacienda F22: pasillo del segundo piso.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 71,
@@ -890,11 +877,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_sala_tv": {
                 "id": "room_f22_sala_tv",
-                "name": "FAMILY ROOM & SALA DE ENTRETENIMIENTO",
+                "name": "Sala de TV",
                 "hotspots": [
                       {
                             "id": "hs_1793392765220",
-                            "label": "Ir a PASILLO",
+                            "label": "Ir a Pasillo del segundo piso",
                             "position": [
                                   -82.03345056023956,
                                   -167.47426640881747,
@@ -905,7 +892,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/SALA TV.jpg",
                 "floorLevel": "Piso 3",
-                "description": "Espacio de ocio con mesa de juego, living lounge y ventanales panorámicos a la terraza alta.",
+                "description": "Recorrido 360° de Hacienda F22: sala de tv.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-3.png",
                 "minimapPosition": {
                       "x": 72,
@@ -914,11 +901,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_vestier": {
                 "id": "room_f22_vestier",
-                "name": "VESTIER BOUTIQUE & WALK-IN CLOSET",
+                "name": "Vestier",
                 "hotspots": [
                       {
                             "id": "hs_1793393033295",
-                            "label": "Ir al BAÑO",
+                            "label": "Ir a Baño principal",
                             "position": [
                                   -347.9331637377707,
                                   -31.980618316994363,
@@ -929,7 +916,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/VESTIER.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Armarios y vitrinas en vidrio ahumado retroiluminado con tocador de gran formato.",
+                "description": "Recorrido 360° de Hacienda F22: vestier.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 63,
@@ -938,11 +925,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_wc_ppal": {
                 "id": "room_f22_wc_ppal",
-                "name": "MASTER BATH & SPA PRIVADO",
+                "name": "Baño principal",
                 "hotspots": [
                       {
                             "id": "hs_1793392983634",
-                            "label": "Ir a SUITE PRINCIPAL",
+                            "label": "Ir a Habitación principal",
                             "position": [
                                   -309.4919639907384,
                                   26.747194546281918,
@@ -952,7 +939,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793393115100",
-                            "label": "Ir a VESTIER",
+                            "label": "Ir a Vestier",
                             "position": [
                                   -399.746945454499,
                                   10.604409267640113,
@@ -963,7 +950,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/WCPPAL.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Baño de lujo con tina exenta, claraboya cenital natural, doble tocador flotante y ducha spa.",
+                "description": "Recorrido 360° de Hacienda F22: baño principal.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 58,
@@ -972,11 +959,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_escaleras": {
                 "id": "room_f22_escaleras",
-                "name": "ATRIO ESCULTÓRICO & ESCALERAS",
+                "name": "Escaleras",
                 "hotspots": [
                       {
                             "id": "h_oiy80pm",
-                            "label": "Ir al SALON",
+                            "label": "Ir a Sala",
                             "position": [
                                   90.11466831195486,
                                   -86.40054931486605,
@@ -986,7 +973,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_nznqps9",
-                            "label": "IR AL OASIS",
+                            "label": "Ir a Zona piscina",
                             "position": [
                                   491.1164226523422,
                                   2.9414870700836846,
@@ -996,7 +983,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_t1lo0sk",
-                            "label": "IR AL BBQ",
+                            "label": "Ir a Kiosco",
                             "position": [
                                   407.28655498608896,
                                   4.506111675664135,
@@ -1006,7 +993,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_tc94zcs",
-                            "label": "Ir a la COCINA",
+                            "label": "Ir a Cocina",
                             "position": [
                                   170.7094188817507,
                                   30.688067690090513,
@@ -1016,7 +1003,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_fkf8mww",
-                            "label": "Ir al pasillo",
+                            "label": "Ir a Pasillo del segundo piso",
                             "position": [
                                   -223.37698184940584,
                                   441.89152171857114,
@@ -1026,7 +1013,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793392416440",
-                            "label": "Ir a LA OFICINA",
+                            "label": "Ir a Estudio",
                             "position": [
                                   -318.2483647517061,
                                   50.29577737457333,
@@ -1037,7 +1024,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/ESCALERAS.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Escalera flotante de autor con peldaños en madera y baranda de cristal bajo la doble altura.",
+                "description": "Recorrido 360° de Hacienda F22: escaleras.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 74,
@@ -1046,11 +1033,11 @@ export const projectsData: Record<string, Project> = {
           },
           "room_f22_zona_social": {
                 "id": "room_f22_zona_social",
-                "name": "OASIS EXTERIOR & PISCINA INFINITY",
+                "name": "Zona piscina",
                 "hotspots": [
                       {
                             "id": "hs_zs_to_bbq",
-                            "label": "Ir al Pabellón BBQ",
+                            "label": "Ir a Kiosco",
                             "position": [
                                   -420,
                                   20,
@@ -1060,7 +1047,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_2ze4u8i",
-                            "label": "Ir al gran salon",
+                            "label": "Ir a Sala",
                             "position": [
                                   -53.207299949871036,
                                   7.100782529476604,
@@ -1070,7 +1057,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "h_mzk5vt6",
-                            "label": "Ir a la cocina",
+                            "label": "Ir a Cocina",
                             "position": [
                                   -289.65761144521156,
                                   8.297106946572814,
@@ -1080,7 +1067,7 @@ export const projectsData: Record<string, Project> = {
                       },
                       {
                             "id": "hs_1793391565836",
-                            "label": "Ir al atrio y escaleras",
+                            "label": "Ir a Escaleras",
                             "position": [
                                   87.76054160423945,
                                   20.48155164890381,
@@ -1091,7 +1078,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/ZONA SOCIAL.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Deck exterior en madera teca, jardín paisajístico y piscina con jacuzzi integrado.",
+                "description": "Recorrido 360° de Hacienda F22: zona piscina.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 48,
@@ -1251,7 +1238,7 @@ export function normalizeProject(raw: any): Project {
       }))
     : [];
 
-  return {
+  return applyF22VerifiedSpecs({
     id,
     published: raw.published === true,
     name,
@@ -1296,5 +1283,5 @@ export function normalizeProject(raw: any): Project {
     floorPlans,
     tourType: raw.tourType || '360_spheres',
     tourEmbedUrl: raw.tourEmbedUrl ? String(raw.tourEmbedUrl) : undefined
-  };
+  });
 }

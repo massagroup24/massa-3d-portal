@@ -1,10 +1,11 @@
 import * as THREE from 'three';
+import { getPanoramaSource } from './panoramaSource';
 
 export function getPanoramaDimensions(width: number, height: number, maxTextureSize: number, touchDevice: boolean) {
   if (![width, height, maxTextureSize].every(value => Number.isFinite(value) && value > 0)) {
     throw new Error('La imagen panorámica no tiene dimensiones válidas.');
   }
-  const limit = Math.min(Math.floor(maxTextureSize), touchDevice ? 4096 : 8192);
+  const limit = Math.min(Math.floor(maxTextureSize), touchDevice ? 2048 : 8192);
   if (limit < 1) throw new Error('No se pudo determinar el tamaño de textura disponible.');
   const scale = Math.min(1, limit / width, limit / height);
   return { width: Math.max(1, Math.floor(width * scale)), height: Math.max(1, Math.floor(height * scale)) };
@@ -33,7 +34,15 @@ export function loadPanoramaTexture(url: string, maxTextureSize: number, touchDe
     const abort = () => fail(new DOMException('Carga cancelada', 'AbortError'));
     const timeout = setTimeout(() => fail(new Error('La imagen está tardando demasiado en cargar.')), 30000);
     signal.addEventListener('abort', abort, { once: true });
-    image.onerror = () => fail(new Error('No se pudo cargar la imagen del ambiente.'));
+    const sourceUrl = getPanoramaSource(url, touchDevice);
+    let usingMobileCopy = sourceUrl !== url;
+    image.onerror = () => {
+      // Una copia móvil ausente no debe romper un recorrido ya publicado.
+      if (usingMobileCopy) {
+        usingMobileCopy = false;
+        image.src = new URL(url, window.location.href).href;
+      } else fail(new Error('No se pudo cargar la imagen del ambiente.'));
+    };
     image.onload = () => {
       if (settled) return;
       try {
@@ -54,6 +63,10 @@ export function loadPanoramaTexture(url: string, maxTextureSize: number, touchDe
         texture.magFilter = THREE.LinearFilter;
         texture.generateMipmaps = false;
         texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.addEventListener('dispose', () => {
+          if (source !== image) { source.width = 1; source.height = 1; }
+          image.removeAttribute('src');
+        });
         texture.needsUpdate = true;
         settled = true;
         cleanup();
@@ -62,7 +75,7 @@ export function loadPanoramaTexture(url: string, maxTextureSize: number, touchDe
     };
     try {
       // URL conserva los escapes y firmas existentes; encodeURI los codifica dos veces.
-      image.src = new URL(url, window.location.href).href;
+      image.src = new URL(sourceUrl, window.location.href).href;
     } catch { fail(new Error('La dirección de la imagen no es válida.')); }
   });
 }

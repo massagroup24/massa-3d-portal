@@ -13,6 +13,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { ProjectPublicSpecs } from '../../services/portalService';
+import { ProjectTechnicalSheet } from '../project/ProjectTechnicalSheet';
 
 interface GuestHomeProps {
   projectName: string;
@@ -38,6 +39,21 @@ export function GuestHome({
   onBackToPortfolio,
 }: GuestHomeProps) {
   const whatsappUrl = `https://wa.me/573108924410?text=${encodeURIComponent(`Hola Massa Group, estuve viendo el proyecto ${projectName} en su portal público VIEW y me gustaría cotizar un diseño.`)}`;
+
+  if (specs.technicalSpecs) return <div className="space-y-6 pb-36">
+    <div className="flex flex-wrap items-center gap-3">
+      {onBackToPortfolio && <button type="button" onClick={onBackToPortfolio} className="min-h-11 px-4 rounded-xl border border-white/20">← Portafolio</button>}
+      {publicProjects.map(project => <button key={project.id} type="button" onClick={() => onSelectProject?.(project.id)} className="min-h-11 px-4 rounded-xl border border-white/20" aria-pressed={activeProjectId === project.id}>{project.name}</button>)}
+    </div>
+    <h1 className="text-3xl font-bold text-white">{projectName}</h1>
+    {heroImage && !heroImage.includes('unsplash.com') && <img src={heroImage} alt={projectName} className="w-full max-h-96 object-cover rounded-2xl" />}
+    <p className="text-white/70">{specs.designConcept}</p>
+    <div className="flex flex-wrap gap-3">
+      <button type="button" onClick={onOpen360Tour} className="min-h-11 px-4 rounded-xl bg-[#DFC47B] text-black font-semibold">Recorrido 360°</button>
+      {(['renders', 'blueprints', 'specs'] as const).map((tab, index) => <button key={tab} type="button" onClick={() => onNavigateSection(tab)} className="min-h-11 px-4 rounded-xl border border-white/20">{['Renders', 'Planos', 'Ficha técnica'][index]}</button>)}
+    </div>
+    <ProjectTechnicalSheet specs={specs.technicalSpecs} />
+  </div>;
 
   return (
     <div className="w-full flex flex-col gap-6 sm:gap-8 pb-36">

@@ -29,6 +29,7 @@ import { TourContainer } from './TourContainer';
 import { compressImage } from '../utils/imageCompressor';
 import { EmptyState } from './ui/EmptyState';
 import { useStorageRefresh } from '../hooks/useStorageRefresh';
+import { ProjectTechnicalSheet } from './project/ProjectTechnicalSheet';
 
 interface AdminProjectEditorProps {
   initialProject: Project;
@@ -707,6 +708,7 @@ export function AdminProjectEditor({
                       <input
                         type="text"
                         value={project.areaBuilt || ''}
+                        readOnly={!!project.technicalSpecs}
                         onChange={(e) => updateField('areaBuilt', e.target.value)}
                         placeholder="480 m²"
                         className="w-full px-3 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white text-sm font-mono focus:border-[#9CD01A] transition"
@@ -720,6 +722,7 @@ export function AdminProjectEditor({
                       <input
                         type="text"
                         value={project.areaLot || ''}
+                        readOnly={!!project.technicalSpecs}
                         onChange={(e) => updateField('areaLot', e.target.value)}
                         placeholder="1.850 m²"
                         className="w-full px-3 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white text-sm font-mono focus:border-[#9CD01A] transition"
@@ -733,8 +736,10 @@ export function AdminProjectEditor({
                       <input
                         type="number"
                         min="0"
-                        value={project.bedrooms ?? 4}
-                        onChange={(e) => updateField('bedrooms', parseInt(e.target.value) || 0)}
+                        value={project.bedrooms ?? ''}
+                        disabled={!!project.technicalSpecs}
+                        placeholder="Sin dato confirmado"
+                        onChange={(e) => updateField('bedrooms', e.target.value === '' ? undefined : parseInt(e.target.value) || 0)}
                         className="w-full px-3 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white text-sm font-mono focus:border-[#9CD01A] transition"
                       />
                     </div>
@@ -746,13 +751,17 @@ export function AdminProjectEditor({
                       <input
                         type="number"
                         min="0"
-                        value={project.bathrooms ?? 5}
-                        onChange={(e) => updateField('bathrooms', parseInt(e.target.value) || 0)}
+                        value={project.bathrooms ?? ''}
+                        disabled={!!project.technicalSpecs}
+                        placeholder="Sin dato confirmado"
+                        onChange={(e) => updateField('bathrooms', e.target.value === '' ? undefined : parseInt(e.target.value) || 0)}
                         className="w-full px-3 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-white text-sm font-mono focus:border-[#9CD01A] transition"
                       />
                     </div>
                   </div>
                 </div>
+
+                {project.technicalSpecs && <ProjectTechnicalSheet specs={project.technicalSpecs} />}
 
                 {/* Highlights / Puntos Fuertes de Venta */}
                 <div className="p-6 rounded-3xl bg-[#131317] border border-white/10 space-y-4">
@@ -1459,11 +1468,11 @@ export function AdminProjectEditor({
                     </div>
                     <div>
                       <div className="text-[10px] text-white/40 uppercase font-semibold">Habitaciones</div>
-                      <div className="text-xs font-bold text-white font-mono mt-0.5">{project.bedrooms ?? 4} Hab.</div>
+                      <div className="text-xs font-bold text-white font-mono mt-0.5">{project.bedrooms === undefined ? 'Sin confirmar' : `${project.bedrooms} Hab.`}</div>
                     </div>
                     <div>
                       <div className="text-[10px] text-white/40 uppercase font-semibold">Baños</div>
-                      <div className="text-xs font-bold text-white font-mono mt-0.5">{project.bathrooms ?? 5} Baños</div>
+                      <div className="text-xs font-bold text-white font-mono mt-0.5">{project.bathrooms === undefined ? 'Sin confirmar' : `${project.bathrooms} Baños`}</div>
                     </div>
                   </div>
 

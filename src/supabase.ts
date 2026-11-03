@@ -1,4 +1,5 @@
 import { Project } from './data/tourData';
+import { applyF22VerifiedSpecs } from './data/haciendaF22Specs';
 import { parseStorageReference, resolveStorageReferences, stableStorageReferences } from './lib/storageReferences';
 
 import { supabase, supabaseUrl } from './lib/supabaseClient';
@@ -18,7 +19,7 @@ export async function getProjectsFromSupabase(): Promise<Project[]> {
     .select('id, data, published_for_client');
   if (error) throw new Error('No se pudo cargar el catálogo: ' + error.message);
   const projects = (data || []).filter(row => row.data && typeof row.data === 'object')
-    .map(row => ({ ...row.data, id: row.id, published: row.published_for_client === true } as Project));
+    .map(row => applyF22VerifiedSpecs({ ...row.data, id: row.id, published: row.published_for_client === true } as Project));
   return resolveStorageReferences(supabase, projects, supabaseUrl);
 }
 
@@ -36,7 +37,7 @@ export async function saveProjectToSupabase(project: Project): Promise<void> {
   }
   const { error } = await supabase
     .from(PROJECTS_TABLE)
-    .upsert({ id: project.id, data: stableStorageReferences(project, supabaseUrl), published_for_client: project.published === true });
+    .upsert({ id: project.id, data: stableStorageReferences(applyF22VerifiedSpecs(project), supabaseUrl), published_for_client: project.published === true });
 
   if (error) {
     throw new Error(error.message);

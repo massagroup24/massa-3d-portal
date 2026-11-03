@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { ProjectPublicSpecs } from '../../services/portalService';
 import { Button } from '../ui/Button';
+import { ProjectTechnicalSheet } from '../project/ProjectTechnicalSheet';
 
 interface ProjectSpecsProps {
   projectName: string;
@@ -110,6 +111,15 @@ export function ProjectSpecs({
       window.open(whatsappUrl, '_blank');
     }
   };
+
+  if (specs.technicalSpecs) return <div className="max-w-6xl mx-auto space-y-6 pb-36">
+    <h1 className="text-3xl font-bold text-white">{projectName}</h1>
+    <div className="flex flex-wrap gap-3">
+      {onOpen360Tour && <Button onClick={onOpen360Tour}>Ver recorrido 360°</Button>}
+      <Button onClick={handleAction}>Consultar el proyecto</Button>
+    </div>
+    <ProjectTechnicalSheet specs={specs.technicalSpecs} />
+  </div>;
 
   return (
     <div className="space-y-8 pb-40 max-w-6xl mx-auto">

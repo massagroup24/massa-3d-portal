@@ -1,0 +1,24 @@
+{
+  "revision": "f22-cuadro-areas-2026-11-03",
+  "source": "Cuadro de áreas y cuadro de ocupaciones y cargas suministrados por el propietario",
+  "typology": "Vivienda no VIS unifamiliar",
+  "areas": {
+    "lot": 644.00,
+    "firstFloor": 223.78,
+    "kiosk": 42.32,
+    "poolZone": 56.96,
+    "firstFloorTotal": 323.06,
+    "secondFloor": 198.78,
+    "thirdFloor": 50.00,
+    "openArea": 320.94,
+    "totalConstruction": 514.88
+  },
+  "indices": { "occupation": 0.41, "construction": 0.80 },
+  "occupancy": {
+    "group": "Residencial",
+    "subgroup": "R1",
+    "exits": 2,
+    "riskCategory": "I",
+    "occupantLoad": 21
+  }
+}

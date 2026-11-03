@@ -1,6 +1,8 @@
 import { supabase, supabaseUrl } from '../supabase';
 import { resolveStorageReferences } from '../lib/storageReferences';
 import { Project } from '../data/tourData';
+import { F22_AREA_BUILT, F22_LOT_AREA, F22_SUMMARY, F22_LEVELS, F22_HIGHLIGHTS, HACIENDA_F22_TECHNICAL, f22RenderTitle, type ProjectTechnicalSpecs } from '../data/haciendaF22Specs';
+import { HACIENDA_F22_RENDERS as F22_RENDER_IDENTITIES } from '../config/projectIdentityConfig';
 
 export interface ProjectMediaItem {
   id: string;
@@ -50,6 +52,7 @@ export interface ProjectMaterialItem {
 }
 
 export interface ProjectPublicSpecs {
+  technicalSpecs?: ProjectTechnicalSpecs;
   areaBuilt: string;
   lotArea?: string;
   levels: string;
@@ -159,48 +162,13 @@ export const IBIZA_A14_BLUEPRINTS: ProjectMediaItem[] = [
   }
 ];
 
-export const HACIENDA_F22_BLUEPRINTS: ProjectMediaItem[] = [
-  {
-    id: 'bp-hacienda-1',
-    project_id: 'project_hacienda_f22',
-    type: 'blueprint',
-    title: 'Planta Axonométrica Piso 1 • Social, Deck & Piscina',
-    storage_path: '/HACIENDA F22/360/PLANOS/P1-1.png',
-    category: 'Plantas',
-    order_index: 1,
-    metadata: { level: 'Nivel 1', area: '340 m² + 220 m² Exteriores', description: 'Plano 3D con atrio, gran salón a doble altura, cocina de chef, estudio, escaleras, quincho BBQ y piscina.' }
-  },
-  {
-    id: 'bp-hacienda-2',
-    project_id: 'project_hacienda_f22',
-    type: 'blueprint',
-    title: 'Planta Axonométrica Piso 2 • Suites & Mezzanine',
-    storage_path: '/HACIENDA F22/360/PLANOS/P1-2.png',
-    category: 'Plantas',
-    order_index: 2,
-    metadata: { level: 'Nivel 2', area: '220 m²', description: 'Plano 3D con Master Suite presidencial, vestier boutique, baño spa, family lounge, puente mezzanine y suites.' }
-  },
-  {
-    id: 'bp-hacienda-3',
-    project_id: 'project_hacienda_f22',
-    type: 'blueprint',
-    title: 'Planta Axonométrica Piso 3 • Sky Lounge, Juegos & Mirador 360°',
-    storage_path: '/HACIENDA F22/360/PLANOS/P1-3.png',
-    category: 'Cubiertas',
-    order_index: 3,
-    metadata: { level: 'Rooftop', area: '110 m²', description: 'Plano 3D de cubierta transitable con visuales 360°, fire pit a cielo abierto y preinstalación bioclimática.' }
-  },
-  {
-    id: 'bp-hacienda-4',
-    project_id: 'project_hacienda_f22',
-    type: 'blueprint',
-    title: 'Planta General de Implantación & Lote F22',
-    storage_path: '/HACIENDA F22/360/PLANOS/P1-1.png',
-    category: 'Plantas',
-    order_index: 4,
-    metadata: { level: 'Lote Completo', area: '1.200 m²', description: 'Implantación bioclimática en Condominio Hacienda con orientación solar óptima y retiros perimetrales.' }
-  }
-];
+export const HACIENDA_F22_BLUEPRINTS: ProjectMediaItem[] = F22_LEVELS.map((level, index) => ({
+  id: 'bp-hacienda-' + (index + 1), project_id: 'project_hacienda_f22', type: 'blueprint',
+  title: 'Planta axonométrica • ' + level.name,
+  storage_path: '/HACIENDA F22/360/PLANOS/P1-' + (index + 1) + '.png',
+  category: 'Plantas', order_index: index + 1,
+  metadata: { level: level.name, area: level.area, description: level.spaces.join(' • ') }
+}));
 
 export const IBIZA_A14_RENDERS: ProjectMediaItem[] = [
   {
@@ -245,42 +213,11 @@ export const IBIZA_A14_RENDERS: ProjectMediaItem[] = [
   }
 ];
 
-export const HACIENDA_F22_RENDERS: ProjectMediaItem[] = [
-  { id: 'h22-r-dron', project_id: 'project_hacienda_f22', type: 'render', title: 'Vista Aérea Panorámica Dron & Entorno', storage_path: '/HACIENDA F22/FACHADA DRON.png', category: 'Fachada', order_index: 1, metadata: { resolution: '4K UHD', description: 'Toma aérea monumental con dron capturando la volumetría de la residencia, piscina, quincho y entorno paisajístico del condominio.' } },
-  { id: 'h22-r-1', project_id: 'project_hacienda_f22', type: 'render', title: 'Fachada Principal & Emblema F22', storage_path: '/HACIENDA F22/FACHADA.png', category: 'Fachada', order_index: 2, metadata: { resolution: '4K UHD', description: 'Volumetría monumental en piedra sinterizada, losa en voladizo e iluminación cálida con emblema F22 retroiluminado.' } },
-  { id: 'h22-r-2', project_id: 'project_hacienda_f22', type: 'render', title: 'Perspectiva Escultórica Frontal', storage_path: '/HACIENDA F22/FACHADA 2.png', category: 'Fachada', order_index: 3, metadata: { resolution: '4K UHD', description: 'Geometría pura de volúmenes desfasados, pérgola en concreto y celosías de privacidad.' } },
-  { id: 'h22-r-3', project_id: 'project_hacienda_f22', type: 'render', title: 'Iluminación Crepuscular & Paisajismo', storage_path: '/HACIENDA F22/FACHADA 3.png', category: 'Fachada', order_index: 4, metadata: { resolution: '4K UHD', description: 'Diseño lumínico rasante al atardecer realzando texturas de travertino y jardinería tropical.' } },
-  { id: 'h22-r-n1', project_id: 'project_hacienda_f22', type: 'render', title: 'Fachada Nocturna & Iluminación Escénica', storage_path: '/HACIENDA F22/FACHADA NOCHE.png', category: 'Fachada', order_index: 5, metadata: { resolution: '4K UHD', description: 'Composición nocturna de alto impacto con iluminación cálida 2700K y relieve arquitectónico.' } },
-  { id: 'h22-r-n2', project_id: 'project_hacienda_f22', type: 'render', title: 'Perspectiva Nocturna Frontal', storage_path: '/HACIENDA F22/FACHADA NOCHE 2.png', category: 'Fachada', order_index: 6, metadata: { resolution: '4K UHD', description: 'Visual nocturna frontal que destaca la volumetría de la residencia y su diálogo con el cielo estrellado.' } },
-  { id: 'h22-r-4', project_id: 'project_hacienda_f22', type: 'render', title: 'Fachada Posterior & Apertura al Patio', storage_path: '/HACIENDA F22/FACHADA TRASERA.jpg', category: 'Fachada', order_index: 7, metadata: { resolution: '4K UHD', description: 'Grandes paños acristalados de piso a techo que desvanecen los límites con la piscina.' } },
-  { id: 'h22-r-5', project_id: 'project_hacienda_f22', type: 'render', title: 'Perspectiva Posterior & Deck Superior', storage_path: '/HACIENDA F22/FACHADA TRASERA 2.jpg', category: 'Fachada', order_index: 8, metadata: { resolution: '4K UHD', description: 'Vista diagonal de terrazas y conexión bioclimática cruzada hacia el entorno natural.' } },
-  { id: 'h22-r-6', project_id: 'project_hacienda_f22', type: 'render', title: 'Atrio y Vestíbulo de Acceso', storage_path: '/HACIENDA F22/VESTIBULO.jpg', category: 'Interiores', order_index: 9, metadata: { resolution: '4K UHD', description: 'Pórtico monumental de recibo con puerta pivotante de gran formato y muro en madera noble.' } },
-  { id: 'h22-r-7', project_id: 'project_hacienda_f22', type: 'render', title: 'Detalle Arquitectónico de Entrada', storage_path: '/HACIENDA F22/VESTIBULO 2.jpg', category: 'Interiores', order_index: 10, metadata: { resolution: '4K UHD', description: 'Transición entre exterior e interior con iluminación escenográfica vertical.' } },
-  { id: 'h22-r-8', project_id: 'project_hacienda_f22', type: 'render', title: 'Gran Salón Monumental & Doble Altura', storage_path: '/HACIENDA F22/SALA.jpg', category: 'Interiores', order_index: 11, metadata: { resolution: '4K UHD', description: 'Espacio central de doble altura con sofá orgánico bouclé, escalera flotante en madera y puente mezzanine.' } },
-  { id: 'h22-r-9', project_id: 'project_hacienda_f22', type: 'render', title: 'Perspectiva de Doble Altura & Mezzanine', storage_path: '/HACIENDA F22/SALA 2.jpg', category: 'Interiores', order_index: 12, metadata: { resolution: '4K UHD', description: 'Juego de luces cenitales y sombras proyectadas a través de la pasarela acristalada superior.' } },
-  { id: 'h22-r-10', project_id: 'project_hacienda_f22', type: 'render', title: 'Comedor Formal & Integración Espacial', storage_path: '/HACIENDA F22/SALA 3.png', category: 'Interiores', order_index: 13, metadata: { resolution: '4K UHD', description: 'Mesa de comedor en roble natural integrada con visual abierta hacia los jardines.' } },
-  { id: 'h22-r-11', project_id: 'project_hacienda_f22', type: 'render', title: 'Cocina de Chef con Isla de Cuarcita', storage_path: '/HACIENDA F22/COCINA.jpg', category: 'Interiores', order_index: 14, metadata: { resolution: '4K UHD', description: 'Isla monolítica en cuarcita exótica, campana oculta y lámpara escultórica suspendida en ondas doradas.' } },
-  { id: 'h22-r-12', project_id: 'project_hacienda_f22', type: 'render', title: 'Cava de Vinos & Vitrina de Cristal', storage_path: '/HACIENDA F22/COCINA 2.jpg', category: 'Interiores', order_index: 15, metadata: { resolution: '4K UHD', description: 'Mueble vertical acanalado en madera con iluminación perimetral para cristalería y vinos selectos.' } },
-  { id: 'h22-r-13', project_id: 'project_hacienda_f22', type: 'render', title: 'Perspectiva Integral de Cocina Gourmet', storage_path: '/HACIENDA F22/COCINA 3.jpg', category: 'Interiores', order_index: 16, metadata: { resolution: '4K UHD', description: 'Diálogo armónico entre la barra de desayuno, el piso travertino y carpintería oculta.' } },
-  { id: 'h22-r-14', project_id: 'project_hacienda_f22', type: 'render', title: 'Piscina Turquesa & Muros de Travertino', storage_path: '/HACIENDA F22/PISCINA.jpg', category: 'Zonas Comunes', order_index: 17, metadata: { resolution: '4K UHD', description: 'Piscina desbordante con zona de bronceado, jacuzzi y muros perimetrales con cinta LED rasante.' } },
-  { id: 'h22-r-15', project_id: 'project_hacienda_f22', type: 'render', title: 'Espejo de Agua al Atardecer', storage_path: '/HACIENDA F22/PISCINA 2.jpg', category: 'Zonas Comunes', order_index: 18, metadata: { resolution: '4K UHD', description: 'Atardecer dorado reflejado sobre el agua con pabellón exterior iluminado.' } },
-  { id: 'h22-r-16', project_id: 'project_hacienda_f22', type: 'render', title: 'Pabellón Gourmet / Quincho de Chef', storage_path: '/HACIENDA F22/TERRAZA.png', category: 'Zonas Comunes', order_index: 19, metadata: { resolution: '4K UHD', description: 'Cocina exterior cubierta con asador BBQ empotrado, cava de frío y comedor al aire libre.' } },
-  { id: 'h22-r-17', project_id: 'project_hacienda_f22', type: 'render', title: 'Lounge Apergolado en Teca', storage_path: '/HACIENDA F22/TERRAZA 2.jpg', category: 'Zonas Comunes', order_index: 20, metadata: { resolution: '4K UHD', description: 'Estructura apergolada con ventilación natural y living exterior para veladas privadas.' } },
-  { id: 'h22-r-18', project_id: 'project_hacienda_f22', type: 'render', title: 'Family Lounge & Media Room', storage_path: '/HACIENDA F22/SALA TV.jpg', category: 'Interiores', order_index: 21, metadata: { resolution: '4K UHD', description: 'Ambiente íntimo de descanso con panelado en madera acústica e iluminación indirecta cálida.' } },
-  { id: 'h22-r-19', project_id: 'project_hacienda_f22', type: 'render', title: 'Sala de Cine y TV Familiar', storage_path: '/HACIENDA F22/SALA TV 2.jpg', category: 'Interiores', order_index: 22, metadata: { resolution: '4K UHD', description: 'Mobiliario envolvente low-profile diseñado para el relax total de la familia.' } },
-  { id: 'h22-r-20', project_id: 'project_hacienda_f22', type: 'render', title: 'Game Room & Sala de TV Integrada', storage_path: '/HACIENDA F22/SALA TV 3.png', category: 'Interiores', order_index: 23, metadata: { resolution: '4K UHD', description: 'Espacio de entretenimiento con mesa de ping-pong de diseño, sala de TV al fondo e iluminación lineal perimetral en plafón.' } },
-  { id: 'h22-r-21', project_id: 'project_hacienda_f22', type: 'render', title: 'Home Office / Estudio de Dirección', storage_path: '/HACIENDA F22/OFICINA.jpg', category: 'Interiores', order_index: 24, metadata: { resolution: '4K UHD', description: 'Despacho privado de alto estándar con aislamiento acústico y luz natural directa.' } },
-  { id: 'h22-r-22', project_id: 'project_hacienda_f22', type: 'render', title: 'Master Suite Presidencial', storage_path: '/HACIENDA F22/DORMITORIO.jpg', category: 'Interiores', order_index: 25, metadata: { resolution: '4K UHD', description: 'Habitación principal con cabecero en lino cálido, ranura de luz vertical 2700K y terraza privada.' } },
-  { id: 'h22-r-23', project_id: 'project_hacienda_f22', type: 'render', title: 'Perspectiva de Suite Principal', storage_path: '/HACIENDA F22/DORMITORIO 2.jpg', category: 'Interiores', order_index: 26, metadata: { resolution: '4K UHD', description: 'Cama suspendida, ventanales de piso a techo y texturas serenas de relajación.' } },
-  { id: 'h22-r-24', project_id: 'project_hacienda_f22', type: 'render', title: 'Suite Familiar 01', storage_path: '/HACIENDA F22/HABITACION.jpg', category: 'Interiores', order_index: 27, metadata: { resolution: '4K UHD', description: 'Dormitorio secundario con baño privado, acabados neutros y armarios integrados.' } },
-  { id: 'h22-r-25', project_id: 'project_hacienda_f22', type: 'render', title: 'Suite de Huéspedes 02', storage_path: '/HACIENDA F22/HABITACION 2.jpg', category: 'Interiores', order_index: 28, metadata: { resolution: '4K UHD', description: 'Espacio sereno con control solar pasivo y luz matutina indirecta.' } },
-  { id: 'h22-r-26', project_id: 'project_hacienda_f22', type: 'render', title: 'Suite Panorámica 03', storage_path: '/HACIENDA F22/HABITACION 3.jpg', category: 'Interiores', order_index: 29, metadata: { resolution: '4K UHD', description: 'Habitación con vista perimetral y salida a balcón superior.' } },
-  { id: 'h22-r-27', project_id: 'project_hacienda_f22', type: 'render', title: 'Walk-in Closet Presidencial', storage_path: '/HACIENDA F22/VESTIER.jpg', category: 'Interiores', order_index: 30, metadata: { resolution: '4K UHD', description: 'Vestier tipo boutique con vitrinas de vidrio ahumado, iluminación interna y módulo de accesorios.' } },
-  { id: 'h22-r-28', project_id: 'project_hacienda_f22', type: 'render', title: 'Master Bath & Spa', storage_path: '/HACIENDA F22/BANO.jpg', category: 'Interiores', order_index: 31, metadata: { resolution: '4K UHD', description: 'Baño principal en mármol con doble lavamanos flotante, espejos con halo LED y grifería negro mate.' } },
-  { id: 'h22-r-29', project_id: 'project_hacienda_f22', type: 'render', title: 'Ducha Pluvial de Gran Formato', storage_path: '/HACIENDA F22/BANO 2.png', category: 'Interiores', order_index: 32, metadata: { resolution: '4K UHD', description: 'Zona de ducha húmeda con nicho empotrado y acabado en piedra natural.' } },
-  { id: 'h22-r-30', project_id: 'project_hacienda_f22', type: 'render', title: 'Tocador & Baño Secundario', storage_path: '/HACIENDA F22/BANO 3.jpg', category: 'Interiores', order_index: 33, metadata: { resolution: '4K UHD', description: 'Mobiliario de baño en roble alistonado y encimera pulida de fácil mantenimiento.' } }
-];
-
+export const HACIENDA_F22_RENDERS: ProjectMediaItem[] = F22_RENDER_IDENTITIES.map((render, index) => ({
+  id: render.id, project_id: 'project_hacienda_f22', type: 'render', title: render.title,
+  storage_path: render.url, category: render.category, order_index: index + 1,
+  metadata: { description: render.description }
+}));
 const DEFAULT_BLUEPRINTS: ProjectMediaItem[] = [
   {
     id: 'bp-1',
@@ -398,6 +335,16 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
     .select('*').eq('id', projectId).maybeSingle();
   if (projectError || !available) throw new Error('Proyecto no disponible.');
   const result = await loadPortalData();
+  if (['project_hacienda_f22', 'hacienda-f22'].includes(projectId)) {
+    result.publicSpecs = getProjectPublicSpecs('HACIENDA F22');
+    result.renders = result.renders.map(render => ({ ...render, title: f22RenderTitle(render.storage_path), metadata: { ...render.metadata, description: 'Visualización arquitectónica de Hacienda F22.' } }));
+    result.blueprints = result.blueprints.map(blueprint => {
+      const index = ['P1-1.png', 'P1-2.png', 'P1-3.png'].findIndex(filename => blueprint.storage_path.split('?')[0].endsWith('/' + filename));
+      const { area: _area, description: _description, ...metadata } = blueprint.metadata || {};
+      const level = F22_LEVELS[index];
+      return { ...blueprint, title: level ? 'Planta axonométrica • ' + level.name : 'Plano de Hacienda F22', metadata: level ? { ...metadata, level: level.name, area: level.area, description: level.spaces.join(' • ') } : metadata };
+    });
+  }
   return resolveStorageReferences(supabase, result, supabaseUrl, 'project-vault');
 
   async function loadPortalData(): Promise<ProjectPortalData> {
@@ -627,59 +574,12 @@ export function getProjectPublicSpecs(projectName: string): ProjectPublicSpecs {
 
   if (isHacienda) {
     return {
-      areaBuilt: 'Por definir m²',
-      lotArea: 'Lote F22',
-      levels: '2 Plantas + Rooftop',
-      typology: 'Residencia Campestre Luxury',
-      location: 'Cúcuta, Norte de Santander',
-      year: '2026',
-      architecturalStyle: 'Minimalismo Escultórico de Vanguardia',
-      designConcept: 'Composición de voladizos y patios interiores que tamizan la radiación solar mientras enmarcan las visuales hacia el entorno campestre. Espacios diáfanos que priorizan la serenidad, la ventilación pasiva y la nobleza de los materiales.',
-      keyFeatures: [
-        'Diseño volumétrico con grandes luces y ausencia de columnas intermedias',
-        'Atrio central con jardín interior y espejo de agua',
-        'Cocina de alta gama con isla social en mármol y alacena oculta',
-        'Piscina infinity con desborde perimetral y playa de bronceado',
-        'Master Suite con terraza privada panorámica y baño tipo spa',
-        'Parqueadero cubierto para 4 vehículos con estación de carga'
-      ],
-      materials: [
-        { name: 'Concreto Visto & Mármol', category: 'Estructura & Acentos', description: 'Muros portantes en concreto arquitectónico con encofrado fino.' },
-        { name: 'Maderas Finas Sostenibles', category: 'Carpintería', description: 'Revestimientos acústicos interiores y decks perimetrales.' },
-        { name: 'Ventanería Piso a Techo', category: 'Fachadas', description: 'Sistemas corredizos de perfil oculto y cristales bajo emisivos.' },
-        { name: 'Piedras Naturales', category: 'Zonas Húmedas', description: 'Mármol travertino y pizarra en áreas de agua y terrazas.' }
-      ],
-      spatialProgram: [
-        { zone: 'Nivel 1 • Convivencia & Paisaje', spaces: ['Acceso con Espejo de Agua', 'Gran Salón Social con Doble Altura', 'Comedor Formal', 'Cocina Abierta de Chef', 'Cava de Vinos', 'Terraza Lounge & Asador', 'Piscina Infinity & Jacuzzi', 'Parqueaderos'] },
-        { zone: 'Nivel 2 • Descanso & Privacidad', spaces: ['Master Suite Presidencial con Doble Vestidor', '3 Suites Auxiliares con Baño', 'Estudio de Trabajo / Biblioteca', 'Family Room'] },
-        { zone: 'Nivel Superior • Rooftop', spaces: ['Terraza Mirador 360°', 'Área de Fuego (Fire Pit)', 'Bar Exterior'] }
-      ],
-      locationDetails: {
-        city: 'Cúcuta, NDS',
-        neighborhood: 'Condominio Hacienda',
-        lotNumber: 'Lote F22',
-        environment: 'Sector campestre exclusivo con máxima seguridad, senderos verdes y entorno natural protegido.'
-      },
-      finishes: {
-        flooring: 'Mármol nacional / porcelanato de ultra gran formato 160x80 cm.',
-        carpentry: 'Carpintería arquitectónica en roble alistonado y herrajes europeos.',
-        kitchen: 'Cocina italiana con electrodomésticos empotrados y mesón Neolith / Dekton.',
-        bathrooms: 'Duchas efecto lluvia, división en cristal templado y grifería de autor.',
-        facade: 'Concreto blanco aparente, lamas bioclimáticas y piedra laja pulida.',
-        automation: 'Domótica integral Lutron / Control4 para escenas de iluminación y climatización.'
-      },
-      financials: {
-        priceCOP: 'A consultar con el arquitecto',
-        priceUSD: 'Inversión personalizada',
-        downPayment: '30% Inicial fraccionada',
-        milestones: '50% durante los meses de construcción',
-        delivery: '20% contra recibo a satisfacción',
-        customTerms: [
-          'Garantía estructural decenal por MASSA GROUP',
-          'Personalización de acabados en sala de diseño',
-          'Flexibilidad en hitos de desembolso'
-        ]
-      }
+      areaBuilt: F22_AREA_BUILT, lotArea: F22_LOT_AREA, levels: '3 pisos',
+      typology: HACIENDA_F22_TECHNICAL.typology, location: 'Cúcuta, Norte de Santander',
+      year: '', architecturalStyle: 'Proyecto residencial', designConcept: F22_SUMMARY,
+      keyFeatures: F22_HIGHLIGHTS, materials: [], technicalSpecs: HACIENDA_F22_TECHNICAL,
+      spatialProgram: F22_LEVELS.map(level => ({ zone: level.name, spaces: level.spaces })),
+      locationDetails: { city: 'Cúcuta, Norte de Santander', neighborhood: 'Condominio Hacienda', lotNumber: 'Lote F22', environment: '' }
     };
   }
 

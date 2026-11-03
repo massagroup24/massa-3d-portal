@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { m, AnimatePresence, type Variants } from 'framer-motion';
 import { ArrowUpRight, Sparkles, MapPin, Maximize, Rotate3d, LogIn } from 'lucide-react';
 import { MassaLogo } from '../ui/MassaLogo';
+import { F22_AREA_BUILT, HACIENDA_F22_TECHNICAL } from '../../data/haciendaF22Specs';
 
 export interface PortfolioWork {
   id: string;
@@ -19,9 +20,9 @@ export const PORTFOLIO_WORKS: PortfolioWork[] = [
   {
     id: 'project_hacienda_f22',
     name: 'HACIENDA F22',
-    category: 'Residencia Campestre Luxury',
+    category: HACIENDA_F22_TECHNICAL.typology,
     location: 'Cúcuta, Norte de Santander',
-    area: 'Por definir m²',
+    area: F22_AREA_BUILT,
     year: '2026',
     thumbnail: '',
     bgImage: '',

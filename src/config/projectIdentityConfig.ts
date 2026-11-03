@@ -4,6 +4,8 @@
  * para sentirse como una nueva web independiente al abrirse en una pestaña nueva.
  */
 
+import { F22_AREA_BUILT, F22_LOT_AREA, F22_SUMMARY, F22_LEVELS, HACIENDA_F22_TECHNICAL, type ProjectTechnicalSpecs } from '../data/haciendaF22Specs';
+
 export interface ProjectTheme {
   primaryColor: string;     // Color de acento primario (ej. #9CD01A o #DFC47B)
   primaryHover: string;     // Color hover de acento (ej. #ABDE24 o #F1E29B)
@@ -95,12 +97,13 @@ export interface ProjectIdentity {
     lotMetricValue?: string;
     suitesLabel?: string;
     wellnessLabel?: string;
-    bedrooms: number;
-    bathrooms: number;
-    parkingSpaces: number;
+    bedrooms?: number;
+    bathrooms?: number;
+    parkingSpaces?: number;
     modality: string;
     levels: string;
   };
+  technicalSpecs?: ProjectTechnicalSpecs;
   tourEmbedUrl?: string;    // URL para incrustar el Gemelo Digital 360°
   renders: ProjectRender[];
   levels?: ProjectLevelInfo[];
@@ -112,80 +115,80 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
   // 1. FACHADAS & EXTERIORES (8)
   {
     id: 'f22-fachada-dron',
-    title: 'Vista Aérea Panorámica Dron & Entorno',
+    title: "Vista aérea",
     url: '/HACIENDA F22/FACHADA DRON.png',
-    category: 'Fachada & Exteriores',
-    description: 'Toma aérea monumental con dron mostrando la implantación en el lote F22, piscina infinity, quincho apergolado y campo de golf.',
+    category: "Fachada & Exteriores",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1536,
     height: 1024,
     aspectRatio: 1.50
   },
   {
     id: 'f22-fachada-1',
-    title: 'Fachada Principal & Emblema F22',
+    title: "Fachada principal",
     url: '/HACIENDA F22/FACHADA.png',
-    category: 'Fachada & Exteriores',
-    description: 'Volumetría monumental en piedra sinterizada, losa en voladizo e iluminación cálida con emblema F22 retroiluminado.',
+    category: "Fachada & Exteriores",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
   },
   {
     id: 'f22-fachada-2',
-    title: 'Perspectiva Escultórica Frontal',
+    title: "Fachada principal",
     url: '/HACIENDA F22/FACHADA 2.png',
-    category: 'Fachada & Exteriores',
-    description: 'Geometría pura de volúmenes desfasados, pérgola en concreto y celosías de privacidad.',
+    category: "Fachada & Exteriores",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1446,
     height: 1087,
     aspectRatio: 1.33
   },
   {
     id: 'f22-fachada-3',
-    title: 'Iluminación Crepuscular & Paisajismo',
+    title: "Fachada principal",
     url: '/HACIENDA F22/FACHADA 3.png',
-    category: 'Fachada & Exteriores',
-    description: 'Diseño lumínico rasante al atardecer realzando texturas de travertino y jardinería tropical.',
+    category: "Fachada & Exteriores",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1446,
     height: 1087,
     aspectRatio: 1.33
   },
   {
     id: 'f22-fachada-noche-1',
-    title: 'Fachada Nocturna & Iluminación Escénica',
+    title: "Fachada nocturna",
     url: '/HACIENDA F22/FACHADA NOCHE.png',
-    category: 'Fachada & Exteriores',
-    description: 'Composición nocturna de alto impacto con iluminación rasante cálida 2700K y relieve arquitectónico.',
+    category: "Fachada & Exteriores",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1446,
     height: 1088,
     aspectRatio: 1.33
   },
   {
     id: 'f22-fachada-noche-2',
-    title: 'Perspectiva Nocturna Frontal',
+    title: "Fachada nocturna",
     url: '/HACIENDA F22/FACHADA NOCHE 2.png',
-    category: 'Fachada & Exteriores',
-    description: 'Visual nocturna frontal que destaca la volumetría de la residencia y su diálogo con el cielo estrellado.',
+    category: "Fachada & Exteriores",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
   },
   {
     id: 'f22-fachada-trasera-1',
-    title: 'Fachada Posterior & Apertura al Patio',
+    title: "Fachada posterior",
     url: '/HACIENDA F22/FACHADA TRASERA.jpg',
-    category: 'Fachada & Exteriores',
-    description: 'Grandes paños acristalados de piso a techo que desvanecen los límites con la piscina.',
+    category: "Fachada & Exteriores",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
   },
   {
     id: 'f22-fachada-trasera-2',
-    title: 'Perspectiva Posterior & Deck Superior',
+    title: "Fachada posterior",
     url: '/HACIENDA F22/FACHADA TRASERA 2.jpg',
-    category: 'Fachada & Exteriores',
-    description: 'Vista diagonal de terrazas y conexión bioclimática cruzada hacia el entorno natural.',
+    category: "Fachada & Exteriores",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1619,
     height: 971,
     aspectRatio: 1.67
@@ -194,50 +197,50 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
   // 2. BIENVENIDA & SALÓN DOBLE ALTURA (5)
   {
     id: 'f22-vestibulo-1',
-    title: 'Atrio y Vestíbulo de Acceso',
+    title: "Vestíbulo",
     url: '/HACIENDA F22/VESTIBULO.jpg',
-    category: 'Bienvenida & Salón',
-    description: 'Pórtico monumental de recibo con puerta pivotante de gran formato y muro en madera noble.',
+    category: "Bienvenida & Salón",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
   },
   {
     id: 'f22-vestibulo-2',
-    title: 'Detalle Arquitectónico de Entrada',
+    title: "Vestíbulo",
     url: '/HACIENDA F22/VESTIBULO 2.jpg',
-    category: 'Bienvenida & Salón',
-    description: 'Transición entre exterior e interior con iluminación escenográfica vertical.',
+    category: "Bienvenida & Salón",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
   },
   {
     id: 'f22-sala-1',
-    title: 'Gran Salón Monumental & Doble Altura',
+    title: "Sala y comedor",
     url: '/HACIENDA F22/SALA.jpg',
-    category: 'Bienvenida & Salón',
-    description: 'Espacio central de doble altura con sofá orgánico bouclé, escalera flotante en madera y puente mezzanine.',
+    category: "Bienvenida & Salón",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1671,
     height: 941,
     aspectRatio: 1.78
   },
   {
     id: 'f22-sala-2',
-    title: 'Perspectiva de Doble Altura & Mezzanine',
+    title: "Sala y comedor",
     url: '/HACIENDA F22/SALA 2.jpg',
-    category: 'Bienvenida & Salón',
-    description: 'Juego de luces cenitales y sombras proyectadas a través de la pasarela acristalada superior.',
+    category: "Bienvenida & Salón",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
   },
   {
     id: 'f22-sala-3',
-    title: 'Comedor Formal & Integración Espacial',
+    title: "Sala y comedor",
     url: '/HACIENDA F22/SALA 3.png',
-    category: 'Bienvenida & Salón',
-    description: 'Mesa de comedor en roble natural integrada con visual abierta hacia los jardines.',
+    category: "Bienvenida & Salón",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1521,
     height: 1034,
     aspectRatio: 1.47
@@ -246,30 +249,30 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
   // 3. COCINA DE AUTOR (3)
   {
     id: 'f22-cocina-1',
-    title: 'Cocina de Chef con Isla de Cuarcita',
+    title: "Cocina",
     url: '/HACIENDA F22/COCINA.jpg',
-    category: 'Cocina de Autor',
-    description: 'Isla monolítica en cuarcita exótica, campana oculta y lámpara escultórica suspendida en ondas doradas.',
+    category: "Cocina de Autor",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
   },
   {
     id: 'f22-cocina-2',
-    title: 'Cava de Vinos & Vitrina de Cristal',
+    title: "Cocina",
     url: '/HACIENDA F22/COCINA 2.jpg',
-    category: 'Cocina de Autor',
-    description: 'Mueble vertical acanalado en madera con iluminación perimetral para cristalería y vinos selectos.',
+    category: "Cocina de Autor",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
   },
   {
     id: 'f22-cocina-3',
-    title: 'Perspectiva Integral de Cocina Gourmet',
+    title: "Cocina",
     url: '/HACIENDA F22/COCINA 3.jpg',
-    category: 'Cocina de Autor',
-    description: 'Diálogo armónico entre la barra de desayuno, el piso travertino y carpintería oculta.',
+    category: "Cocina de Autor",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
@@ -278,40 +281,40 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
   // 4. PISCINA & BBQ (4)
   {
     id: 'f22-piscina-1',
-    title: 'Piscina Turquesa & Muros de Travertino',
+    title: "Piscina",
     url: '/HACIENDA F22/PISCINA.jpg',
-    category: 'Piscina & BBQ',
-    description: 'Piscina desbordante con zona de bronceado, jacuzzi y muros perimetrales con cinta LED rasante.',
+    category: "Piscina & BBQ",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
   },
   {
     id: 'f22-piscina-2',
-    title: 'Espejo de Agua al Atardecer',
+    title: "Piscina",
     url: '/HACIENDA F22/PISCINA 2.jpg',
-    category: 'Piscina & BBQ',
-    description: 'Atardecer dorado reflejado sobre el agua con pabellón exterior iluminado.',
+    category: "Piscina & BBQ",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
   },
   {
     id: 'f22-terraza-1',
-    title: 'Pabellón Gourmet / Quincho de Chef',
+    title: "Terraza y kiosco",
     url: '/HACIENDA F22/TERRAZA.png',
-    category: 'Piscina & BBQ',
-    description: 'Cocina exterior cubierta con asador BBQ empotrado, cava de frío y comedor al aire libre.',
+    category: "Piscina & BBQ",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1448,
     height: 1086,
     aspectRatio: 1.33
   },
   {
     id: 'f22-terraza-2',
-    title: 'Lounge Apergolado en Teca',
+    title: "Terraza y kiosco",
     url: '/HACIENDA F22/TERRAZA 2.jpg',
-    category: 'Piscina & BBQ',
-    description: 'Estructura apergolada con ventilación natural y living exterior para veladas privadas.',
+    category: "Piscina & BBQ",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
@@ -320,40 +323,40 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
   // 5. ENTRETENIMIENTO & HOME OFFICE (4)
   {
     id: 'f22-tv-1',
-    title: 'Family Lounge & Media Room',
+    title: "Sala de TV",
     url: '/HACIENDA F22/SALA TV.jpg',
-    category: 'Entretenimiento & Estudio',
-    description: 'Ambiente íntimo de descanso con panelado en madera acústica e iluminación indirecta cálida.',
+    category: "Entretenimiento & Estudio",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
   },
   {
     id: 'f22-tv-2',
-    title: 'Sala de Cine y TV Familiar',
+    title: "Sala de TV",
     url: '/HACIENDA F22/SALA TV 2.jpg',
-    category: 'Entretenimiento & Estudio',
-    description: 'Mobiliario envolvente low-profile diseñado para el relax total de la familia.',
+    category: "Entretenimiento & Estudio",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
   },
   {
     id: 'f22-tv-3',
-    title: 'Game Room & Sala de TV Integrada',
+    title: "Sala de TV",
     url: '/HACIENDA F22/SALA TV 3.png',
-    category: 'Entretenimiento & Estudio',
-    description: 'Espacio de entretenimiento con mesa de ping-pong de diseño, sala de TV al fondo e iluminación lineal perimetral en plafón.',
+    category: "Entretenimiento & Estudio",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1254,
     height: 1114,
     aspectRatio: 1.13
   },
   {
     id: 'f22-oficina-1',
-    title: 'Home Office / Estudio de Dirección',
+    title: "Estudio",
     url: '/HACIENDA F22/OFICINA.jpg',
-    category: 'Entretenimiento & Estudio',
-    description: 'Despacho privado de alto estándar con aislamiento acústico y luz natural directa.',
+    category: "Entretenimiento & Estudio",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
@@ -362,305 +365,417 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
   // 6. SUITES PRIVADAS, VESTIER & BAÑOS SPA (9)
   {
     id: 'f22-dormitorio-1',
-    title: 'Master Suite Presidencial',
+    title: "Habitación principal",
     url: '/HACIENDA F22/DORMITORIO.jpg',
-    category: 'Suites & Baños Spa',
-    description: 'Habitación principal con cabecero en lino cálido, ranura de luz vertical 2700K y terraza privada.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1522,
     height: 1033,
     aspectRatio: 1.47
   },
   {
     id: 'f22-dormitorio-2',
-    title: 'Perspectiva de Suite Principal',
+    title: "Habitación principal",
     url: '/HACIENDA F22/DORMITORIO 2.jpg',
-    category: 'Suites & Baños Spa',
-    description: 'Cama suspendida, ventanales de piso a techo y texturas serenas de relajación.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
   },
   {
     id: 'f22-habitacion-1',
-    title: 'Suite Familiar 01',
+    title: "Habitación",
     url: '/HACIENDA F22/HABITACION.jpg',
-    category: 'Suites & Baños Spa',
-    description: 'Dormitorio secundario con baño privado, acabados neutros y armarios integrados.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1536,
     height: 1024,
     aspectRatio: 1.50
   },
   {
     id: 'f22-habitacion-2',
-    title: 'Suite de Huéspedes 02',
+    title: "Habitación",
     url: '/HACIENDA F22/HABITACION 2.jpg',
-    category: 'Suites & Baños Spa',
-    description: 'Espacio sereno con control solar pasivo y luz matutina indirecta.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
   },
   {
     id: 'f22-habitacion-3',
-    title: 'Suite Panorámica 03',
+    title: "Habitación",
     url: '/HACIENDA F22/HABITACION 3.jpg',
-    category: 'Suites & Baños Spa',
-    description: 'Habitación con vista perimetral y salida a balcón superior.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1448,
     height: 1086,
     aspectRatio: 1.33
   },
   {
     id: 'f22-vestier-1',
-    title: 'Walk-in Closet Presidencial',
+    title: "Vestier",
     url: '/HACIENDA F22/VESTIER.jpg',
-    category: 'Suites & Baños Spa',
-    description: 'Vestier tipo boutique con vitrinas de vidrio ahumado, iluminación interna y módulo de accesorios.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 941,
     height: 1672,
     aspectRatio: 0.56 // Vertical / Portrait
   },
   {
     id: 'f22-bano-1',
-    title: 'Master Bath & Spa',
+    title: "Baño",
     url: '/HACIENDA F22/BANO.jpg',
-    category: 'Suites & Baños Spa',
-    description: 'Baño principal en mármol con doble lavamanos flotante, espejos con halo LED y grifería negro mate.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
   },
   {
     id: 'f22-bano-2',
-    title: 'Ducha Pluvial de Gran Formato & Cabina Spa',
+    title: "Baño",
     url: '/HACIENDA F22/BANO 2.png',
-    category: 'Suites & Baños Spa',
-    description: 'Zona de ducha húmeda con nicho empotrado y acabado en piedra natural.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1521,
     height: 1034,
     aspectRatio: 1.47
   },
   {
     id: 'f22-bano-3',
-    title: 'Tocador & Baño Secundario',
+    title: "Baño",
     url: '/HACIENDA F22/BANO 3.jpg',
-    category: 'Suites & Baños Spa',
-    description: 'Mobiliario de baño en roble alistonado y encimera pulida de fácil mantenimiento.',
+    category: "Habitaciones y baños",
+    description: 'Visualización arquitectónica de Hacienda F22.',
     width: 1521,
     height: 1034,
     aspectRatio: 1.47
   }
 ];
 
-export const HACIENDA_F22_LEVELS: ProjectLevelInfo[] = [
-  {
-    id: 'nivel-1',
-    label: 'Planta Piso 1 • Social, Deck & Piscina',
-    area: '340 m² + 220 m² Terrazas',
-    height: 'Doble altura 6.20 m en salón principal',
-    summary: 'Integración total entre el atrio de acceso con espejo de agua, gran salón de doble altura, cocina de autor con isla de cuarcita y apertura total hacia la piscina infinity y el quincho apergolado.',
-    spaces: [
-      'Pórtico de acceso con espejo de agua y puerta pivotante de 3.20 m',
-      'Gran Salón-Comedor en doble altura con ventanales corredizos ocultos',
-      'Cocina de Chef con isla monolítica, cava climatizada y despensa oculta',
-      'Home Office / Estudio privado con vista al jardín frontal',
-      'Piscina desbordante climatizada, Jacuzzi y Deck en madera teca',
-      'Pabellón BBQ / Quincho gourmet cubierto con baño social exterior',
-      'Garaje cubierto para 4 vehículos + cuarto de máquinas y zona de servicio'
-    ]
-  },
-  {
-    id: 'nivel-2',
-    label: 'Planta Piso 2 • Suites Privadas & Mezzanine',
-    area: '220 m²',
-    height: 'Altura libre 3.20 m',
-    summary: 'Ala residencial íntima conectada por un puente-galería flotante con baranda en cristal templado y vistas sobre la doble altura del salón y la piscina.',
-    spaces: [
-      'Master Suite Presidencial (68 m²) con terraza privada hacia el jardín',
-      'Walk-in Closet tipo boutique con iluminación LED integrada e isla central',
-      'Master Bath tipo Spa con doble ducha pluvial, tina exenta y mármol sinterizado',
-      '3 Suites secundarias, cada una con vestier independiente, baño privado y balcón',
-      'Sala de TV / Family Lounge insonorizado con iluminación indirecta'
-    ]
-  },
-  {
-    id: 'nivel-3',
-    label: 'Planta Piso 3 • Sky Lounge & Mirador 360°',
-    area: '110 m²',
-    height: 'Cielo abierto 360°',
-    summary: 'Espacio contemplativo superior para atardeceres sobre el Condominio Hacienda, equipado con preinstalación solar fotovoltaica y lounge de fuego.',
-    spaces: [
-      'Sky Lounge & Firepit para reuniones nocturnas bajo las estrellas',
-      'Mirador panorámico 360° hacia los cerros de Cúcuta',
-      'Área técnica aislada acústicamente para equipos VRF y paneles solares'
-    ]
-  }
-];
+export const HACIENDA_F22_LEVELS: ProjectLevelInfo[] = F22_LEVELS.map(level => ({ id: level.id, label: level.name, area: level.area, height: '', summary: level.role, spaces: level.spaces }));
 
 export const HACIENDA_F22_ROOMS_360: ProjectRoom360[] = [
   {
-    id: 'room_f22_zona_social',
-    name: 'Oasis Exterior & Piscina Infinity',
-    level: 'Planta Nivel 1 • Exterior',
-    area: '220 m² Exteriores',
-    materials: 'Deck en madera teca, piedra Bali en piscina, muros travertino y jacuzzi climatizado',
-    previewUrl: '/HACIENDA F22/360/ZONA SOCIAL.jpg',
-    hotspots: [
-      { id: 'hs-zs-1', label: 'Piscina Infinity & Jacuzzi', detail: 'Espejo de agua desbordante con hidromasaje y asoleadero húmedo.', x: 38, y: 64 },
-      { id: 'hs-zs-2', label: 'Pabellón Quincho BBQ', detail: 'Conectar con el pabellón de asados cubierto →', x: 22, y: 52, targetRoomId: 'room_f22_bbq' },
-      { id: 'hs-zs-3', label: 'Ingresar al Gran Salón', detail: 'Abrir ventanales hacia el salón central →', x: 74, y: 52, targetRoomId: 'room_f22_sala' }
+    "id": "room_f22_zona_social",
+    "name": "Zona piscina",
+    "level": "Planta Nivel 1",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/ZONA SOCIAL.jpg",
+    "hotspots": [
+      {
+        "id": "hs-zs-2",
+        "label": "Ir a Kiosco",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 22,
+        "y": 52,
+        "targetRoomId": "room_f22_bbq"
+      },
+      {
+        "id": "hs-zs-3",
+        "label": "Ir a Sala",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 74,
+        "y": 52,
+        "targetRoomId": "room_f22_sala"
+      }
     ]
   },
   {
-    id: 'room_f22_bbq',
-    name: 'Pabellón BBQ & Quincho Gourmet',
-    level: 'Planta Nivel 1 • Exterior Gourmet',
-    area: '48 m²',
-    materials: 'Pérgola en concreto arquitectónico, asador en acero inox 304 y mesón en granito',
-    previewUrl: '/HACIENDA F22/360/BBQ.jpg',
-    hotspots: [
-      { id: 'hs-bbq-1', label: 'Asador & Campana Integrada', detail: 'Parrilla a gas y carbón con estación de corte y refrigerador bar.', x: 86, y: 54 },
-      { id: 'hs-bbq-2', label: 'Deck y Piscina', detail: 'Volver a la piscina desbordante →', x: 52, y: 60, targetRoomId: 'room_f22_zona_social' },
-      { id: 'hs-bbq-3', label: 'Ingresar a la Residencia', detail: 'Entrar al salón social →', x: 28, y: 48, targetRoomId: 'room_f22_sala' }
+    "id": "room_f22_bbq",
+    "name": "Kiosco",
+    "level": "Planta Nivel 1",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/BBQ.jpg",
+    "hotspots": [
+      {
+        "id": "hs-bbq-2",
+        "label": "Ir a Zona piscina",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 52,
+        "y": 60,
+        "targetRoomId": "room_f22_zona_social"
+      },
+      {
+        "id": "hs-bbq-3",
+        "label": "Ir a Sala",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 28,
+        "y": 48,
+        "targetRoomId": "room_f22_sala"
+      }
     ]
   },
   {
-    id: 'room_f22_sala',
-    name: 'Gran Salón de Doble Altura & Comedor',
-    level: 'Planta Nivel 1 • Social',
-    area: '96 m² (Doble Altura 6.20 m)',
-    materials: 'Travertino Fiorito, listones de roble natural, chimenea lineal y cristal laminado',
-    previewUrl: '/HACIENDA F22/360/SALA.jpg',
-    hotspots: [
-      { id: 'hs-s-1', label: 'Chimenea Lineal de Bioetanol', detail: 'Muro central en piedra sinterizada e iluminación perimetral.', x: 50, y: 58 },
-      { id: 'hs-s-2', label: 'Cocina de Chef', detail: 'Pasar a la cocina y cava de vinos →', x: 20, y: 52, targetRoomId: 'room_f22_cocina' },
-      { id: 'hs-s-3', label: 'Subir a Nivel 2', detail: 'Ir a escaleras flotantes y suites →', x: 62, y: 46, targetRoomId: 'room_f22_escaleras' },
-      { id: 'hs-s-4', label: 'Estudio Privado', detail: 'Entrar al despacho ejecutivo →', x: 32, y: 50, targetRoomId: 'room_f22_estudio' },
-      { id: 'hs-s-5', label: 'Salir a Piscina', detail: 'Apertura hacia el oasis exterior →', x: 82, y: 52, targetRoomId: 'room_f22_zona_social' }
+    "id": "room_f22_sala",
+    "name": "Sala",
+    "level": "Planta Nivel 1",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/SALA.jpg",
+    "hotspots": [
+      {
+        "id": "hs-s-2",
+        "label": "Ir a Cocina",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 20,
+        "y": 52,
+        "targetRoomId": "room_f22_cocina"
+      },
+      {
+        "id": "hs-s-3",
+        "label": "Ir a Escaleras",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 62,
+        "y": 46,
+        "targetRoomId": "room_f22_escaleras"
+      },
+      {
+        "id": "hs-s-4",
+        "label": "Ir a Estudio",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 32,
+        "y": 50,
+        "targetRoomId": "room_f22_estudio"
+      },
+      {
+        "id": "hs-s-5",
+        "label": "Ir a Zona piscina",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 82,
+        "y": 52,
+        "targetRoomId": "room_f22_zona_social"
+      }
     ]
   },
   {
-    id: 'room_f22_cocina',
-    name: 'Cocina de Chef & Cava Climatizada',
-    level: 'Planta Nivel 1 • Gastronomía',
-    area: '44 m²',
-    materials: 'Cuarcita Taj Mahal en cascada, vitrina de vinos con vidrio bronce y carpintería soft-close',
-    previewUrl: '/HACIENDA F22/360/COCINA_1.jpg',
-    hotspots: [
-      { id: 'hs-c-1', label: 'Isla Monolítica en Cascada', detail: 'Cuarcita exótica con estufa de inducción y barra de desayuno.', x: 50, y: 68 },
-      { id: 'hs-c-2', label: 'Cava de Vinos Iluminada', detail: 'Vitrina climatizada con control térmico y copero integrado.', x: 28, y: 46 },
-      { id: 'hs-c-3', label: 'Volver al Gran Salón', detail: 'Regresar al área social →', x: 42, y: 48, targetRoomId: 'room_f22_sala' },
-      { id: 'hs-c-4', label: 'Salir al Deck', detail: 'Acceso directo a terraza y piscina →', x: 74, y: 50, targetRoomId: 'room_f22_zona_social' }
+    "id": "room_f22_cocina",
+    "name": "Cocina",
+    "level": "Planta Nivel 1",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/COCINA_1.jpg",
+    "hotspots": [
+      {
+        "id": "hs-c-3",
+        "label": "Ir a Sala",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 42,
+        "y": 48,
+        "targetRoomId": "room_f22_sala"
+      },
+      {
+        "id": "hs-c-4",
+        "label": "Ir a Zona piscina",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 74,
+        "y": 50,
+        "targetRoomId": "room_f22_zona_social"
+      }
     ]
   },
   {
-    id: 'room_f22_estudio',
-    name: 'Estudio & Home Office Ejecutivo',
-    level: 'Planta Nivel 1 • Despacho',
-    area: '24 m²',
-    materials: 'Panelado acústico en madera clara, escritorio curvo y biblioteca retroiluminada',
-    previewUrl: '/HACIENDA F22/360/ESTUDIO.jpg',
-    hotspots: [
-      { id: 'hs-est-1', label: 'Escritorio Curvo Flotante', detail: 'Área de trabajo ergonómica con conexiones ocultas y vista al frente.', x: 26, y: 64 },
-      { id: 'hs-est-2', label: 'Biblioteca Iluminada', detail: 'Estantería curva con luces led rasantes cálidas 2700K.', x: 48, y: 50 },
-      { id: 'hs-est-3', label: 'Salir al Salón', detail: 'Volver al salón central →', x: 88, y: 52, targetRoomId: 'room_f22_sala' }
+    "id": "room_f22_estudio",
+    "name": "Estudio",
+    "level": "Planta Nivel 1",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/ESTUDIO.jpg",
+    "hotspots": [
+      {
+        "id": "hs-est-3",
+        "label": "Ir a Sala",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 88,
+        "y": 52,
+        "targetRoomId": "room_f22_sala"
+      }
     ]
   },
   {
-    id: 'room_f22_escaleras',
-    name: 'Atrio Escultórico & Escalera Flotante',
-    level: 'Planta Nivel 1 • Transición',
-    area: '32 m²',
-    materials: 'Peldaños macizos en madera noble, estructura metálica oculta y vidrio templado',
-    previewUrl: '/HACIENDA F22/360/ESCALERAS.jpg',
-    hotspots: [
-      { id: 'hs-esc-1', label: 'Escalera Flotante', detail: 'Peldaños suspendidos en voladizo sobre jardín interior seco.', x: 50, y: 46 },
-      { id: 'hs-esc-2', label: 'Subir al Mezzanine', detail: 'Acceder a Planta Nivel 2 y suites →', x: 50, y: 32, targetRoomId: 'room_f22_pasillo' },
-      { id: 'hs-esc-3', label: 'Bajar al Gran Salón', detail: 'Volver a la estancia principal →', x: 22, y: 60, targetRoomId: 'room_f22_sala' }
+    "id": "room_f22_escaleras",
+    "name": "Escaleras",
+    "level": "Planta Nivel 1",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/ESCALERAS.jpg",
+    "hotspots": [
+      {
+        "id": "hs-esc-2",
+        "label": "Ir a Pasillo del segundo piso",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 50,
+        "y": 32,
+        "targetRoomId": "room_f22_pasillo"
+      },
+      {
+        "id": "hs-esc-3",
+        "label": "Ir a Sala",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 22,
+        "y": 60,
+        "targetRoomId": "room_f22_sala"
+      }
     ]
   },
   {
-    id: 'room_f22_pasillo',
-    name: 'Puente Mezzanine & Galería Nivel 2',
-    level: 'Planta Nivel 2 • Distribución',
-    area: '28 m²',
-    materials: 'Pasarela en voladizo con baranda panorámica en cristal y vista sobre el salón',
-    previewUrl: '/HACIENDA F22/360/PASILLO 2P.jpg',
-    hotspots: [
-      { id: 'hs-pas-1', label: 'Visual a Doble Altura', detail: 'Vista aérea privilegiada sobre la sala social y araña de diseño.', x: 32, y: 64 },
-      { id: 'hs-pas-2', label: 'Family Room & Juegos', detail: 'Entrar a la sala de entretenimiento →', x: 24, y: 48, targetRoomId: 'room_f22_sala_tv' },
-      { id: 'hs-pas-3', label: 'Master Suite Presidencial', detail: 'Ingresar a la suite principal →', x: 50, y: 44, targetRoomId: 'room_f22_master' },
-      { id: 'hs-pas-4', label: 'Suite Auxiliar Huéspedes', detail: 'Ir a habitación secundaria →', x: 78, y: 48, targetRoomId: 'room_f22_hab_aux' },
-      { id: 'hs-pas-5', label: 'Bajar al Nivel 1', detail: 'Descender por la escalera flotante →', x: 68, y: 62, targetRoomId: 'room_f22_escaleras' }
+    "id": "room_f22_pasillo",
+    "name": "Pasillo del segundo piso",
+    "level": "Planta Nivel 2",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/PASILLO 2P.jpg",
+    "hotspots": [
+      {
+        "id": "hs-pas-2",
+        "label": "Ir a Sala de TV",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 24,
+        "y": 48,
+        "targetRoomId": "room_f22_sala_tv"
+      },
+      {
+        "id": "hs-pas-3",
+        "label": "Ir a Habitación principal",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 50,
+        "y": 44,
+        "targetRoomId": "room_f22_master"
+      },
+      {
+        "id": "hs-pas-4",
+        "label": "Ir a Habitación auxiliar",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 78,
+        "y": 48,
+        "targetRoomId": "room_f22_hab_aux"
+      },
+      {
+        "id": "hs-pas-5",
+        "label": "Ir a Escaleras",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 68,
+        "y": 62,
+        "targetRoomId": "room_f22_escaleras"
+      }
     ]
   },
   {
-    id: 'room_f22_sala_tv',
-    name: 'Sky Lounge, Juegos & Mirador 360°',
-    level: 'Planta Piso 3 • Rooftop & Entretenimiento',
-    area: '60 m² Cubiertos + 110 m² Terraza Mirador',
-    materials: 'Piso en madera cálida, iluminación perimetral curva, mesa de ping pong y ventanales a la gran terraza mirador 360°',
-    previewUrl: '/HACIENDA F22/360/SALA TV.jpg',
-    hotspots: [
-      { id: 'hs-tv-1', label: 'Mesa de Ping Pong / Juegos', detail: 'Zona lúdica con iluminación decorativa y amplio espacio de circulación.', x: 50, y: 56 },
-      { id: 'hs-tv-2', label: 'Gran Terraza Mirador 360°', detail: 'Salida directa a la cubierta mirador panorámica hacia las colinas.', x: 68, y: 48 },
-      { id: 'hs-tv-3', label: 'Bajar a Piso 2 (Suites)', detail: 'Descender al pasillo distribuidor de habitaciones →', x: 84, y: 52, targetRoomId: 'room_f22_pasillo' },
-      { id: 'hs-tv-4', label: 'Master Suite', detail: 'Pasar a la suite principal en Piso 2 →', x: 22, y: 48, targetRoomId: 'room_f22_master' }
+    "id": "room_f22_sala_tv",
+    "name": "Sala de TV",
+    "level": "Planta Piso 3",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/SALA TV.jpg",
+    "hotspots": [
+      {
+        "id": "hs-tv-3",
+        "label": "Ir a Pasillo del segundo piso",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 84,
+        "y": 52,
+        "targetRoomId": "room_f22_pasillo"
+      },
+      {
+        "id": "hs-tv-4",
+        "label": "Ir a Habitación principal",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 22,
+        "y": 48,
+        "targetRoomId": "room_f22_master"
+      }
     ]
   },
   {
-    id: 'room_f22_master',
-    name: 'Master Suite Presidencial',
-    level: 'Planta Nivel 2 • Privado',
-    area: '68 m² Suite Completa',
-    materials: 'Panelado en roble natural, cabecero acolchado, iluminación 2700K y terraza privada',
-    previewUrl: '/HACIENDA F22/360/HAB PPAL 1.jpg',
-    hotspots: [
-      { id: 'hs-m-1', label: 'Cama King & Panelado', detail: 'Cabecero escultórico con iluminación rasante indirecta.', x: 50, y: 58 },
-      { id: 'hs-m-2', label: 'Terraza Privada Exterior', detail: 'Salida directa a balcón con vistas al jardín y piscina.', x: 24, y: 48 },
-      { id: 'hs-m-3', label: 'Vestier Boutique', detail: 'Entrar al walk-in closet con vitrinas ahumadas →', x: 82, y: 50, targetRoomId: 'room_f22_vestier' },
-      { id: 'hs-m-4', label: 'Salir a Mezzanine', detail: 'Volver al pasillo distribuidor →', x: 88, y: 56, targetRoomId: 'room_f22_pasillo' }
+    "id": "room_f22_master",
+    "name": "Habitación principal",
+    "level": "Planta Nivel 2",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/HAB PPAL 1.jpg",
+    "hotspots": [
+      {
+        "id": "hs-m-3",
+        "label": "Ir a Vestier",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 82,
+        "y": 50,
+        "targetRoomId": "room_f22_vestier"
+      },
+      {
+        "id": "hs-m-4",
+        "label": "Ir a Pasillo del segundo piso",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 88,
+        "y": 56,
+        "targetRoomId": "room_f22_pasillo"
+      }
     ]
   },
   {
-    id: 'room_f22_vestier',
-    name: 'Vestier Boutique & Walk-In Closet',
-    level: 'Planta Nivel 2 • Vestier',
-    area: '26 m²',
-    materials: 'Vitrinas en vidrio ahumado bronce, iluminación led oculta y tocador doble con espejo',
-    previewUrl: '/HACIENDA F22/360/VESTIER.jpg',
-    hotspots: [
-      { id: 'hs-v-1', label: 'Vitrinas Boutique Iluminadas', detail: 'Armarios cerrados en cristal con iluminación de tienda de alta costura.', x: 74, y: 52 },
-      { id: 'hs-v-2', label: 'Tocador con Espejo LED', detail: 'Estación de maquillaje con luz neutra perimetral.', x: 18, y: 56 },
-      { id: 'hs-v-3', label: 'Master Bath & Spa', detail: 'Pasar al baño principal con tina exenta →', x: 50, y: 48, targetRoomId: 'room_f22_wc_ppal' },
-      { id: 'hs-v-4', label: 'Volver a Master Suite', detail: 'Regresar al dormitorio principal →', x: 38, y: 54, targetRoomId: 'room_f22_master' }
+    "id": "room_f22_vestier",
+    "name": "Vestier",
+    "level": "Planta Nivel 2",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/VESTIER.jpg",
+    "hotspots": [
+      {
+        "id": "hs-v-3",
+        "label": "Ir a Baño principal",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 50,
+        "y": 48,
+        "targetRoomId": "room_f22_wc_ppal"
+      },
+      {
+        "id": "hs-v-4",
+        "label": "Ir a Habitación principal",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 38,
+        "y": 54,
+        "targetRoomId": "room_f22_master"
+      }
     ]
   },
   {
-    id: 'room_f22_wc_ppal',
-    name: 'Master Bath & Spa Privado',
-    level: 'Planta Nivel 2 • Spa',
-    area: '24 m²',
-    materials: 'Tina exenta ergonómica, claraboya cenital natural, mesón suspendido y ducha de lluvia',
-    previewUrl: '/HACIENDA F22/360/WCPPAL.jpg',
-    hotspots: [
-      { id: 'hs-wc-1', label: 'Tina Exenta & Claraboya', detail: 'Bañera escultórica bajo tragaluz cenital de luz natural.', x: 26, y: 72 },
-      { id: 'hs-wc-2', label: 'Lavamanos Doble Flotante', detail: 'Mueble suspendido con grifería negra empotrada y espejo con luz cálida.', x: 54, y: 50 },
-      { id: 'hs-wc-3', label: 'Cabina Ducha Spa', detail: 'Doble regadera de techo con panel de cristal esmerilado.', x: 76, y: 52 },
-      { id: 'hs-wc-4', label: 'Regresar al Vestier', detail: 'Volver al walk-in closet boutique →', x: 42, y: 48, targetRoomId: 'room_f22_vestier' }
+    "id": "room_f22_wc_ppal",
+    "name": "Baño principal",
+    "level": "Planta Nivel 2",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/WCPPAL.jpg",
+    "hotspots": [
+      {
+        "id": "hs-wc-4",
+        "label": "Ir a Vestier",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 42,
+        "y": 48,
+        "targetRoomId": "room_f22_vestier"
+      }
     ]
   },
   {
-    id: 'room_f22_hab_aux',
-    name: 'Suite Auxiliar / Huéspedes',
-    level: 'Planta Nivel 2 • Suite',
-    area: '32 m²',
-    materials: 'Mueble bajo en roble, pantalla empotrada, cama central y ventanales de piso a techo',
-    previewUrl: '/HACIENDA F22/360/HAB AUX.jpg',
-    hotspots: [
-      { id: 'hs-aux-1', label: 'Cama Circular de Diseño', detail: 'Mobiliario vanguardista en tonos arena y textiles naturales.', x: 50, y: 64 },
-      { id: 'hs-aux-2', label: 'Ventanales Panorámicos', detail: 'Apertura directa de luz natural con vista a los árboles perimetrales.', x: 66, y: 48 },
-      { id: 'hs-aux-3', label: 'Volver a Mezzanine', detail: 'Salir al pasillo distribuidor de Nivel 2 →', x: 88, y: 50, targetRoomId: 'room_f22_pasillo' }
+    "id": "room_f22_hab_aux",
+    "name": "Habitación auxiliar",
+    "level": "Planta Nivel 2",
+    "area": "",
+    "materials": "",
+    "previewUrl": "/HACIENDA F22/360/HAB AUX.jpg",
+    "hotspots": [
+      {
+        "id": "hs-aux-3",
+        "label": "Ir a Pasillo del segundo piso",
+        "detail": "Cambiar de ambiente en el recorrido 360°.",
+        "x": 88,
+        "y": 50,
+        "targetRoomId": "room_f22_pasillo"
+      }
     ]
   }
 ];
@@ -868,15 +983,15 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
     name: 'HACIENDA F22',
     titlePrefix: 'HACIENDA',
     titleHighlight: 'F22',
-    categoryLabel: 'RESIDENCIA CAMPESTRE DE AUTOR',
+    categoryLabel: 'VIVIENDA NO VIS UNIFAMILIAR',
     urbanization: 'CONDOMINIO HACIENDA',
     lot: 'LOTE F22',
     location: 'CÚCUTA / NORTE DE SANTANDER',
     locationFull: 'CÚCUTA / NORTE DE SANTANDER • CONDOMINIO HACIENDA • LOTE F22',
     statusBadge: 'AMHO CONSTRUCCIONES • OBRA EXCLUSIVA',
-    statusLabel: 'Diseño Aprobado • Listo para Construcción',
+    statusLabel: 'Proyecto residencial',
     brandName: 'AMHO CONSTRUCCIONES',
-    tagline: 'Escultura habitable concebida por AMHO Construcciones en diálogo entre volúmenes en voladizo, travertino natural, cuarcita exótica y un oasis exterior con piscina desbordante y pabellón gourmet.',
+    tagline: F22_SUMMARY,
     // Cuando esté listo el video oficial, colocar aquí su ruta o URL para activar el reproductor.
     heroVideoUrl: '',
     heroVideoPoster: '/HACIENDA F22/FACHADA.png',
@@ -905,17 +1020,13 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       metallicGradient: 'linear-gradient(135deg, #B89752 0%, #DFC47B 32%, #F7E8A8 50%, #D1B16B 74%, #9E7D3B 100%)'
     },
     specs: {
-      areaBuilt: '560 m²',
-      lotArea: '1.200 m² (Lote F22)',
-      lotMetricValue: '1.200 m²',
-      suitesLabel: '4 Master',
-      wellnessLabel: 'Piscina + Spa',
-      bedrooms: 4,
-      bathrooms: 5,
-      parkingSpaces: 4,
-      modality: 'Llave en Mano • AMHO Construcciones',
-      levels: '3 Plantas (Piso 1 Social, Piso 2 Suites, Piso 3 Sky Lounge)'
+      areaBuilt: F22_AREA_BUILT,
+      lotArea: F22_LOT_AREA,
+      lotMetricValue: F22_LOT_AREA,
+      modality: 'Vivienda no VIS unifamiliar',
+      levels: '3 pisos'
     },
+    technicalSpecs: HACIENDA_F22_TECHNICAL,
     renders: HACIENDA_F22_RENDERS,
     levels: HACIENDA_F22_LEVELS,
     rooms360: HACIENDA_F22_ROOMS_360

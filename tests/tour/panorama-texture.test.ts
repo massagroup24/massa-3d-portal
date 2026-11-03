@@ -3,17 +3,17 @@ import { getPanoramaDimensions, loadPanoramaTexture } from '../../src/utils/pano
 
 describe('Presupuesto de texturas del recorrido 360°', () => {
   it('reduce un panorama grande en móvil sin deformar su proporción', () => {
-    expect(getPanoramaDimensions(12000, 6000, 16384, true)).toEqual({ width: 4096, height: 2048 });
+    expect(getPanoramaDimensions(12000, 6000, 16384, true)).toEqual({ width: 2048, height: 1024 });
   });
   it('respeta un límite de GPU inferior al presupuesto móvil', () => {
-    expect(getPanoramaDimensions(8192, 4096, 2048, true)).toEqual({ width: 2048, height: 1024 });
+    expect(getPanoramaDimensions(8192, 4096, 1024, true)).toEqual({ width: 1024, height: 512 });
   });
   it('permite mayor resolución en escritorio y no amplía imágenes pequeñas', () => {
     expect(getPanoramaDimensions(12000, 6000, 16384, false)).toEqual({ width: 8192, height: 4096 });
     expect(getPanoramaDimensions(1920, 960, 8192, false)).toEqual({ width: 1920, height: 960 });
   });
   it('limita también imágenes altas para evitar tamaños incompatibles', () => {
-    expect(getPanoramaDimensions(4000, 8000, 16384, true)).toEqual({ width: 2048, height: 4096 });
+    expect(getPanoramaDimensions(4000, 8000, 16384, true)).toEqual({ width: 1024, height: 2048 });
   });
   it.each([[0, 4000, 8192], [8000, 0, 8192], [NaN, 1000, 8192], [4000, Infinity, 8192], [4000, 2000, 0]])('rechaza dimensiones inválidas %s/%s/%s', (width, height, limit) => {
     expect(() => getPanoramaDimensions(width, height, limit, true)).toThrow();
@@ -52,11 +52,22 @@ describe('Carga y recuperación de panoramas en conexiones móviles', () => {
     image.onload?.();
     const texture = await pending;
     expect(texture.image).toBe(canvas);
-    expect([canvas.width, canvas.height]).toEqual([4096, 2048]);
-    expect(drawImage).toHaveBeenCalledWith(image, 0, 0, 4096, 2048);
+    expect([canvas.width, canvas.height]).toEqual([2048, 1024]);
+    expect(drawImage).toHaveBeenCalledWith(image, 0, 0, 2048, 1024);
     expect(texture.generateMipmaps).toBe(false);
     expect(image.crossOrigin).toBe('anonymous');
     texture.dispose();
+    expect([canvas.width, canvas.height]).toEqual([1, 1]);
+    expect(image.removeAttribute).toHaveBeenCalledWith('src');
+  });
+  it('descarga directamente la copia ligera de F22 y conserva la original como respaldo', async () => {
+    const pending = loadPanoramaTexture('/HACIENDA F22/360/ZONA SOCIAL.jpg', 8192, true, new AbortController().signal);
+    const image = ImageStub.instances[0];
+    expect(image.src).toBe('https://massa.example/panoramas/mobile/hacienda-f22/zona-social.jpg');
+    image.onerror?.();
+    expect(image.src).toBe('https://massa.example/HACIENDA%20F22/360/ZONA%20SOCIAL.jpg');
+    image.onerror?.();
+    await expect(pending).rejects.toThrow('No se pudo cargar');
   });
   it('conserva escapes y firmas de URLs existentes sin doble codificación', async () => {
     const url = 'https://project.supabase.co/storage/v1/object/sign/tour-images/SALA%20F22.jpg?token=abc%2Fdef%3D';
