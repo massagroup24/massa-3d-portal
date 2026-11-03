@@ -1,11 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
 import { Project } from './data/tourData';
+import { parseStorageReference, resolveStorageReferences, stableStorageReferences } from './lib/storageReferences';
 
-// Reemplaza estas dos líneas con los datos de tu proyecto de Supabase
-const supabaseUrl = 'https://nsiglkllgsgilwmdxkuu.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zaWdsa2xsZ3NnaWx3bWR4a3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3OTAzODEsImV4cCI6MjA5NzM2NjM4MX0.pGvHyGlKogUnX9hWcz_Y-bjH5a-53LATWc-x9taCQBw';
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase, supabaseUrl } from './lib/supabaseClient';
+import { authService } from './lib/authService';
+export { supabase, supabaseUrl } from './lib/supabaseClient';
 
 const PROJECTS_TABLE = 'projects';
 const STORAGE_BUCKET = 'tour-images';
@@ -14,22 +12,18 @@ const STORAGE_BUCKET = 'tour-images';
  * Obtiene todos los proyectos de Supabase
  */
 export async function getProjectsFromSupabase(): Promise<Project[]> {
-  const { data, error } = await supabase.from(PROJECTS_TABLE).select('*');
-  
-  if (error) {
-    console.error("Error obteniendo proyectos de Supabase:", error);
-    return [];
-  }
+  const { data: allowed, error: accessError } = await supabase.rpc('is_platform_admin');
+  const isAdmin = !accessError && allowed === true;
+  const { data, error } = await supabase.from(isAdmin ? PROJECTS_TABLE : 'public_projects')
+    .select('id, data, published_for_client');
+  if (error) throw new Error('No se pudo cargar el catálogo: ' + error.message);
+  const projects = (data || []).filter(row => row.data && typeof row.data === 'object')
+    .map(row => ({ ...row.data, id: row.id, published: row.published_for_client === true } as Project));
+  return resolveStorageReferences(supabase, projects, supabaseUrl);
+}
 
-  const projects: Project[] = [];
-  if (data) {
-    data.forEach((row) => {
-      if (row && row.data && typeof row.data === 'object' && 'id' in row.data && row.data.id) {
-        projects.push(row.data as Project);
-      }
-    });
-  }
-  return projects;
+export async function getProjectFromSupabase(id: string): Promise<Project | null> {
+  return (await getProjectsFromSupabase()).find(project => project.id === id) || null;
 }
 
 /**
@@ -42,7 +36,7 @@ export async function saveProjectToSupabase(project: Project): Promise<void> {
   }
   const { error } = await supabase
     .from(PROJECTS_TABLE)
-    .upsert({ id: project.id, data: project });
+    .upsert({ id: project.id, data: stableStorageReferences(project, supabaseUrl), published_for_client: project.published === true });
 
   if (error) {
     throw new Error(error.message);
@@ -93,7 +87,7 @@ export async function uploadImageToSupabase(file: File, path: string): Promise<s
     .from(STORAGE_BUCKET)
     .getPublicUrl(cleanPath);
 
-  return publicUrlData.publicUrl;
+  return resolveStorageReferences(supabase, publicUrlData.publicUrl, supabaseUrl);
 }
 
 /**
@@ -102,7 +96,7 @@ export async function uploadImageToSupabase(file: File, path: string): Promise<s
 export async function deleteImageFromSupabase(urlOrPath: string): Promise<void> {
   if (!urlOrPath) return;
   try {
-    let cleanPath = urlOrPath;
+    let cleanPath = parseStorageReference(urlOrPath, supabaseUrl)?.path || urlOrPath;
     const bucketMarker = `/${STORAGE_BUCKET}/`;
     const index = urlOrPath.indexOf(bucketMarker);
     if (index !== -1) {
@@ -141,7 +135,6 @@ export interface MassaUser {
   created_at?: string;
 }
 
-const USERS_TABLE = 'massa_3d_users';
 
 /**
  * Normaliza el perfil de ingreso según el rol asignado
@@ -157,99 +150,12 @@ export function resolveAllowedProfile(role: UserRole, explicitProfile?: AllowedP
  * Verifica credenciales y permisos estrictos del usuario contra Supabase
  * Impide que un usuario de tipo 'cliente' ingrese por el perfil 'architect'
  */
-export async function verifyUserLogin(
-  username: string, 
-  password: string,
-  targetProfile: 'architect' | 'client'
-): Promise<{ success: boolean; user?: MassaUser; error?: string }> {
-  const cleanUsername = username.trim().toLowerCase();
-  const cleanPassword = password.trim();
-
-  try {
-    // 1. Consultar en la tabla massa_3d_users de Supabase
-    const { data, error } = await supabase
-      .from(USERS_TABLE)
-      .select('*')
-      .ilike('username', cleanUsername)
-      .eq('password', cleanPassword)
-      .eq('active', true)
-      .maybeSingle();
-
-    if (!error && data) {
-      const user = data as MassaUser;
-      const effectiveProfile = resolveAllowedProfile(user.role, user.allowed_profile);
-
-      // Verificación estricta: Si es cliente, no puede ingresar como arquitecto
-      if (targetProfile === 'architect') {
-        if (effectiveProfile === 'client' || user.role === 'client') {
-          return {
-            success: false,
-            error: `Acceso Denegado: La cuenta "${user.name || user.username}" está registrada como CLIENTE y no tiene permisos para el Portal de Arquitecto.`
-          };
-        }
-      }
-
-      // Si es arquitecto exclusivo, no puede ingresar como cliente directo
-      if (targetProfile === 'client') {
-        if (effectiveProfile === 'architect' && user.role !== 'admin') {
-          return {
-            success: false,
-            error: `Acceso Restringido: La cuenta "${user.name || user.username}" está registrada como ARQUITECTO. Ingresa por la pestaña Arquitecto.`
-          };
-        }
-      }
-
-      return {
-        success: true,
-        user: {
-          ...user,
-          allowed_profile: effectiveProfile
-        }
-      };
-    }
-  } catch (err) {
-    console.warn("Error consultando tabla en Supabase, usando respaldo local:", err);
-  }
-
-  // 2. Respaldo por defecto local por si la base de datos está offline
-  const fallbackUsers: MassaUser[] = [
-    { id: 'local-juan', username: 'juan', password: 'massa2026', name: 'Juan David', role: 'admin', allowed_profile: 'both', active: true },
-    { id: 'local-admin', username: 'admin', password: 'massa2026', name: 'Administrador MASSA', role: 'admin', allowed_profile: 'both', active: true },
-    { id: 'local-editor', username: 'editor', password: 'massa2026', name: 'Editor Arquitectura', role: 'architect', allowed_profile: 'architect', active: true },
-    { id: 'local-cliente', username: 'cliente', password: 'massa2026', name: 'Cliente Propietario', role: 'client', allowed_profile: 'client', active: true }
-  ];
-
-  const matchedUser = fallbackUsers.find(
-    u => u.username === cleanUsername && (u.password === cleanPassword || ['massa2026', '1234', 'massa'].includes(cleanPassword))
-  );
-
-  if (matchedUser) {
-    const effectiveProfile = resolveAllowedProfile(matchedUser.role, matchedUser.allowed_profile);
-
-    if (targetProfile === 'architect' && (effectiveProfile === 'client' || matchedUser.role === 'client')) {
-      return {
-        success: false,
-        error: `Acceso Denegado: La cuenta "${matchedUser.name}" está registrada como CLIENTE y no tiene permisos para el Portal de Arquitecto.`
-      };
-    }
-
-    if (targetProfile === 'client' && effectiveProfile === 'architect' && matchedUser.role !== 'admin') {
-      return {
-        success: false,
-        error: `Acceso Restringido: La cuenta "${matchedUser.name}" está registrada como ARQUITECTO. Ingresa por la pestaña Arquitecto.`
-      };
-    }
-
-    return {
-      success: true,
-      user: matchedUser
-    };
-  }
-
-  return {
-    success: false,
-    error: 'Usuario o contraseña incorrectos o la cuenta se encuentra inactiva.'
-  };
+export async function verifyUserLogin(username: string, password: string, targetProfile: 'architect' | 'client'):
+  Promise<{ success: boolean; user?: MassaUser; error?: string }> {
+  const result = await authService.signIn(username, password, targetProfile);
+  if (!result.success || !result.user) return { success: false, error: result.error };
+  return { success: true, user: { id: result.user.id, username: result.user.email,
+    name: result.user.name, role: 'admin', allowed_profile: 'architect', active: true } };
 }
 
 /**
@@ -263,274 +169,20 @@ export async function verifyEditorLogin(
 }
 
 /**
- * Obtiene la lista completa de usuarios autorizados desde user_profiles (o massa_3d_users como fallback de transición).
- * NUNCA expone contraseñas en texto plano.
+ * Devuelve únicamente la identidad administradora verificada.
  */
 export async function getMassaUsers(): Promise<MassaUser[]> {
-  try {
-    // 1. Intentar consultar RPC de administración (lee auth.users + user_profiles en tiempo real)
-    const { data: rpcUsers, error: rpcErr } = await supabase.rpc('get_all_users_for_admin');
-
-    if (!rpcErr && rpcUsers && Array.isArray(rpcUsers)) {
-      return rpcUsers.map((u: any) => {
-        const rawRole = (u.role || '').toLowerCase();
-        const isAdmin = rawRole === 'admin' || 
-          u.email?.toLowerCase() === 'juandavidfigueroa4@gmail.com' || 
-          (u.email && (u.email.toLowerCase().startsWith('admin@') || u.email.toLowerCase() === 'admin'));
-        const effectiveRole: UserRole = isAdmin ? 'admin' : (rawRole === 'client' ? 'client' : 'architect');
-        return {
-          id: u.id,
-          username: u.email,
-          name: u.name || u.email?.split('@')[0] || 'Usuario MASSA',
-          role: effectiveRole,
-          allowed_profile: resolveAllowedProfile(effectiveRole, effectiveRole === 'client' ? 'client' : (effectiveRole === 'admin' ? 'both' : 'architect')),
-          active: u.active ?? true,
-          created_at: u.created_at,
-          password: '••••••••',
-        };
-      }) as MassaUser[];
-    }
-  } catch (rpcEx) {
-    console.warn("Aviso al consultar RPC get_all_users_for_admin:", rpcEx);
-  }
-
-  try {
-    // 2. Consultar directamente user_profiles
-    const { data: profiles, error: profileErr } = await supabase
-      .from('user_profiles')
-      .select('id, email, name, role, phone, created_at')
-      .order('created_at', { ascending: true });
-
-    if (!profileErr && profiles) {
-      return profiles.map((u: any) => {
-        const rawRole = (u.role || '').toLowerCase();
-        const isAdmin = rawRole === 'admin' || 
-          u.email?.toLowerCase() === 'juandavidfigueroa4@gmail.com' || 
-          (u.email && (u.email.toLowerCase().startsWith('admin@') || u.email.toLowerCase() === 'admin'));
-        const effectiveRole: UserRole = isAdmin ? 'admin' : (rawRole === 'client' ? 'client' : 'architect');
-        return {
-          id: u.id,
-          username: u.email,
-          name: u.name,
-          role: effectiveRole,
-          allowed_profile: resolveAllowedProfile(effectiveRole, effectiveRole === 'client' ? 'client' : (effectiveRole === 'admin' ? 'both' : 'architect')),
-          active: true,
-          created_at: u.created_at,
-          password: '••••••••',
-        };
-      }) as MassaUser[];
-    }
-  } catch (err) {
-    console.warn("Aviso al consultar user_profiles:", err);
-  }
-
-  try {
-    // 3. Fallback de transición: tabla massa_3d_users sanitizando contraseñas
-    const { data, error } = await supabase
-      .from(USERS_TABLE)
-      .select('id, username, name, role, allowed_profile, active, created_at')
-      .order('created_at', { ascending: true });
-
-    if (!error && data && data.length > 0) {
-      return data.map((u: any) => ({
-        ...u,
-        role: u.role || 'architect',
-        allowed_profile: resolveAllowedProfile(u.role, u.allowed_profile),
-        password: '••••••••',
-      })) as MassaUser[];
-    }
-  } catch (err) {
-    console.warn("No se pudo obtener usuarios de Supabase:", err);
-  }
-
-  // Si no hay usuarios en la base de datos o fallaron las consultas, retornar arreglo vacío (cero mock data engañosa)
-  return [];
+  const user = await authService.getCurrentUser();
+  return user ? [{ id: user.id, username: user.email, name: user.name, role: 'admin',
+    allowed_profile: 'architect', active: true }] : [];
 }
 
-/**
- * Crea o actualiza un usuario directamente en Supabase Auth y sincroniza user_profiles desde la web
- */
-export async function saveMassaUser(user: Partial<MassaUser> & { username: string; name: string }): Promise<MassaUser> {
-  const role = user.role || 'architect';
-  const allowed_profile = resolveAllowedProfile(role, user.allowed_profile);
-  let cleanEmail = user.username.trim().toLowerCase();
-  if (!cleanEmail.includes('@')) {
-    cleanEmail = `${cleanEmail}@massagroup.co`;
-  }
-
-  // Comprobar si es actualización de usuario existente por su UUID
-  const isUuid = user.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
-
-  if (isUuid) {
-    // 1. Intentar actualización atómica vía RPC (modifica auth.users Y public.user_profiles)
-    try {
-      const { data: rpcRes, error: rpcErr } = await supabase.rpc('admin_update_user', {
-        target_user_id: user.id,
-        new_email: cleanEmail,
-        new_name: user.name.trim(),
-        new_role: role,
-        new_password: user.password && user.password !== '••••••••' ? user.password.trim() : null,
-        new_active: user.active ?? true,
-      });
-
-      if (!rpcErr && rpcRes) {
-        return {
-          id: user.id as string,
-          username: cleanEmail,
-          name: user.name.trim(),
-          role,
-          allowed_profile,
-          active: user.active ?? true,
-          password: '••••••••',
-        };
-      }
-    } catch (err) {
-      console.warn("Aviso al invocar RPC admin_update_user:", err);
-    }
-
-    // 2. Fallback de actualización directa en user_profiles
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .upsert({
-        id: user.id,
-        email: cleanEmail,
-        name: user.name.trim(),
-        role: role,
-      });
-
-    if (profileError) {
-      throw new Error(`Error actualizando perfil: ${profileError.message}`);
-    }
-
-    return {
-      id: user.id as string,
-      username: cleanEmail,
-      name: user.name.trim(),
-      role,
-      allowed_profile,
-      active: user.active ?? true,
-      password: '••••••••'
-    };
-  }
-
-  // Creación de NUEVO usuario directamente en Supabase Auth desde la Web:
-  if (!user.password || user.password.trim().length < 6) {
-    throw new Error('La contraseña debe tener al menos 6 caracteres.');
-  }
-
-  // 1. Intentar creación atómica instantánea vía RPC (crea en auth.users con correo confirmado)
-  try {
-    const { data: rpcCreate, error: rpcCreateErr } = await supabase.rpc('admin_create_user', {
-      new_email: cleanEmail,
-      new_password: user.password.trim(),
-      new_name: user.name.trim(),
-      new_role: role,
-    });
-
-    if (!rpcCreateErr && rpcCreate?.id) {
-      return {
-        id: rpcCreate.id,
-        username: cleanEmail,
-        name: user.name.trim(),
-        role,
-        allowed_profile,
-        active: true,
-        password: '••••••••',
-      };
-    }
-  } catch (createErr) {
-    console.warn("Aviso al invocar RPC admin_create_user:", createErr);
-  }
-
-  // 2. Fallback estándar vía auth.signUp sin desloguear la sesión actual
-  const authCreator = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false
-    }
-  });
-
-  const { data: signUpData, error: signUpError } = await authCreator.auth.signUp({
-    email: cleanEmail,
-    password: user.password.trim(),
-    options: {
-      data: {
-        name: user.name.trim(),
-        role: role
-      }
-    }
-  });
-
-  if (signUpError) {
-    throw new Error(`Error en Supabase Auth: ${signUpError.message}`);
-  }
-
-  const newUserId = signUpData.user?.id;
-  if (!newUserId) {
-    throw new Error('No se pudo registrar la cuenta en Supabase Auth.');
-  }
-
-  // Asegurar registro de perfil corporativo en user_profiles
-  const { error: profileError } = await supabase
-    .from('user_profiles')
-    .upsert({
-      id: newUserId,
-      email: cleanEmail,
-      name: user.name.trim(),
-      role: role,
-    });
-
-  if (profileError) {
-    console.warn("Aviso al guardar user_profiles:", profileError.message);
-  }
-
-  return {
-    id: newUserId,
-    username: cleanEmail,
-    name: user.name.trim(),
-    role,
-    allowed_profile,
-    active: true,
-    password: '••••••••'
-  };
+// El modelo de cuenta única no admite altas, cambios de identidad ni bajas desde el navegador.
+export async function saveMassaUser(_user: Partial<MassaUser> & { username: string; name: string }): Promise<MassaUser> {
+  throw new Error('La plataforma utiliza una única cuenta administradora. Gestiona su identidad desde Supabase Auth.');
 }
-
-/**
- * Elimina un usuario en Supabase (sincronizando Auth y Perfiles)
- */
-export async function deleteMassaUser(id: string): Promise<void> {
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-  if (isUuid) {
-    // 1. Intentar eliminación completa vía RPC (elimina en auth.users y en cascada)
-    try {
-      const { data: rpcDel, error: rpcDelErr } = await supabase.rpc('admin_delete_user', {
-        target_user_id: id,
-      });
-
-      if (!rpcDelErr && rpcDel) {
-        return;
-      }
-    } catch (rpcErr) {
-      console.warn("Aviso al invocar RPC admin_delete_user:", rpcErr);
-    }
-
-    // 2. Fallback: eliminar directamente de user_profiles
-    const { error } = await supabase.from('user_profiles').delete().eq('id', id);
-    if (error) {
-      throw new Error(`Error al eliminar usuario: ${error.message}`);
-    }
-    return;
-  }
-
-  const { error } = await supabase
-    .from(USERS_TABLE)
-    .delete()
-    .eq('id', id);
-
-  if (error && !isUuid) {
-    throw new Error(error.message);
-  }
+export async function deleteMassaUser(_id: string): Promise<void> {
+  throw new Error('No se puede eliminar la única cuenta administradora desde la plataforma.');
 }
 
 // ==========================================

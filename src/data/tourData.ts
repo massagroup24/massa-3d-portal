@@ -27,6 +27,7 @@ export interface ProjectRenderItem {
 
 export interface Project {
   id: string;
+  published?: boolean;
   name: string;
   thumbnail: string;
   description: string;
@@ -1252,6 +1253,7 @@ export function normalizeProject(raw: any): Project {
 
   return {
     id,
+    published: raw.published === true,
     name,
     description,
     thumbnail,

@@ -197,7 +197,7 @@ export function VipCommercialLanding({
       const list: CommercialResidence[] = [];
 
       for (const p of Object.values(projects)) {
-        if (!p || !p.id) continue;
+        if (!p || !p.id || p.published !== true) continue;
         const canonicalId = p.id === 'edinson-jejen' ? 'project_1781963945215' 
           : p.id === 'marquimoda' ? 'project_1782912175010' 
           : (p.id === 'ibiza-a14' || p.id === 'ibiza') ? 'project_ibiza_a14'
@@ -254,20 +254,7 @@ export function VipCommercialLanding({
         return list;
       }
     }
-    const fallbackList = COMMERCIAL_RESIDENCES
-      .filter((c) => !SAVED_TOUR_ONLY_IDS.has(c.id) && !(c.projectId && SAVED_TOUR_ONLY_IDS.has(c.projectId)))
-      .map((c) => ({
-        ...c,
-        heroImage: !is360OrPlaceholderAsset(c.heroImage) ? c.heroImage : '',
-      }));
-    return fallbackList.sort((a, b) => {
-      const idxA = CANONICAL_PROJECT_ORDER.indexOf(a.id);
-      const idxB = CANONICAL_PROJECT_ORDER.indexOf(b.id);
-      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-      if (idxA !== -1) return -1;
-      if (idxB !== -1) return 1;
-      return 0;
-    });
+    return [];
   }, [projects]);
 
   return (

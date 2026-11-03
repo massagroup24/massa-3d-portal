@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase, logProjectVisit } from '../supabase';
+import { getProjectFromSupabase, logProjectVisit } from '../supabase';
 import { Project } from '../data/tourData';
 import { TourContainer } from './TourContainer';
 import { WelcomeScreen } from './WelcomeScreen';
@@ -18,38 +18,35 @@ export function ClientViewer() {
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadProject() {
+    let cancelled = false;
+    async function loadProject(refresh = false) {
       if (!id) return;
       try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (error || !data) {
-          setError("Proyecto no encontrado o enlace inválido.");
-          return;
-        }
-
-        const proj = data.data as Project;
+        if (!refresh) setLoading(true);
+        setError(null);
+        const proj = await getProjectFromSupabase(id);
+        if (cancelled) return;
         if (!proj || !proj.rooms) {
-          setError("El proyecto está incompleto o corrupto en la nube.");
+          setProject(null);
+          setError("Proyecto no disponible o recorrido no publicado.");
           return;
         }
         setProject(proj);
-        logProjectVisit(proj.id, proj.name);
+        if (!refresh) logProjectVisit(proj.id, proj.name);
         const firstRoomId = Object.keys(proj.rooms)[0];
         const validRoomId = proj.rooms[proj.initialRoomId] ? proj.initialRoomId : firstRoomId;
-        setCurrentRoomId(validRoomId || null);
+        setCurrentRoomId(previous => previous && proj.rooms[previous] ? previous : validRoomId || null);
       } catch (err) {
-        setError("Error de conexión al cargar el proyecto.");
+        if (!cancelled) { setProject(null); setError("Error de conexión al cargar el proyecto."); }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
-    loadProject();
+    setProject(null);
+    setStarted(false);
+    void loadProject();
+    const timer = window.setInterval(() => { void loadProject(true); }, 240000);
+    return () => { cancelled = true; window.clearInterval(timer); };
   }, [id]);
 
   // Pre-cargar imágenes para mejorar la velocidad percibida

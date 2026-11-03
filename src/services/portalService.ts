@@ -1,4 +1,5 @@
-import { supabase } from '../supabase';
+import { supabase, supabaseUrl } from '../supabase';
+import { resolveStorageReferences } from '../lib/storageReferences';
 import { Project } from '../data/tourData';
 
 export interface ProjectMediaItem {
@@ -391,13 +392,18 @@ const DEFAULT_PROGRESS: ProgressUpdateItem[] = [
 ];
 
 export async function getProjectPortalData(projectId: string, fallbackProject?: Project): Promise<ProjectPortalData> {
+  const { data: allowed, error: accessError } = await supabase.rpc('is_platform_admin');
+  const isAdmin = !accessError && allowed === true;
+  const { data: available, error: projectError } = await supabase.from(isAdmin ? 'projects' : 'public_projects')
+    .select('*').eq('id', projectId).maybeSingle();
+  if (projectError || !available) throw new Error('Proyecto no disponible.');
+  const result = await loadPortalData();
+  return resolveStorageReferences(supabase, result, supabaseUrl, 'project-vault');
+
+  async function loadPortalData(): Promise<ProjectPortalData> {
   try {
     // 1. Obtener datos de la tabla 'projects'
-    const { data: projRow } = await supabase
-      .from('projects')
-      .select('id, data, current_phase, current_progress, architect_name, architect_role, architect_avatar, architect_phone, architect_whatsapp, published_for_client')
-      .eq('id', projectId)
-      .maybeSingle();
+    const projRow = available;
 
     // 2. Obtener medios relacionales de project_media
     const { data: mediaRows } = await supabase
@@ -411,7 +417,7 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       .from('progress_updates')
       .select('*, media:progress_media(*)')
       .eq('project_id', projectId)
-      .order('update_date', { ascending: false });
+      .order('recorded_at', { ascending: false });
 
     const rawData = projRow?.data || fallbackProject || {};
     const lowerId = projectId.toLowerCase();
@@ -479,7 +485,7 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
 
     // Avances
     let progressUpdates = (progressRows || []) as ProgressUpdateItem[];
-    if (progressUpdates.length === 0) {
+    if (isAdmin && progressUpdates.length === 0) {
       progressUpdates = DEFAULT_PROGRESS;
     }
 
@@ -491,7 +497,7 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       clientName,
       currentPhase: projRow?.current_phase || (isIbiza || isHacienda ? 'FASE 1: PREVENTA & ESTUDIOS TÉCNICOS' : isMq ? 'FASE 4: HABILITACIÓN ARQUITECTÓNICA' : 'FASE 3: ACABADOS DE LUJO'),
       currentProgress: projRow?.current_progress ?? (isIbiza || isHacienda ? 15 : isMq ? 82 : 68),
-      isPublic: projRow?.published_for_client ?? true,
+      isPublic: projRow?.published_for_client === true,
       architect: {
         name: projRow?.architect_name || 'Mateo Rossi',
         role: projRow?.architect_role || 'Director de Proyecto MASSA',
@@ -528,7 +534,7 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       clientName: isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda F22' : isMqFallback ? 'Marquimoda S.A.S.' : 'Edinson Jején',
       currentPhase: isIbiza || isHacienda ? 'FASE 1: PREVENTA & ESTUDIOS TÉCNICOS' : isMqFallback ? 'FASE 4: HABILITACIÓN ARQUITECTÓNICA' : 'FASE 3: ACABADOS DE LUJO',
       currentProgress: isIbiza || isHacienda ? 15 : isMqFallback ? 82 : 68,
-      isPublic: true,
+      isPublic: available.published_for_client === true,
       architect: {
         name: 'Mateo Rossi',
         role: 'Director de Proyecto MASSA',
@@ -538,7 +544,7 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       },
       renders: isIbiza ? IBIZA_A14_RENDERS : isHacienda ? HACIENDA_F22_RENDERS : [],
       blueprints: isIbiza ? IBIZA_A14_BLUEPRINTS : isHacienda ? HACIENDA_F22_BLUEPRINTS : DEFAULT_BLUEPRINTS,
-      progressUpdates: DEFAULT_PROGRESS,
+      progressUpdates: isAdmin ? DEFAULT_PROGRESS : [],
       publicSpecs: getProjectPublicSpecs(fallbackName),
       beforeAfterComparison: isMqFallback ? {
         beforeImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80',
@@ -553,6 +559,7 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       }
     };
   }
+}
 }
 
 export function getProjectPublicSpecs(projectName: string): ProjectPublicSpecs {

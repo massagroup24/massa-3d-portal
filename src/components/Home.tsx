@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { authService } from '../lib/authService';
 import { Project } from '../data/tourData';
 import { 
   Building2, 
@@ -58,8 +59,14 @@ export function Home({
   };
 
   const displayName = getDisplayName();
-  const userLevel = typeof window !== 'undefined' ? sessionStorage.getItem('massa_3d_user_level') : null;
-  const isAdmin = userLevel === 'admin';
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    let active = true;
+    const sync = (user: { role: string } | null) => { if (active) setIsAdmin(user?.role === 'admin'); };
+    void authService.getCurrentUser().then(sync);
+    const { data } = authService.onAuthStateChange(sync);
+    return () => { active = false; data.subscription.unsubscribe(); };
+  }, []);
   const [showVisitsModal, setShowVisitsModal] = useState(false);
 
   const totalProjects = Object.keys(projects).length;

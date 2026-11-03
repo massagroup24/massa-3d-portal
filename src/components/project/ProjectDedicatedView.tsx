@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, ProjectRender } from '../../config/projectIdentityConfig';
 import { TourContainer } from '../TourContainer';
-import { projectsData, Project, Room, resolveCanonicalProjectId, normalizeProject } from '../../data/tourData';
+import { Project, resolveCanonicalProjectId } from '../../data/tourData';
 import { getProjectsFromSupabase } from '../../supabase';
 import { SkiperArchitecturalCarousel } from './SkiperArchitecturalCarousel';
 import { SkiperParallaxGallery } from './SkiperParallaxGallery';
@@ -358,7 +358,7 @@ const ROOMS_360_A14: Room360Info[] = [
   }
 ];
 
-export function ProjectDedicatedView() {
+function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -388,133 +388,7 @@ export function ProjectDedicatedView() {
     return isHaciendaF22 ? RESIDENCE_LEVELS_F22 : RESIDENCE_LEVELS_A14;
   }, [isHaciendaF22]);
 
-  const [projectUpdateCounter, setProjectUpdateCounter] = useState(0);
-
-  // Escuchar sincronización en tiempo real desde el editor de recorridos
-  useEffect(() => {
-    const handleUpdate = () => {
-      setProjectUpdateCounter(prev => prev + 1);
-    };
-    window.addEventListener('storage', handleUpdate);
-    window.addEventListener('massa_project_updated', handleUpdate);
-    return () => {
-      window.removeEventListener('storage', handleUpdate);
-      window.removeEventListener('massa_project_updated', handleUpdate);
-    };
-  }, []);
-
-  const canonicalId = resolveCanonicalProjectId(identity?.id || id || 'project_hacienda_f22');
-
-  const [supabaseProject, setSupabaseProject] = useState<Project | null>(null);
-
-  // Sincronizar dinámicamente con Supabase en tiempo real (para celulares y dispositivos remotos)
-  useEffect(() => {
-    let isCancelled = false;
-    getProjectsFromSupabase()
-      .then((supaProjects) => {
-        if (isCancelled || !supaProjects || supaProjects.length === 0) return;
-        const matched = supaProjects.find(
-          (p) => resolveCanonicalProjectId(p.id) === canonicalId || p.id === identity?.id
-        );
-        if (matched) {
-          setSupabaseProject(matched);
-        }
-      })
-      .catch((err) => console.warn("[ProjectDedicatedView] Supabase sync fallback a local:", err));
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [canonicalId, identity?.id, projectUpdateCounter]);
-
-  // Sincronizar con datos oficiales + cambios guardados en el editor (localStorage: massa_custom_projects)
-  const rawProjectData = useMemo<Project | null>(() => {
-    const initialBase = (canonicalId && projectsData[canonicalId]) 
-      ? projectsData[canonicalId] 
-      : (identity?.id && projectsData[identity.id]) || null;
-
-    const baseData = supabaseProject 
-      ? normalizeProject({
-          ...(initialBase || {}),
-          ...supabaseProject,
-          rooms: {
-            ...(initialBase?.rooms || {}),
-            ...(supabaseProject.rooms || {})
-          },
-          floorPlans: {
-            ...(initialBase?.floorPlans || {}),
-            ...(supabaseProject.floorPlans || {})
-          }
-        })
-      : initialBase;
-
-    try {
-      // 1. Clave principal del editor: massa_custom_projects
-      const storedMassa = localStorage.getItem('massa_custom_projects');
-      if (storedMassa) {
-        const parsed = JSON.parse(storedMassa);
-        const customObj = parsed[canonicalId] || (identity?.id && parsed[identity.id]);
-        if (customObj) {
-          // Fusión defensiva de habitaciones conservando texturas 360 y planos canónicos
-          const baseRooms = baseData?.rooms || {};
-          const customRooms = customObj.rooms || {};
-          const mergedRooms: Record<string, Room> = {};
-          const allRoomKeys = new Set([...Object.keys(baseRooms), ...Object.keys(customRooms)]);
-          for (const key of allRoomKeys) {
-            const bR = baseRooms[key];
-            const cR = customRooms[key];
-            if (cR && bR) {
-              mergedRooms[key] = {
-                ...bR,
-                ...cR,
-                imageUrl: cR.imageUrl || bR.imageUrl,
-                floorPlanImage: cR.floorPlanImage || bR.floorPlanImage,
-                floorLevel: cR.floorLevel || bR.floorLevel || 'Piso 1',
-                hotspots: (cR.hotspots && cR.hotspots.length > 0) ? cR.hotspots : (bR.hotspots || [])
-              };
-            } else if (cR) {
-              mergedRooms[key] = { ...cR };
-            } else if (bR) {
-              mergedRooms[key] = { ...bR };
-            }
-          }
-
-          return normalizeProject({
-            ...(baseData || {}),
-            ...customObj,
-            rooms: mergedRooms,
-            floorPlans: {
-              ...(baseData?.floorPlans || {}),
-              ...(customObj.floorPlans || {})
-            },
-            id: canonicalId
-          });
-        }
-      }
-
-      // 2. Resguardo por compatibilidad histórica
-      const savedV4 = localStorage.getItem('custom_projects_v4');
-      if (savedV4) {
-        const parsedV4 = JSON.parse(savedV4);
-        const customObjV4 = parsedV4[canonicalId];
-        if (customObjV4) {
-          return normalizeProject({
-            ...(baseData || {}),
-            ...customObjV4,
-            rooms: {
-              ...(baseData?.rooms || {}),
-              ...(customObjV4.rooms || {})
-            },
-            id: canonicalId
-          });
-        }
-      }
-    } catch (err) {
-      console.warn("Error leyendo proyectos de localStorage:", err);
-    }
-
-    return baseData ? normalizeProject(baseData) : null;
-  }, [canonicalId, identity?.id, projectUpdateCounter, supabaseProject]);
+  const rawProjectData = remoteProject;
 
   // Ambientes 360° del escenario protagonista (sincronizados con el editor)
   const rooms360List = useMemo<Room360Info[]>(() => {
@@ -2379,4 +2253,28 @@ export function ProjectDedicatedView() {
 
     </div>
   );
+}
+
+export function ProjectDedicatedView() {
+  const { id } = useParams<{ id: string }>();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    setProject(null);
+    setLoading(true);
+    const load = async () => {
+      try {
+        const rows = await getProjectsFromSupabase();
+        if (!cancelled) setProject(rows.find(row => resolveCanonicalProjectId(row.id) === resolveCanonicalProjectId(id || '')) || null);
+      } catch { if (!cancelled) setProject(null); }
+      finally { if (!cancelled) setLoading(false); }
+    };
+    void load();
+    const timer = window.setInterval(() => { void load(); }, 240000);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [id]);
+  if (loading) return <div role="status" className="min-h-screen bg-black text-white grid place-items-center">Consultando proyecto…</div>;
+  if (!project) return <div className="min-h-screen bg-black text-white grid place-items-center"><div><h1>Proyecto no disponible</h1><p>El proyecto no está publicado o no se pudo consultar.</p><a href="/">Volver al inicio</a></div></div>;
+  return <ProjectDedicatedContent key={project.id} remoteProject={project} />;
 }

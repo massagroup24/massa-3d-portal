@@ -32,11 +32,9 @@ export function RolePortalScreen({ onSelectVisitor, onLoginEditor }: RolePortalS
     try {
       const result = await verifyEditorLogin(username, password);
       if (result.success) {
-        sessionStorage.setItem('massa_3d_role', 'editor');
         if (result.user) {
           sessionStorage.setItem('massa_3d_username', result.user.username);
           sessionStorage.setItem('massa_3d_name', result.user.name);
-          sessionStorage.setItem('massa_3d_user_level', result.user.role);
         }
         onLoginEditor();
       } else {
@@ -51,7 +49,7 @@ export function RolePortalScreen({ onSelectVisitor, onLoginEditor }: RolePortalS
 
   const handleVisitorClick = () => {
     try {
-      sessionStorage.setItem('massa_3d_role', 'visitor');
+      sessionStorage.removeItem('massa_3d_role');
     } catch (err) {
       console.error(err);
     }

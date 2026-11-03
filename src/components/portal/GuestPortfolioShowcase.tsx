@@ -151,6 +151,7 @@ function getShowcaseTitleData(activeWork: PortfolioWork | null): ShowcaseTitleDa
 
 
 interface GuestPortfolioShowcaseProps {
+  availableProjectIds?: string[];
   onSelectProject: (projectId: string) => void;
   onOpenLogin: () => void;
   onContactCommercial?: () => void;
@@ -212,11 +213,13 @@ const letterVariants: Variants = {
 };
 
 export function GuestPortfolioShowcase({
+  availableProjectIds = [],
   onSelectProject,
   onOpenLogin,
   onContactCommercial,
   onBackToCommercial,
 }: GuestPortfolioShowcaseProps) {
+  const availableWorks = PORTFOLIO_WORKS.filter(work => availableProjectIds.includes(work.id));
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mobileIcon, setMobileIcon] = useState<'logo' | 'sidebar'>('logo');
@@ -270,7 +273,7 @@ export function GuestPortfolioShowcase({
 
     const showroomTimer = setInterval(() => {
       setAutoCycleIndex((prev) => {
-        const next = (prev + 1) % PORTFOLIO_WORKS.length;
+        const next = availableWorks.length ? (prev + 1) % availableWorks.length : 0;
         const container = carouselRef.current;
         if (container) {
           const item = container.children[next] as HTMLElement | undefined;
@@ -283,7 +286,7 @@ export function GuestPortfolioShowcase({
     }, 3600);
 
     return () => clearInterval(showroomTimer);
-  }, [isMobile, isUserInteracting]);
+  }, [isMobile, isUserInteracting, availableWorks.length]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -303,7 +306,7 @@ export function GuestPortfolioShowcase({
   const effectiveIndex = hoveredIndex !== null 
     ? hoveredIndex 
     : (isMobile && !isUserInteracting ? autoCycleIndex : null);
-  const activeWork = effectiveIndex !== null ? PORTFOLIO_WORKS[effectiveIndex] : null;
+  const activeWork = effectiveIndex !== null ? availableWorks[effectiveIndex] : null;
   const titleData = getShowcaseTitleData(activeWork);
 
   // Manejador al tocar/clicar una miniatura
@@ -520,9 +523,9 @@ export function GuestPortfolioShowcase({
                   </div>
 
                   <div className="space-y-0.5">
-                    {PORTFOLIO_WORKS.map((work, idx) => {
+                    {availableWorks.map((work, idx) => {
                       const itemNumber = idx + 1;
-                      const isCurrent = (activeWork ? activeWork.id : PORTFOLIO_WORKS[0].id) === work.id;
+                      const isCurrent = (activeWork ? activeWork.id : availableWorks[0]?.id) === work.id;
 
                       return (
                         <button
@@ -600,7 +603,8 @@ export function GuestPortfolioShowcase({
                     <button
                       type="button"
                       onClick={() => {
-                        onSelectProject(activeWork ? activeWork.id : PORTFOLIO_WORKS[0].id);
+                        const selectedId = activeWork?.id || availableWorks[0]?.id;
+                        if (selectedId) onSelectProject(selectedId);
                         setIsSidebarOpen(false);
                       }}
                       className="w-full group flex items-center text-left py-2 px-1 rounded-xl text-white/50 hover:text-white/90 hover:bg-white/[0.03] transition-all cursor-pointer"
@@ -677,7 +681,7 @@ export function GuestPortfolioShowcase({
             onMouseLeave={() => !isMobile && setHoveredIndex(null)}
             className="flex items-center justify-start md:justify-center gap-2 sm:gap-3.5 p-2 sm:p-2.5 rounded-3xl bg-[#141416]/85 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-x-auto no-scrollbar max-w-full touch-pan-x"
           >
-            {PORTFOLIO_WORKS.map((work, idx) => {
+            {availableWorks.map((work, idx) => {
               const isHovered = hoveredIndex === idx;
               const isAutoActive = isMobile && !isUserInteracting && autoCycleIndex === idx;
               const isItemActive = isHovered || isAutoActive;

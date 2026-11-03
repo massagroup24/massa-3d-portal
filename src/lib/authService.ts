@@ -1,7 +1,7 @@
-import { supabase } from '../supabase';
+﻿import { supabase } from './supabaseClient';
+import { ADMIN_EMAIL } from '../config/adminAccess';
 
 export type UserRole = 'architect' | 'client' | 'admin';
-
 export interface UserProfile {
   id: string;
   email: string;
@@ -11,328 +11,104 @@ export interface UserProfile {
   created_at?: string;
   updated_at?: string;
 }
-
-export interface AuthResult {
-  success: boolean;
-  user?: {
-    id: string;
-    email: string;
-    name: string;
-    role: UserRole;
-  };
-  error?: string;
-}
-
-// Bandera atómica para evitar que onAuthStateChange desmonte la pantalla de Login
-// antes de que signIn termine de validar la segregación de roles.
+export interface AuthResult { success: boolean; user?: UserProfile; error?: string }
+const DISPLAY_KEYS = ['massa_3d_role', 'massa_client_email', 'massa_3d_username', 'massa_3d_name', 'massa_3d_user_level'];
 let isAuthenticating = false;
+let sessionRevision = 0;
 
-/**
- * Servicio centralizado de Autenticación de MASSA VIEW basado en Supabase Auth
- */
+function clearDisplayIdentity() {
+  for (const storageName of ['sessionStorage', 'localStorage'] as const) {
+    try {
+      const storage = globalThis[storageName];
+      DISPLAY_KEYS.forEach(key => storage?.removeItem(key));
+    } catch { /* El navegador puede impedir el almacenamiento. */ }
+  }
+}
+async function readAuthorizedProfile(id: string, email?: string): Promise<UserProfile | null> {
+  if (email?.toLowerCase() !== ADMIN_EMAIL) return null;
+  const { data: profile, error } = await supabase.from('user_profiles')
+    .select('id, email, name, role, phone, created_at, updated_at').eq('id', id).maybeSingle();
+  if (error || !profile || profile.id !== id || profile.role !== 'admin' ||
+      profile.email?.toLowerCase() !== ADMIN_EMAIL) return null;
+  // El servidor valida el JWT y el UUID autorizado. El correo y los metadatos no conceden acceso.
+  const { data: allowed, error: accessError } = await supabase.rpc('is_platform_admin');
+  return !accessError && allowed === true ? profile as UserProfile : null;
+}
 export const authService = {
-  /**
-   * Inicia sesión con credenciales oficiales (Email y Contraseña) en Supabase Auth
-   * y valida el perfil corporativo en public.user_profiles con RLS.
-   */
-  async signIn(
-    email: string,
-    password: string,
-    targetRole?: 'architect' | 'client'
-  ): Promise<AuthResult> {
-    let cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
-
-    if (!cleanEmail || !cleanPassword) {
-      return { success: false, error: 'Por favor ingresa correo y contraseña.' };
+  async signIn(email: string, password: string, targetRole?: 'architect' | 'client'): Promise<AuthResult> {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password.trim()) return { success: false, error: 'Por favor ingresa correo y contraseña.' };
+    if (targetRole === 'client' || cleanEmail !== ADMIN_EMAIL) {
+      return { success: false, error: 'Acceso denegado. El ingreso está reservado a la cuenta administradora autorizada.' };
     }
-
-    if (!cleanEmail.includes('@')) {
-      cleanEmail = `${cleanEmail}@massagroup.co`;
-    }
-
     isAuthenticating = true;
+    sessionRevision++;
+    clearDisplayIdentity();
     try {
-      // 1. Autenticar contra Supabase Auth oficial
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password: cleanPassword,
-      });
-
-      if (authError || !data?.user) {
-        // Soporte de administrador maestro / local para edición ininterrumpida
-        const isMasterAdmin = 
-          (cleanPassword === 'admin' || cleanPassword === 'admin123' || cleanPassword === 'massa2025' || cleanPassword === 'massa' || cleanPassword === '123456') &&
-          (cleanEmail.startsWith('admin') || cleanEmail.includes('massa') || cleanEmail.includes('juan') || targetRole === 'architect');
-
-        if (isMasterAdmin) {
-          const fallbackUser = {
-            id: 'admin-master-id',
-            email: cleanEmail,
-            name: 'Administrador MASSA',
-            role: 'architect' as UserRole,
-          };
-          try {
-            sessionStorage.setItem('massa_3d_role', 'editor');
-            sessionStorage.setItem('massa_3d_username', cleanEmail);
-            sessionStorage.setItem('massa_3d_name', fallbackUser.name);
-            sessionStorage.setItem('massa_3d_user_level', 'architect');
-
-            localStorage.setItem('massa_3d_role', 'editor');
-            localStorage.setItem('massa_3d_username', cleanEmail);
-            localStorage.setItem('massa_3d_name', fallbackUser.name);
-            localStorage.setItem('massa_3d_user_level', 'architect');
-          } catch {
-            // ignore
-          }
-
-          return {
-            success: true,
-            user: fallbackUser,
-          };
-        }
-
-        // En caso de que el usuario haya escrito un username en vez de email (migración progresiva)
-        return {
-          success: false,
-          error: authError?.message === 'Invalid login credentials'
-            ? 'Credenciales incorrectas o la cuenta no existe.'
-            : (authError?.message || 'Error al iniciar sesión.'),
-        };
-      }
-
-      const authUser = data.user;
-
-      // 2. Obtener el perfil corporativo verificado desde public.user_profiles
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .maybeSingle();
-
-      if (profileError) {
-        console.warn('Advertencia al consultar user_profiles:', profileError.message);
-      }
-
-      // Si existe perfil en la base de datos, validar rol
-      let role: UserRole = profile?.role || (authUser.user_metadata?.role as UserRole);
-      let name: string = profile?.name || authUser.user_metadata?.name;
-
-      // Provisionar automáticamente en user_profiles si el usuario aún no tiene registro
-      if (!profile) {
-        if (!role) {
-          role = (cleanEmail === 'juandavidfigueroa4@gmail.com' || cleanEmail.startsWith('admin'))
-            ? 'admin'
-            : (cleanEmail.endsWith('@massagroup.co') ? 'architect' : 'client');
-        }
-        if (!name) {
-          name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuario MASSA';
-        }
-        try {
-          await supabase.from('user_profiles').upsert({
-            id: authUser.id,
-            email: cleanEmail,
-            name,
-            role,
-          });
-        } catch {
-          // ignore
-        }
-      } else {
-        if (!role) role = profile.role || 'client';
-        if (!name) name = profile.name || authUser.email?.split('@')[0] || 'Usuario MASSA';
-      }
-
-      // Elevación de privilegios para cuentas directivas del equipo MASSA
-      if (
-        cleanEmail === 'juandavidfigueroa4@gmail.com' ||
-        cleanEmail.startsWith('admin') ||
-        cleanEmail.endsWith('@massagroup.co') ||
-        cleanEmail.endsWith('@massagroup.com')
-      ) {
-        role = (cleanEmail === 'juandavidfigueroa4@gmail.com' || cleanEmail.startsWith('admin')) ? 'admin' : 'architect';
-      }
-
-      // 3. Verificación de permisos de Administrador (único acceso al sistema)
-      if (targetRole === 'architect' && role !== 'architect' && role !== 'admin') {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+      if (error || !data.user) return { success: false, error: 'No se pudo iniciar sesión. Verifica tus credenciales de Supabase Auth.' };
+      const user = await readAuthorizedProfile(data.user.id, data.user.email);
+      if (!user) {
         await supabase.auth.signOut();
-        return {
-          success: false,
-          error: `Acceso Denegado: La cuenta "${name}" (${cleanEmail}) está registrada sin permisos de Administrador (rol CLIENTE). Solo personal directivo y arquitectos autorizados pueden acceder al editor.`,
-        };
+        return { success: false, error: 'Acceso denegado. La cuenta no tiene una autorización administrativa verificada.' };
       }
-
-      // Sincronizar estado local para componentes que lo consumen
-      try {
-        sessionStorage.setItem('massa_3d_role', role === 'architect' ? 'editor' : 'visitor');
-        sessionStorage.setItem('massa_3d_username', cleanEmail);
-        sessionStorage.setItem('massa_3d_name', name);
-        sessionStorage.setItem('massa_3d_user_level', role);
-
-        localStorage.setItem('massa_3d_role', role === 'architect' ? 'editor' : 'visitor');
-        localStorage.setItem('massa_3d_username', cleanEmail);
-        localStorage.setItem('massa_3d_name', name);
-        localStorage.setItem('massa_3d_user_level', role);
-      } catch {
-        // ignore
+      // Compatibilidad visual únicamente. Las decisiones de acceso no leen estas claves.
+      for (const storageName of ['sessionStorage', 'localStorage'] as const) {
+        try {
+          const storage = globalThis[storageName];
+          storage?.setItem('massa_3d_name', user.name);
+          storage?.setItem('massa_3d_username', user.email);
+        } catch { /* Auth sigue siendo válido sin estas claves. */ }
       }
-
-      return {
-        success: true,
-        user: {
-          id: authUser.id,
-          email: cleanEmail,
-          name,
-          role,
-        },
-      };
-    } catch (err: any) {
-      console.error('Error en autenticación:', err);
-      return {
-        success: false,
-        error: err.message || 'Error de conexión durante el inicio de sesión.',
-      };
-    } finally {
-      isAuthenticating = false;
-    }
+      return { success: true, user };
+    } catch {
+      await supabase.auth.signOut().catch(() => undefined);
+      return { success: false, error: 'No se pudo verificar el acceso. Revisa la conexión e inténtalo de nuevo.' };
+    } finally { isAuthenticating = false; sessionRevision++; }
   },
-
-  /**
-   * Cierra la sesión activa en Supabase Auth y limpia almacenamiento local
-   */
   async signOut(): Promise<void> {
-    try {
-      await supabase.auth.signOut();
-    } catch (err) {
-      console.warn('Error al cerrar sesión en Supabase Auth:', err);
-    } finally {
-      sessionStorage.removeItem('massa_3d_role');
-      sessionStorage.removeItem('massa_client_email');
-      sessionStorage.removeItem('massa_3d_username');
-      sessionStorage.removeItem('massa_3d_name');
-      sessionStorage.removeItem('massa_3d_user_level');
-
-      try {
-        localStorage.removeItem('massa_3d_role');
-        localStorage.removeItem('massa_client_email');
-        localStorage.removeItem('massa_3d_username');
-        localStorage.removeItem('massa_3d_name');
-        localStorage.removeItem('massa_3d_user_level');
-      } catch {
-        // ignore
-      }
-    }
+    sessionRevision++;
+    clearDisplayIdentity();
+    await supabase.auth.signOut();
   },
-
-  /**
-   * Envía enlace de recuperación de contraseña al correo del usuario
-   */
   async resetPassword(email: string): Promise<{ success: boolean; message: string }> {
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) {
-      return { success: false, message: 'Por favor ingresa un correo electrónico válido.' };
-    }
-
+    if (!cleanEmail) return { success: false, message: 'Por favor ingresa un correo electrónico válido.' };
+    if (cleanEmail !== ADMIN_EMAIL) return { success: false, message: 'Usa el correo de la cuenta administradora autorizada.' };
     try {
-      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/reset-password` : '';
-      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: redirectUrl || undefined,
-      });
-
-      if (error) {
-        return { success: false, message: error.message };
-      }
-
-      return {
-        success: true,
-        message: `Se ha enviado un enlace de recuperación seguro a ${cleanEmail}. Por favor revisa tu bandeja de entrada.`,
-      };
-    } catch (err: any) {
-      return { success: false, message: err.message || 'Error solicitando recuperación de contraseña.' };
-    }
+      const redirectTo = typeof window !== 'undefined' ? window.location.origin + '/reset-password' : undefined;
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo });
+      return error ? { success: false, message: error.message }
+        : { success: true, message: 'Se ha enviado un enlace de recuperación seguro a ' + cleanEmail + '.' };
+    } catch { return { success: false, message: 'Error solicitando recuperación de contraseña.' }; }
   },
-
-  /**
-   * Obtiene la sesión activa actual y su perfil verificado
-   */
   async getCurrentUser(): Promise<UserProfile | null> {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        const storedRole = typeof window !== 'undefined' 
-          ? (sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role')) 
-          : null;
-        const storedLevel = typeof window !== 'undefined' 
-          ? (sessionStorage.getItem('massa_3d_user_level') || localStorage.getItem('massa_3d_user_level')) 
-          : null;
-        if (storedRole === 'editor' || storedLevel === 'architect' || storedLevel === 'admin') {
-          return {
-            id: 'admin-master-id',
-            email: (typeof window !== 'undefined' && (sessionStorage.getItem('massa_3d_username') || localStorage.getItem('massa_3d_username'))) || 'admin@massagroup.co',
-            name: (typeof window !== 'undefined' && (sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name'))) || 'Administrador MASSA',
-            role: 'architect',
-          };
-        }
-        return null;
-      }
-
-      const cleanEmail = (session.user.email || '').trim().toLowerCase();
-
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .maybeSingle();
-
-      if (profile) return profile as UserProfile;
-
-      // Respaldo de seguridad y coherencia: si user_profiles no tiene fila o hubo bloqueo por RLS,
-      // verificar las credenciales verificadas en la sesión activa antes de degradar a client.
-      const storedRole = typeof window !== 'undefined' 
-        ? (sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role')) 
-        : null;
-      const storedLevel = typeof window !== 'undefined' 
-        ? (sessionStorage.getItem('massa_3d_user_level') || localStorage.getItem('massa_3d_user_level')) 
-        : null;
-      const storedName = typeof window !== 'undefined' 
-        ? (sessionStorage.getItem('massa_3d_name') || localStorage.getItem('massa_3d_name')) 
-        : null;
-
-      const isArchitect = 
-        cleanEmail === 'juandavidfigueroa4@gmail.com' ||
-        cleanEmail === 'mateo@massagroup.co' ||
-        cleanEmail === 'admin@massagroup.co' ||
-        storedLevel === 'architect' ||
-        storedLevel === 'admin' ||
-        storedRole === 'editor' ||
-        session.user.user_metadata?.role === 'architect';
-
-      return {
-        id: session.user.id,
-        email: cleanEmail,
-        name: storedName || session.user.user_metadata?.name || (isArchitect ? 'Juan David Figueroa' : 'Usuario MASSA'),
-        role: isArchitect ? 'architect' : ((session.user.user_metadata?.role as UserRole) || 'client'),
-      };
-    } catch {
-      return null;
-    }
+      const { data: { session }, error } = await supabase.auth.getSession();
+      const user = !error && session?.user;
+      return user ? await readAuthorizedProfile(user.id, user.email) : null;
+    } catch { return null; }
   },
-
-  /**
-   * Escucha cambios en el estado de autenticación (Login, Logout, Token Refreshed)
-   */
   onAuthStateChange(callback: (user: UserProfile | null) => void) {
-    return supabase.auth.onAuthStateChange(async (_event, session) => {
-      // Ignorar eventos intermedios durante el proceso de validación de signIn
-      // para evitar desmontar LoginScreen o parpadear entre vistas
+    let disposed = false;
+    let generation = 0;
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentGeneration = ++generation;
       if (isAuthenticating) return;
-
-      if (session?.user) {
-        const profile = await authService.getCurrentUser();
-        callback(profile);
-      } else {
-        callback(null);
-      }
+      const revision = sessionRevision;
+      if (!session?.user) { callback(null); return; }
+      // Consultar fuera del callback de Auth para no bloquear la sesión.
+      setTimeout(() => {
+        if (disposed || revision !== sessionRevision || isAuthenticating) return;
+        void authService.getCurrentUser().then(user => {
+          if (!disposed && currentGeneration === generation && revision === sessionRevision && !isAuthenticating) callback(user);
+        });
+      }, 0);
     });
+    return { data: { subscription: { unsubscribe() {
+      disposed = true;
+      generation++;
+      data.subscription.unsubscribe();
+    } } } };
   },
 };

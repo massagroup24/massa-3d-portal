@@ -1,223 +1,134 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { authService, UserRole } from '../../src/lib/authService';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { authService } from '../../src/lib/authService';
+import { ADMIN_EMAIL } from '../../src/config/adminAccess';
 import { supabase } from '../../src/supabase';
 
-const createStorageMock = () => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => { store[key] = value.toString(); },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
-  };
+const id = '11111111-1111-4111-8111-111111111111';
+const profile = { id, email: ADMIN_EMAIL, name: 'Juan David', role: 'admin' };
+const storage = () => {
+  const values = new Map<string, string>();
+  return { getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => { values.set(key, value); },
+    removeItem: (key: string) => { values.delete(key); }, clear: () => values.clear() } as Storage;
 };
+globalThis.sessionStorage = storage();
+globalThis.localStorage = storage();
 
-if (typeof globalThis.sessionStorage === 'undefined') {
-  globalThis.sessionStorage = createStorageMock() as any;
+function mockProfile(value: unknown = profile, error: unknown = null) {
+  vi.spyOn(supabase, 'from').mockReturnValue({
+    select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue({ data: value, error }),
+  } as any);
 }
-if (typeof globalThis.localStorage === 'undefined') {
-  globalThis.localStorage = createStorageMock() as any;
+function mockLogin(error: unknown = null) {
+  return vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValue({
+    data: { user: error ? null : { id, email: ADMIN_EMAIL, user_metadata: { role: 'admin' } }, session: null },
+    error,
+  } as any);
 }
-
-describe('Suite de Autenticación Segura — authService', () => {
+function mockSession(email = ADMIN_EMAIL) {
+  vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({
+    data: { session: { user: { id, email, user_metadata: { role: 'admin' } } } }, error: null,
+  } as any);
+}
+describe('Acceso a una sola cuenta con identidad verificada', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    globalThis.sessionStorage.clear();
-    globalThis.localStorage.clear();
+    vi.useRealTimers();
+    sessionStorage.clear(); localStorage.clear();
+    vi.spyOn(supabase.auth, 'signOut').mockResolvedValue({ error: null });
+    vi.spyOn(supabase, 'rpc').mockResolvedValue({ data: true, error: null } as any);
   });
-
-  describe('Inicio de Sesión (signIn)', () => {
-    it('1. Rechaza intentos con campos de correo o contraseña vacíos', async () => {
-      const res1 = await authService.signIn('', '123456');
-      expect(res1.success).toBe(false);
-      expect(res1.error).toMatch(/correo y contraseña/i);
-
-      const res2 = await authService.signIn('test@massa.co', '   ');
-      expect(res2.success).toBe(false);
-      expect(res2.error).toMatch(/correo y contraseña/i);
-    });
-
-    it('2. Inicia sesión correctamente con Supabase Auth y mapea perfil de Arquitecto', async () => {
-      const mockUserId = '11111111-1111-4111-8111-111111111111';
-      
-      vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValueOnce({
-        data: {
-          user: {
-            id: mockUserId,
-            email: 'mateo@massagroup.co',
-            user_metadata: { name: 'Mateo Rossi', role: 'architect' },
-          } as any,
-          session: {} as any,
-        },
-        error: null,
-      });
-
-      vi.spyOn(supabase, 'from').mockReturnValueOnce({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValueOnce({
-          data: { id: mockUserId, email: 'mateo@massagroup.co', name: 'Mateo Rossi', role: 'architect' },
-          error: null,
-        }),
-      } as any);
-
-      const res = await authService.signIn('mateo@massagroup.co', 'Secret123!', 'architect');
-      expect(res.success).toBe(true);
-      expect(res.user?.role).toBe('architect');
-      expect(res.user?.name).toBe('Mateo Rossi');
-      expect(sessionStorage.getItem('massa_3d_role')).toBe('editor');
-    });
-
-    it('3. Impide que un usuario con rol de Cliente ingrese por el panel de Arquitecto', async () => {
-      const mockUserId = '22222222-2222-4222-8222-222222222222';
-      const signOutSpy = vi.spyOn(supabase.auth, 'signOut').mockResolvedValueOnce({ error: null });
-
-      vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValueOnce({
-        data: {
-          user: {
-            id: mockUserId,
-            email: 'cliente@gmail.com',
-            user_metadata: { name: 'Carlos Mendoza', role: 'client' },
-          } as any,
-          session: {} as any,
-        },
-        error: null,
-      });
-
-      vi.spyOn(supabase, 'from').mockReturnValueOnce({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValueOnce({
-          data: { id: mockUserId, email: 'cliente@gmail.com', name: 'Carlos Mendoza', role: 'client' },
-          error: null,
-        }),
-      } as any);
-
-      const res = await authService.signIn('cliente@gmail.com', 'Secret123!', 'architect');
-      expect(res.success).toBe(false);
-      expect(res.error).toMatch(/Acceso Denegado.*CLIENTE/i);
-      expect(signOutSpy).toHaveBeenCalled();
-    });
-
-    it('4. Impide que un usuario con rol de Arquitecto ingrese por el panel de Cliente', async () => {
-      const mockUserId = '11111111-1111-4111-8111-111111111111';
-      const signOutSpy = vi.spyOn(supabase.auth, 'signOut').mockResolvedValueOnce({ error: null });
-
-      vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValueOnce({
-        data: {
-          user: {
-            id: mockUserId,
-            email: 'mateo@massagroup.co',
-            user_metadata: { name: 'Mateo Rossi', role: 'architect' },
-          } as any,
-          session: {} as any,
-        },
-        error: null,
-      });
-
-      vi.spyOn(supabase, 'from').mockReturnValueOnce({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValueOnce({
-          data: { id: mockUserId, email: 'mateo@massagroup.co', name: 'Mateo Rossi', role: 'architect' },
-          error: null,
-        }),
-      } as any);
-
-      const res = await authService.signIn('mateo@massagroup.co', 'Secret123!', 'client');
-      expect(res.success).toBe(false);
-      expect(res.error).toMatch(/Acceso Denegado.*ARQUITECTO/i);
-      expect(signOutSpy).toHaveBeenCalled();
-    });
-
-    it('5. Retorna error seguro cuando las credenciales no son válidas', async () => {
-      vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValueOnce({
-        data: { user: null, session: null },
-        error: { message: 'Invalid login credentials' } as any,
-      });
-
-      const res = await authService.signIn('wrong@massa.co', 'wrongpass');
-      expect(res.success).toBe(false);
-      expect(res.error).toMatch(/incorrectas/i);
-    });
+  it('rechaza campos vacios sin consultar Auth', async () => {
+    const login = mockLogin();
+    expect((await authService.signIn('', 'secret')).success).toBe(false);
+    expect((await authService.signIn(ADMIN_EMAIL, '  ')).success).toBe(false);
+    expect(login).not.toHaveBeenCalled();
   });
-
-  describe('Cierre de Sesión (signOut)', () => {
-    it('5. Cierra la sesión en Supabase y limpia todo el almacenamiento local', async () => {
-      sessionStorage.setItem('massa_3d_role', 'editor');
-      sessionStorage.setItem('massa_3d_username', 'mateo@massagroup.co');
-      localStorage.setItem('massa_3d_role', 'editor');
-
-      const signOutSpy = vi.spyOn(supabase.auth, 'signOut').mockResolvedValueOnce({ error: null });
-
-      await authService.signOut();
-
-      expect(signOutSpy).toHaveBeenCalled();
-      expect(sessionStorage.getItem('massa_3d_role')).toBeNull();
-      expect(sessionStorage.getItem('massa_3d_username')).toBeNull();
-      expect(localStorage.getItem('massa_3d_role')).toBeNull();
-    });
+  it.each(['admin@massagroup.co', 'mateo@massagroup.co', 'otro@gmail.com'])('rechaza otra cuenta: %s', async email => {
+    const login = mockLogin();
+    expect((await authService.signIn(email, 'Secret123!', 'architect')).success).toBe(false);
+    expect(login).not.toHaveBeenCalled();
   });
-
-  describe('Recuperación de Contraseña (resetPassword)', () => {
-    it('6. Valida que el correo no esté vacío', async () => {
-      const res = await authService.resetPassword('');
-      expect(res.success).toBe(false);
-      expect(res.message).toMatch(/correo electrónico válido/i);
-    });
-
-    it('7. Envía solicitud de recuperación de contraseña a Supabase Auth', async () => {
-      const resetSpy = vi.spyOn(supabase.auth, 'resetPasswordForEmail').mockResolvedValueOnce({
-        data: {},
-        error: null,
-      });
-
-      const res = await authService.resetPassword('carlos@cliente.com');
-      expect(res.success).toBe(true);
-      expect(resetSpy).toHaveBeenCalledWith('carlos@cliente.com', expect.any(Object));
-      expect(res.message).toMatch(/enlace de recuperación seguro/i);
-    });
+  it('no permite login por un perfil de cliente', async () => {
+    expect((await authService.signIn(ADMIN_EMAIL, 'Secret123!', 'client')).success).toBe(false);
   });
-
-  describe('Consulta de Sesión Activa (getCurrentUser)', () => {
-    it('8. Devuelve null si no existe sesión activa en Supabase', async () => {
-      vi.spyOn(supabase.auth, 'getSession').mockResolvedValueOnce({
-        data: { session: null },
-        error: null,
-      });
-
-      const user = await authService.getCurrentUser();
-      expect(user).toBeNull();
+  it('acepta solo Auth, perfil admin y autorizacion del servidor coincidentes', async () => {
+    const login = mockLogin(); mockProfile();
+    const result = await authService.signIn('  ' + ADMIN_EMAIL.toUpperCase() + '  ', '  Secret123!  ', 'architect');
+    expect(result).toEqual({ success: true, user: profile });
+    expect(login).toHaveBeenCalledWith({ email: ADMIN_EMAIL, password: '  Secret123!  ' });
+    expect(supabase.rpc).toHaveBeenCalledWith('is_platform_admin');
+    expect(sessionStorage.getItem('massa_3d_role')).toBeNull();
+  });
+  it.each(['admin', 'admin123', 'massa2025', 'massa', '123456'])('no usa la contrasena alternativa %s', async password => {
+    mockLogin({ message: 'Invalid login credentials' });
+    expect((await authService.signIn(ADMIN_EMAIL, password, 'architect')).success).toBe(false);
+    expect(sessionStorage.getItem('massa_3d_name')).toBeNull();
+  });
+  it.each([null, { ...profile, role: 'client' }, { ...profile, role: 'architect' },
+    { ...profile, id: 'otro-id' }, { ...profile, email: 'otra@empresa.com' }])('rechaza perfil ausente o no autorizado %#', async value => {
+    mockLogin(); mockProfile(value);
+    expect((await authService.signIn(ADMIN_EMAIL, 'Secret123!', 'architect')).success).toBe(false);
+    expect(supabase.auth.signOut).toHaveBeenCalled();
+  });
+  it('no utiliza metadatos de Auth si la lectura del perfil falla', async () => {
+    mockLogin(); mockProfile(null, { message: 'RLS error' });
+    expect((await authService.signIn(ADMIN_EMAIL, 'Secret123!')).success).toBe(false);
+  });
+  it.each([{ data: false, error: null }, { data: null, error: { message: 'RPC unavailable' } }])('falla de forma cerrada si el servidor no autoriza %#', async value => {
+    mockLogin(); mockProfile();
+    vi.mocked(supabase.rpc).mockResolvedValue(value as any);
+    expect((await authService.signIn(ADMIN_EMAIL, 'Secret123!')).success).toBe(false);
+  });
+  it('no recupera privilegios desde almacenamiento sin sesion', async () => {
+    sessionStorage.setItem('massa_3d_role', 'editor');
+    localStorage.setItem('massa_3d_user_level', 'admin');
+    vi.spyOn(supabase.auth, 'getSession').mockResolvedValue({ data: { session: null }, error: null });
+    expect(await authService.getCurrentUser()).toBeNull();
+  });
+  it('no recupera privilegios desde metadatos cuando falta el perfil', async () => {
+    mockSession(); mockProfile(null);
+    expect(await authService.getCurrentUser()).toBeNull();
+  });
+  it('devuelve el perfil autorizado de la sesion actual', async () => {
+    mockSession(); mockProfile();
+    expect(await authService.getCurrentUser()).toEqual(profile);
+  });
+  it('no admite otras sesiones aunque tengan metadatos admin', async () => {
+    mockSession('otro@massagroup.co'); mockProfile();
+    expect(await authService.getCurrentUser()).toBeNull();
+  });
+  it('limpia indicadores locales al salir', async () => {
+    localStorage.setItem('massa_3d_role', 'editor');
+    sessionStorage.setItem('massa_3d_name', 'Juan');
+    await authService.signOut();
+    expect(localStorage.getItem('massa_3d_role')).toBeNull();
+    expect(sessionStorage.getItem('massa_3d_name')).toBeNull();
+  });
+  it('solicita recuperacion solo para la cuenta autorizada', async () => {
+    const reset = vi.spyOn(supabase.auth, 'resetPasswordForEmail').mockResolvedValue({ data: {}, error: null });
+    expect((await authService.resetPassword('')).success).toBe(false);
+    expect((await authService.resetPassword('otra@gmail.com')).success).toBe(false);
+    expect((await authService.resetPassword(ADMIN_EMAIL)).success).toBe(true);
+    expect(reset).toHaveBeenCalledTimes(1);
+  });
+  it('consulta el perfil fuera del callback de Auth y cancela al desuscribir', async () => {
+    vi.useFakeTimers();
+    let listener: any;
+    const unsubscribe = vi.fn();
+    vi.spyOn(supabase.auth, 'onAuthStateChange').mockImplementation(callback => {
+      listener = callback; return { data: { subscription: { unsubscribe } } } as any;
     });
-
-    it('9. Devuelve el perfil completo verificado si hay sesión activa', async () => {
-      const mockUserId = '11111111-1111-4111-8111-111111111111';
-
-      vi.spyOn(supabase.auth, 'getSession').mockResolvedValueOnce({
-        data: {
-          session: {
-            user: {
-              id: mockUserId,
-              email: 'mateo@massagroup.co',
-            },
-          } as any,
-        },
-        error: null,
-      });
-
-      vi.spyOn(supabase, 'from').mockReturnValueOnce({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValueOnce({
-          data: { id: mockUserId, email: 'mateo@massagroup.co', name: 'Mateo Rossi', role: 'architect' },
-          error: null,
-        }),
-      } as any);
-
-      const user = await authService.getCurrentUser();
-      expect(user).toBeDefined();
-      expect(user?.id).toBe(mockUserId);
-      expect(user?.role).toBe('architect');
-    });
+    const get = vi.spyOn(authService, 'getCurrentUser').mockResolvedValue(profile as any);
+    const callback = vi.fn();
+    const connection = authService.onAuthStateChange(callback);
+    listener('SIGNED_IN', { user: { id } });
+    expect(get).not.toHaveBeenCalled();
+    connection.data.subscription.unsubscribe();
+    await vi.runAllTimersAsync();
+    expect(get).not.toHaveBeenCalled();
+    expect(callback).not.toHaveBeenCalled();
+    expect(unsubscribe).toHaveBeenCalled();
   });
 });

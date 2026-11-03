@@ -6,6 +6,7 @@ import { ProjectConfigurator } from './components/ProjectConfigurator';
 import { ClientViewer } from './components/ClientViewer';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { LoginScreen } from './components/LoginScreen';
+import { ResetPasswordScreen } from './components/ResetPasswordScreen';
 import { PortalLayout } from './components/layout/PortalLayout';
 import { ClientHome } from './components/ClientHome';
 import { RendersGallery } from './components/portal/RendersGallery';
@@ -20,7 +21,7 @@ import { VipCommercialLanding } from './components/commercial/VipCommercialLandi
 import { ProjectSpecs } from './components/portal/ProjectSpecs';
 import { getProjectPortalData, getProjectPublicSpecs, ProjectPortalData } from './services/portalService';
 import { NavTab } from './components/ui/Dock';
-import { projectsData, Project, normalizeProject, resolveCanonicalProjectId, CANONICAL_PROJECT_ORDER } from './data/tourData';
+import { Project, normalizeProject, resolveCanonicalProjectId, CANONICAL_PROJECT_ORDER } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 import { Lock } from 'lucide-react';
 import { ProjectsManagementPortal } from './components/ProjectsManagementPortal';
@@ -31,79 +32,18 @@ import { openProjectInNewTab } from './config/projectIdentityConfig';
 function MainPortal() {
   const navigate = useNavigate();
 
-  // Estado de rol: 'guest' (acceso comercial VIP por defecto), 'portal' (login), 'client' (portal cliente), 'architect' (estudio de recorridos 360)
-  const [userRole, setUserRole] = useState<'portal' | 'guest' | 'client' | 'architect'>(() => {
-    try {
-      const saved = sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role');
-      if (saved === 'editor') return 'architect';
-      // Limpiar tokens residuales obsoletos de 'visitor' o 'client' para que nunca desvíen al portal cliente en recargas
-      if (saved === 'visitor' || saved === 'client') {
-        sessionStorage.setItem('massa_3d_role', 'guest');
-        localStorage.setItem('massa_3d_role', 'guest');
-        return 'guest';
-      }
-      return 'guest'; // Entrada directa sin barreras a la plataforma comercial VIP
-    } catch {
-      return 'guest';
-    }
-  });
-
-  // Validar y sincronizar sesión activa de Supabase Auth
+  const [userRole, setUserRole] = useState<'portal' | 'guest' | 'client' | 'architect'>('guest');
   useEffect(() => {
-    let isMounted = true;
-
-    const syncSessionUser = (user: { role: string } | null) => {
-      if (!isMounted) return;
-
-      const savedRole = sessionStorage.getItem('massa_3d_role') || localStorage.getItem('massa_3d_role');
-      const savedLevel = sessionStorage.getItem('massa_3d_user_level') || localStorage.getItem('massa_3d_user_level');
-      const isArchitectSession = savedRole === 'editor' || savedLevel === 'architect' || savedLevel === 'admin';
-
-      if (!user) {
-        if (isArchitectSession) {
-          setUserRole('architect');
-        } else {
-          setUserRole('guest');
-        }
-        return;
-      }
-
-      if (user.role === 'architect' || isArchitectSession) {
-        setUserRole('architect');
-      } else {
-        setUserRole('guest');
-      }
+    let active = true;
+    const sync = (user: { role: string } | null) => {
+      if (!active) return;
+      setUserRole(previous => user?.role === 'admin' ? 'architect' : previous === 'portal' ? 'portal' : 'guest');
+      if (!user) setConfiguringProjectId(null);
     };
-
-    authService.getCurrentUser().then(syncSessionUser).catch(() => {
-      // ignore
-    });
-
-    const { data: authListener } = authService.onAuthStateChange(syncSessionUser);
-
-    return () => {
-      isMounted = false;
-      authListener?.subscription?.unsubscribe();
-    };
+    void authService.getCurrentUser().then(sync);
+    const { data } = authService.onAuthStateChange(sync);
+    return () => { active = false; data.subscription.unsubscribe(); };
   }, []);
-
-  // Mantener sincronizado localStorage para nuevas pestañas
-  useEffect(() => {
-    try {
-      const currentRole = sessionStorage.getItem('massa_3d_role');
-      if (currentRole) {
-        localStorage.setItem('massa_3d_role', currentRole);
-        const name = sessionStorage.getItem('massa_3d_name');
-        if (name) localStorage.setItem('massa_3d_name', name);
-        const username = sessionStorage.getItem('massa_3d_username');
-        if (username) localStorage.setItem('massa_3d_username', username);
-        const level = sessionStorage.getItem('massa_3d_user_level');
-        if (level) localStorage.setItem('massa_3d_user_level', level);
-      }
-    } catch {
-      // ignore
-    }
-  }, [userRole]);
 
   const [activeTab, setActiveTab] = useState<NavTab>(() => {
     try {
@@ -115,20 +55,9 @@ function MainPortal() {
     return 'home';
   });
 
-  const [projects, setProjects] = useState<Record<string, Project>>(() => {
-    const normalized: Record<string, Project> = {};
-    CANONICAL_PROJECT_ORDER.forEach(id => {
-      if (projectsData[id]) {
-        normalized[id] = normalizeProject(projectsData[id]);
-      }
-    });
-    Object.keys(projectsData).forEach(key => {
-      if (!normalized[key]) {
-        normalized[key] = normalizeProject(projectsData[key]);
-      }
-    });
-    return normalized;
-  });
+  const [loadedProjects, setProjects] = useState<Record<string, Project>>({});
+  const projects = userRole === 'architect' ? loadedProjects
+    : Object.fromEntries(Object.entries(loadedProjects).filter(([, project]) => project.published === true));
 
   const [activeProjectId, setActiveProjectId] = useState<string | null>(() => {
     return 'project_hacienda_f22';
@@ -147,137 +76,54 @@ function MainPortal() {
   const [portalData, setPortalData] = useState<ProjectPortalData | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
-  // Cargar proyectos desde Supabase con normalización defensiva
+  // Las vistas de PostgreSQL deciden qué contenido se puede leer.
+  // Nunca recuperar proyectos ocultos desde una copia local o datos compilados.
   useEffect(() => {
-    async function loadData() {
+    let cancelled = false;
+    const load = async () => {
       try {
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Tiempo de espera agotado (límite 10s)")), 10000)
-        );
-
-        const fbProjects = await Promise.race([
-          getProjectsFromSupabase(),
-          timeoutPromise
-        ]);
-        
-        const rawLoaded: Record<string, Project> = {};
-        // 1. Base con todas las residencias oficiales de MASSA (solo proyectos canónicos únicos)
-        Object.values(projectsData).forEach(p => {
-          if (p && p.id) {
-            rawLoaded[p.id] = normalizeProject(p);
-          }
+        const rows = await getProjectsFromSupabase();
+        if (cancelled) return;
+        const sorted = [...rows].sort((a, b) => {
+          const rank = (id: string) => {
+            const index = CANONICAL_PROJECT_ORDER.indexOf(id);
+            return index < 0 ? Number.MAX_SAFE_INTEGER : index;
+          };
+          return rank(a.id) - rank(b.id);
         });
-
-        // 2. Proyectos personalizados guardados localmente (limpiando dummies y aliases antiguos)
-        try {
-          const stored = localStorage.getItem('massa_custom_projects');
-          if (stored) {
-            const custom = JSON.parse(stored);
-            const legacyDummies = new Set([
-              'villa-serena', 'altos-del-valle', 'penthouse-massa',
-              'casa-del-lago', 'residencia-bambu', 'torre-horizonte',
-              'casa-cantera', 'edinson-jejen', 'marquimoda'
-            ]);
-            Object.keys(custom).forEach(k => {
-              const item = custom[k];
-              if (item && item.id && !legacyDummies.has(k) && !legacyDummies.has(item.id)) {
-                const existing = rawLoaded[item.id];
-                if (existing) {
-                  rawLoaded[item.id] = normalizeProject({
-                    ...existing,
-                    ...item,
-                    floorPlans: {
-                      ...(existing.floorPlans || {}),
-                      ...(item.floorPlans || {})
-                    },
-                    rooms: {
-                      ...(existing.rooms || {}),
-                      ...(item.rooms || {})
-                    }
-                  });
-                } else {
-                  rawLoaded[item.id] = normalizeProject(item);
-                }
-              }
-            });
-          }
-        } catch {}
-
-        // 3. Proyectos sincronizados en la nube de Supabase
-        if (fbProjects && fbProjects.length > 0) {
-          fbProjects.forEach(p => {
-            if (p && p.id) {
-              const canonicalId = resolveCanonicalProjectId(p.id);
-              const existing = rawLoaded[canonicalId];
-              if (existing) {
-                rawLoaded[canonicalId] = normalizeProject({
-                  ...existing,
-                  ...p,
-                  id: canonicalId,
-                  floorPlans: {
-                    ...(existing.floorPlans || {}),
-                    ...(p.floorPlans || {})
-                  },
-                  rooms: {
-                    ...(existing.rooms || {}),
-                    ...(p.rooms || {})
-                  }
-                });
-              } else {
-                rawLoaded[canonicalId] = normalizeProject({ ...p, id: canonicalId });
-              }
-            }
-          });
-        }
-
-        // Ordenar respetando estrictamente el orden canónico oficial:
-        // 1. Hacienda F22, 2. Ibiza A14, 3. Edinson Jején, 4. Marquimoda
-        const loadedProjects: Record<string, Project> = {};
-        CANONICAL_PROJECT_ORDER.forEach(id => {
-          if (rawLoaded[id]) {
-            loadedProjects[id] = rawLoaded[id];
-          }
-        });
-        Object.keys(rawLoaded).forEach(id => {
-          if (!loadedProjects[id]) {
-            loadedProjects[id] = rawLoaded[id];
-          }
-        });
-
-        setProjects(loadedProjects);
-
-        if (!activeProjectId || !loadedProjects[activeProjectId]) {
-          const firstId = Object.keys(loadedProjects)[0];
-          if (firstId) setActiveProjectId(firstId);
-        }
+        setProjects(Object.fromEntries(sorted.map(project => [project.id, normalizeProject(project)])));
         setSyncError(null);
-      } catch (error: any) {
-        console.warn("Usando datos locales por desconexión de Supabase:", error);
-        setSyncError("Conexión con Supabase en modo local.");
+      } catch {
+        if (!cancelled) { setProjects({}); setSyncError('No se pudo consultar el catálogo. Intenta recargar la página.'); }
       }
-    }
-    loadData();
-  }, []);
+    };
+    void load();
+    const interval = window.setInterval(() => { void load(); }, 240000);
+    return () => { cancelled = true; window.clearInterval(interval); };
+  }, [userRole]);
 
   // Cargar datos de proyecto extendidos (Renders, Planos, Avances) para el portal
   useEffect(() => {
     if (!activeProjectId) return;
-    const currentProj = projects[activeProjectId] || projectsData[activeProjectId];
+    const currentProj = projects[activeProjectId];
+    if (!currentProj) { setPortalData(null); return; }
+    let cancelled = false;
     getProjectPortalData(activeProjectId, currentProj)
-      .then((data) => setPortalData(data))
+      .then((data) => { if (!cancelled) setPortalData(data); })
       .catch((err) => console.warn("Error cargando portal data:", err));
-  }, [activeProjectId, projects]);
+    return () => { cancelled = true; };
+  }, [activeProjectId, loadedProjects, userRole]);
 
   const handleSelectProject = (projectId: string) => {
     setActiveProjectId(projectId);
     setTourStarted(false);
-    const proj = projects[projectId] || projectsData[projectId];
+    const proj = projects[projectId];
     if (proj) {
       const firstRoomId = proj.rooms ? Object.keys(proj.rooms)[0] : null;
       const validRoomId = (proj.rooms && proj.rooms[proj.initialRoomId]) ? proj.initialRoomId : firstRoomId;
       setCurrentRoomId(validRoomId || null);
     } else {
-      const fallback = projects[Object.keys(projects)[0]] || projectsData[Object.keys(projectsData)[0]];
+      const fallback = projects[Object.keys(projects)[0]];
       if (fallback) {
         const firstRoomId = fallback.rooms ? Object.keys(fallback.rooms)[0] : null;
         setCurrentRoomId(firstRoomId || null);
@@ -287,7 +133,7 @@ function MainPortal() {
 
   const handleStart360Tour = (customProjId?: string) => {
     const projId = customProjId || activeProjectId || Object.keys(projects)[0];
-    const proj = projects[projId] || projectsData[projId] || Object.values(projects)[0] || Object.values(projectsData)[0];
+    const proj = projects[projId];
     if (proj) {
       const firstRoomId = proj.rooms ? Object.keys(proj.rooms)[0] : null;
       const validRoomId = (proj.rooms && proj.rooms[proj.initialRoomId]) ? proj.initialRoomId : firstRoomId;
@@ -324,7 +170,9 @@ function MainPortal() {
     navigate('/', { replace: true });
   };
 
-  const handleLoginSuccess = (role: 'guest' | 'client' | 'architect') => {
+  const handleLoginSuccess = async (role: 'guest' | 'client' | 'architect') => {
+    const user = role === 'architect' ? await authService.getCurrentUser() : null;
+    if (role === 'architect' && !user) return;
     setUserRole(role);
     if (role === 'guest') {
       setGuestView('commercial');
@@ -376,10 +224,10 @@ function MainPortal() {
 
   // 2. Creador Interactivo de Recorridos 360° (Proyectos Actuales y Guardados)
   const projectToConfigure = configuringProjectId
-    ? (projects[configuringProjectId] || projectsData[configuringProjectId] || null)
+    ? (projects[configuringProjectId] || null)
     : null;
 
-  if (projectToConfigure) {
+  if (userRole === 'architect' && projectToConfigure) {
     return (
       <ProjectConfigurator
         initialProject={projectToConfigure}
@@ -402,9 +250,9 @@ function MainPortal() {
   }
 
   // 3. Recorrido 360° en pantalla completa (Reutilizando motor Three.js existente)
-  const currentProject = (activeProjectId && (projects[activeProjectId] || projectsData[activeProjectId])) 
-    ? (projects[activeProjectId] || projectsData[activeProjectId]) 
-    : (Object.values(projects)[0] || Object.values(projectsData)[0]);
+  const currentProject = (activeProjectId && (projects[activeProjectId]))
+    ? (projects[activeProjectId])
+    : (Object.values(projects)[0]);
   const firstAvailableRoomId = currentProject?.rooms ? Object.keys(currentProject.rooms)[0] : null;
   const currentRoom = currentProject?.rooms 
     ? (currentRoomId && currentProject.rooms[currentRoomId] ? currentProject.rooms[currentRoomId] : (firstAvailableRoomId ? currentProject.rooms[firstAvailableRoomId] : undefined)) 
@@ -449,7 +297,7 @@ function MainPortal() {
     );
   }
 
-  const currentDisplayName = portalData?.name || currentProject?.name || (activeProjectId && (projects[activeProjectId]?.name || projectsData[activeProjectId]?.name)) || 'RESIDENCIA JEJÉN';
+  const currentDisplayName = portalData?.name || currentProject?.name || (activeProjectId && (projects[activeProjectId]?.name)) || 'RESIDENCIA JEJÉN';
 
   // 5. Plataforma Comercial VIP para Invitados (Entrada Abierta de Alto Impacto por Defecto)
   if (userRole === 'guest' && guestView !== 'showcase' && guestView !== 'project') {
@@ -469,6 +317,7 @@ function MainPortal() {
     return (
       <>
         <GuestPortfolioShowcase
+          availableProjectIds={Object.keys(projects)}
           onSelectProject={(projectId) => {
             openProjectInNewTab(projectId);
           }}
@@ -662,6 +511,7 @@ export default function App() {
       <PWAInstallBanner />
       <Routes>
         <Route path="/" element={<MainPortal />} />
+        <Route path="/reset-password" element={<ResetPasswordScreen />} />
         <Route path="/admin/proyectos" element={<MainPortal />} />
         <Route path="/admin/usuarios" element={<MainPortal />} />
         <Route path="/tour/:id" element={<ClientViewer />} />

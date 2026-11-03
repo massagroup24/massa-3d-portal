@@ -5,6 +5,7 @@ import { saveProjectToSupabase, uploadImageToSupabase, deleteImageFromSupabase }
 import { HotspotEditor3D } from './HotspotEditor3D';
 import { compressImage } from '../utils/imageCompressor';
 import { Modal } from './Modal';
+import { useStorageRefresh } from '../hooks/useStorageRefresh';
 
 interface ConfiguratorProps {
   initialProject: Project;
@@ -15,6 +16,7 @@ interface ConfiguratorProps {
 
 export function ProjectConfigurator({ initialProject, onClose, onSave, isNewProject = false }: ConfiguratorProps) {
   const [project, setProject] = useState<Project>(initialProject);
+  useStorageRefresh(project, setProject);
   const [hasSaved, setHasSaved] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
     initialProject.initialRoomId || Object.keys(initialProject.rooms || {})[0] || null
@@ -139,6 +141,7 @@ export function ProjectConfigurator({ initialProject, onClose, onSave, isNewProj
         ]);
       } catch (cloudErr) {
         console.warn("Sincronización con Supabase en modo local/desconectado:", cloudErr);
+        throw cloudErr;
       }
 
       setSavingState('saved');
@@ -563,6 +566,15 @@ export function ProjectConfigurator({ initialProject, onClose, onSave, isNewProj
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <label className="flex items-center gap-2 text-xs text-white/80">
+            <input
+              type="checkbox"
+              checked={project.published === true}
+              disabled={savingState === 'saving'}
+              onChange={event => setProject(previous => ({ ...previous, published: event.target.checked }))}
+            />
+            Publicar al guardar
+          </label>
           <button
             onClick={handleSaveToSupabase}
             disabled={savingState === 'saving'}

@@ -28,6 +28,7 @@ import { saveProjectToSupabase, uploadImageToSupabase } from '../supabase';
 import { TourContainer } from './TourContainer';
 import { compressImage } from '../utils/imageCompressor';
 import { EmptyState } from './ui/EmptyState';
+import { useStorageRefresh } from '../hooks/useStorageRefresh';
 
 interface AdminProjectEditorProps {
   initialProject: Project;
@@ -43,6 +44,7 @@ export function AdminProjectEditor({
   isNewProject = false
 }: AdminProjectEditorProps) {
   const [project, setProject] = useState<Project>(initialProject);
+  useStorageRefresh(project, setProject);
   const [activeTab, setActiveTab] = useState<'commercial' | 'renders' | 'tour3d' | 'preview'>('commercial');
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
