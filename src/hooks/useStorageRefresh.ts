@@ -8,12 +8,15 @@ export function useStorageRefresh<T>(value: T, setValue: Dispatch<SetStateAction
   current.current = value;
   useEffect(() => {
     let disposed = false;
-    const timer = window.setInterval(() => {
+    const refresh = () => {
       const snapshot = current.current;
       void resolveStorageReferences(supabase, snapshot, supabaseUrl).then(refreshed => {
         if (!disposed) setValue(previous => previous === snapshot ? refreshed : previous);
       }).catch(() => undefined);
-    }, 240000);
-    return () => { disposed = true; window.clearInterval(timer); };
+    };
+    const resume = () => { if (document.visibilityState === 'visible') refresh(); };
+    const timer = window.setInterval(refresh, 240000);
+    document.addEventListener('visibilitychange', resume);
+    return () => { disposed = true; window.clearInterval(timer); document.removeEventListener('visibilitychange', resume); };
   }, [setValue]);
 }

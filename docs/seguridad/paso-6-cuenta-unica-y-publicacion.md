@@ -55,11 +55,17 @@ selección del catálogo; no convierte los assets del repositorio en archivos
 privados. El traslado de material que deba ser privado requiere identificarlo
 antes de la siguiente publicación.
 
-## Aplicación al servidor: pendiente
+## Aplicación al servidor: en curso
 
-No se ha ejecutado esta migración en producción ni se han cambiado las opciones
-de Auth del proyecto remoto. El entorno de trabajo no tiene conexión SQL
-administrativa configurada ni un conector de Supabase.
+El usuario ejecutó el procedimiento guiado en SQL Editor y compartió el
+resultado de publicación inicial: Hacienda F22 e Ibiza A14 públicos y Edinson
+Jejen y Marquimoda como borradores. Una captura posterior confirma el hook de
+cuenta única habilitado con esquema `public` y función
+`platform_access_token_hook`. El cierre de nuevos registros y de Auth anónimo
+no se ha confirmado todavía. La aplicación web y las reglas remotas aún
+necesitan una comprobación funcional posterior al cambio.
+El entorno de trabajo no tiene conexión SQL administrativa configurada ni un
+conector de Supabase; esta evidencia procede de las capturas del usuario.
 
 La aplicación nueva depende de la migración. Preparar una ventana de cambio
 para aplicar el SQL y servir el build nuevo juntos: los buckets privados dejan

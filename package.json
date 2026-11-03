@@ -13,7 +13,8 @@
     "backup:restore": "node scripts/restore.mjs",
     "seed:test": "node scripts/seed-test-env.mjs",
     "verify:test-env": "node scripts/verify-test-env.mjs",
-    "test:security": "vitest run tests/security --pool=forks --poolOptions.forks.singleFork"
+    "test:security": "vitest run tests/security --pool=forks --poolOptions.forks.singleFork",
+    "test:tour": "vitest run tests/tour --pool=forks --poolOptions.forks.singleFork"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

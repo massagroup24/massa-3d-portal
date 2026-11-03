@@ -13,6 +13,7 @@ interface OverlayUIProps {
   brandColor?: string;
   isGyroEnabled?: boolean;
   isGyroSupported?: boolean;
+  isGyroPending?: boolean;
   onToggleGyro?: () => void;
 }
 
@@ -27,14 +28,25 @@ export function OverlayUI({
   brandColor = '#9CD01A',
   isGyroEnabled = false,
   isGyroSupported = false,
+  isGyroPending = false,
   onToggleGyro
 }: OverlayUIProps) {
   const [showIndicator, setShowIndicator] = useState(true);
   const [showMobileInfo, setShowMobileInfo] = useState(false);
+  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
   // En móviles (< 768px) el plano inicia minimizado para inmersión panorámica total
   const [isMinimapOpen, setIsMinimapOpen] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768);
 
   const roomChipsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)');
+    const update = () => {
+      setIsCompact(media.matches);
+      if (media.matches) setIsMinimapOpen(false);
+    };
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
 
   // Niveles detectados en las habitaciones o en floorPlans (ordenados: Piso 1, Piso 2, Piso 3)
   const availableFloors = useMemo(() => {
@@ -84,22 +96,25 @@ export function OverlayUI({
     if (floorPlans && floorPlans[selectedFloor]) {
       return floorPlans[selectedFloor];
     }
-    if (selectedFloor === 'Piso 1' || selectedFloor === 'Nivel 1') {
-      return '/HACIENDA F22/360/PLANOS/P1-1.png';
-    }
-    if (selectedFloor === 'Piso 2' || selectedFloor === 'Nivel 2') {
-      return '/HACIENDA F22/360/PLANOS/P1-2.png';
-    }
-    if (selectedFloor === 'Piso 3' || selectedFloor === 'Nivel 3' || selectedFloor === 'Rooftop') {
-      return '/HACIENDA F22/360/PLANOS/P1-3.png';
-    }
     if (currentRoom?.floorLevel === selectedFloor && currentRoom?.floorPlanImage) {
       return currentRoom.floorPlanImage;
     }
     const matchingRoom = Object.values(rooms || {}).find(r => r.floorLevel === selectedFloor && r.floorPlanImage);
     if (matchingRoom?.floorPlanImage) return matchingRoom.floorPlanImage;
+    const isHacienda = brandColor === '#DFC47B' || minimapImage.includes('HACIENDA') || Object.keys(rooms).some(id => id.includes('f22'));
+    if (isHacienda) {
+      if (selectedFloor === 'Piso 1' || selectedFloor === 'Nivel 1') {
+        return '/HACIENDA F22/360/PLANOS/P1-1.png';
+      }
+      if (selectedFloor === 'Piso 2' || selectedFloor === 'Nivel 2') {
+        return '/HACIENDA F22/360/PLANOS/P1-2.png';
+      }
+      if (selectedFloor === 'Piso 3' || selectedFloor === 'Nivel 3' || selectedFloor === 'Rooftop') {
+        return '/HACIENDA F22/360/PLANOS/P1-3.png';
+      }
+    }
     return minimapImage;
-  }, [selectedFloor, currentRoom, rooms, minimapImage, floorPlans]);
+  }, [selectedFloor, currentRoom, rooms, minimapImage, floorPlans, brandColor]);
 
   // Filtrado de habitaciones visibles en el plano activo
   const visibleRooms = useMemo(() => {
@@ -140,7 +155,7 @@ export function OverlayUI({
         <button 
           type="button"
           onClick={handleBack}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/85 backdrop-blur-xl border border-white/20 text-white text-xs font-bold active:scale-95 transition-all shadow-xl shrink-0 cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 min-h-11 rounded-full bg-black/85 backdrop-blur-xl border border-white/20 text-white text-xs font-bold active:scale-95 transition-all shadow-xl shrink-0 cursor-pointer"
           title="Regresar"
         >
           <ChevronLeft className="w-4 h-4 shrink-0" style={{ color: brandColor }} />
@@ -151,7 +166,7 @@ export function OverlayUI({
         <button
           type="button"
           onClick={() => setShowMobileInfo(prev => !prev)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 backdrop-blur-xl border border-white/20 text-white text-xs font-medium max-w-[46vw] active:scale-95 transition-all shadow-xl cursor-pointer"
+          className="flex min-w-0 flex-1 items-center gap-1.5 px-3 py-1.5 min-h-11 rounded-full bg-black/80 backdrop-blur-xl border border-white/20 text-white text-xs font-medium max-w-[46vw] active:scale-95 transition-all shadow-xl cursor-pointer"
         >
           <span className="w-2 h-2 rounded-full shrink-0 animate-pulse" style={{ backgroundColor: brandColor }} />
           <span className="truncate">{currentRoom.name}</span>
@@ -164,7 +179,8 @@ export function OverlayUI({
             <button
               type="button"
               onClick={onToggleGyro}
-              className={`p-1.5 rounded-full border backdrop-blur-xl transition-all active:scale-90 shadow-xl cursor-pointer ${
+              disabled={isGyroPending}
+              className={`min-w-11 min-h-11 p-1.5 flex items-center justify-center rounded-full border backdrop-blur-xl transition-all active:scale-90 shadow-xl cursor-pointer disabled:opacity-50 ${
                 isGyroEnabled 
                   ? 'shadow-lg' 
                   : 'bg-black/80 border-white/20 text-white/70'
@@ -285,6 +301,7 @@ export function OverlayUI({
             <button
               type="button"
               onClick={onToggleGyro}
+              disabled={isGyroPending}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border backdrop-blur-xl transition-all shadow-xl cursor-pointer ${
                 isGyroEnabled 
                   ? '' 
@@ -345,11 +362,11 @@ export function OverlayUI({
         <>
           {/* Backdrop para cerrar al tocar afuera */}
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity pointer-events-auto"
             onClick={() => setIsMinimapOpen(false)}
           />
 
-          <div className="fixed inset-x-0 bottom-0 z-50 bg-[#0C0C12]/95 backdrop-blur-2xl border-t border-white/20 rounded-t-3xl p-4 pb-[calc(env(safe-area-inset-bottom,16px)+12px)] flex flex-col gap-3 shadow-[0_-20px_50px_rgba(0,0,0,0.9)] max-h-[82vh] pointer-events-auto md:hidden animate-slide-up">
+          <div className="fixed inset-x-0 bottom-0 z-50 bg-[#0C0C12]/95 backdrop-blur-2xl border-t border-white/20 rounded-t-3xl p-4 pb-[calc(env(safe-area-inset-bottom,16px)+12px)] flex flex-col gap-3 shadow-[0_-20px_50px_rgba(0,0,0,0.9)] max-h-[82dvh] overflow-y-auto overscroll-contain touch-pan-y pointer-events-auto md:hidden animate-slide-up">
             {/* Tirador del Bottom Sheet */}
             <div className="w-12 h-1 rounded-full bg-white/30 mx-auto -mt-1 cursor-pointer" onClick={() => setIsMinimapOpen(false)} />
 
@@ -449,9 +466,9 @@ export function OverlayUI({
       )}
 
       {/* PLANO DE ESQUINA EN DESKTOP (>= 768px) */}
-      <footer className="flex flex-col sm:flex-row justify-between items-end gap-3 pointer-events-auto">
+      <footer className="flex flex-col sm:flex-row justify-between items-end gap-3 pointer-events-none">
         {isMinimapOpen ? (
-          <div className="hidden md:flex bg-black/85 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl flex-col gap-3 transition-all">
+          <div className="hidden md:flex bg-black/85 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl flex-col gap-3 transition-all pointer-events-auto">
             <div className="flex items-center justify-between text-white/90 font-medium px-1">
               <div className="flex items-center gap-2">
                 <Map className="w-4 h-4" style={{ color: brandColor }} />
@@ -541,12 +558,12 @@ export function OverlayUI({
         ) : null}
 
         {/* BARRA INFERIOR FLOTANTE (BOTÓN PLANO + CARRUSEL HORIZONTAL DE AMBIENTES) */}
-        {(!isMinimapOpen || typeof window !== 'undefined' && window.innerWidth < 768) && (
+        {(!isMinimapOpen || isCompact) && (
           <div className="flex items-center gap-2 max-w-full w-full pointer-events-auto">
             <button 
               type="button"
               onClick={() => setIsMinimapOpen(true)}
-              className="bg-black/85 backdrop-blur-xl border border-white/20 text-white px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full shadow-2xl flex items-center justify-center gap-1.5 font-bold text-xs sm:text-sm transition-all hover:bg-black/95 active:scale-95 group shrink-0 cursor-pointer"
+              className="bg-black/85 backdrop-blur-xl border border-white/20 text-white px-3.5 py-2 min-h-11 sm:px-4 sm:py-2.5 rounded-full shadow-2xl flex items-center justify-center gap-1.5 font-bold text-xs sm:text-sm transition-all hover:bg-black/95 active:scale-95 group shrink-0 cursor-pointer"
             >
               <Map className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" style={{ color: brandColor }} />
               <span>Plano ({Object.keys(rooms).length})</span>
@@ -570,7 +587,7 @@ export function OverlayUI({
                     type="button"
                     data-room-id={r.id}
                     onClick={() => onNavigate(r.id)}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border shrink-0 active:scale-95 touch-manipulation cursor-pointer"
+                    className="px-3 py-1.5 min-h-11 rounded-full text-xs font-semibold whitespace-nowrap transition-all border shrink-0 active:scale-95 touch-manipulation cursor-pointer"
                     style={
                       isCurrent
                         ? { 

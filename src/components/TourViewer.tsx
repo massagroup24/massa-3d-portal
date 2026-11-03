@@ -1,9 +1,45 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, useProgress, DeviceOrientationControls } from '@react-three/drei';
-import { Suspense, useEffect, useRef } from 'react';
+import { Component, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import * as THREE from 'three';
 import { RoomSphere } from './RoomSphere';
 import { Room } from '../data/tourData';
+
+function ViewerUnavailable({ onRetry }: { onRetry: () => void }) {
+  return <div className="absolute inset-0 flex items-center justify-center p-5 pointer-events-none">
+    <div role="alert" className="max-w-sm rounded-2xl border border-white/20 bg-black/90 p-5 text-center text-white pointer-events-auto">
+      <h2 className="font-semibold">El visor necesita reiniciarse</h2>
+      <p className="mt-2 text-sm text-white/65">Vuelve a intentarlo para continuar el recorrido. También puedes regresar al proyecto.</p>
+      <button type="button" onClick={onRetry} className="mt-4 min-h-11 rounded-xl bg-white px-5 text-sm font-bold text-black touch-manipulation">Reintentar recorrido</button>
+    </div>
+  </div>;
+}
+
+class ViewerBoundary extends Component<{ children: ReactNode; onRetry: () => void }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? <ViewerUnavailable onRetry={this.props.onRetry} /> : this.props.children; }
+}
+
+function RendererLifecycle({ onLost, onRestored }: { onLost: () => void; onRestored: () => void }) {
+  const renderer = useThree(state => state.gl);
+  useEffect(() => {
+    const canvas = renderer.domElement;
+    const lost = (event: Event) => { event.preventDefault(); onLost(); };
+    const resume = () => {
+      if (document.visibilityState === 'visible' && renderer.getContext().isContextLost()) onLost();
+    };
+    canvas.addEventListener('webglcontextlost', lost);
+    canvas.addEventListener('webglcontextrestored', onRestored);
+    document.addEventListener('visibilitychange', resume);
+    return () => {
+      canvas.removeEventListener('webglcontextlost', lost);
+      canvas.removeEventListener('webglcontextrestored', onRestored);
+      document.removeEventListener('visibilitychange', resume);
+    };
+  }, [renderer, onLost, onRestored]);
+  return null;
+}
 
 interface CameraControllerProps {
   isTransitioning?: boolean;
@@ -105,20 +141,28 @@ export function TourViewer({
   brandColor = '#9CD01A',
   brandName
 }: TourViewerProps) {
+  const [touchDevice] = useState(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches);
+  const [rendererKey, setRendererKey] = useState(0);
+  const [contextLost, setContextLost] = useState(false);
+  const restart = useCallback(() => { setContextLost(false); setRendererKey(value => value + 1); }, []);
+  const markLost = useCallback(() => setContextLost(true), []);
   if (!room) return null;
 
   return (
+    <ViewerBoundary key={rendererKey} onRetry={restart}>
     <Canvas 
       camera={{ position: [0, 0, 0.1], fov: 75 }}
-      dpr={[1, 2]} // Optimización crítica: límite a 2x en pantallas retina móviles para fluidez total de 60fps
+      dpr={[1, touchDevice ? 1.5 : 2]}
       gl={{ 
-        powerPreference: 'high-performance', 
-        antialias: true, 
+        powerPreference: touchDevice ? 'default' : 'high-performance',
+        antialias: !touchDevice,
         alpha: false 
       }}
+      fallback={<ViewerUnavailable onRetry={restart} />}
       style={{ touchAction: 'none', width: '100%', height: '100%' }}
     >
       <color attach="background" args={['#08080A']} />
+      <RendererLifecycle onLost={markLost} onRestored={restart} />
       <CameraController isTransitioning={isTransitioning} targetPosition={targetPosition} room={room} />
       <ambientLight intensity={1} />
       
@@ -161,12 +205,13 @@ export function TourViewer({
         2. Si no, OrbitControls gestiona el arrastre táctil natural sin bloquear el navegador.
       */}
       {isGyroEnabled ? (
-        <DeviceOrientationControls />
+        <DeviceOrientationControls makeDefault />
       ) : (
         <OrbitControls 
           enabled={!isTransitioning}
           enableZoom={false} 
           enablePan={false} 
+          touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
           enableDamping={true}
           dampingFactor={0.08}
           rotateSpeed={-0.65}
@@ -175,5 +220,7 @@ export function TourViewer({
         />
       )}
     </Canvas>
+    {contextLost && <ViewerUnavailable onRetry={restart} />}
+    </ViewerBoundary>
   );
 }

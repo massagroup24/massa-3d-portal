@@ -4,7 +4,6 @@ import { getProjectFromSupabase, logProjectVisit } from '../supabase';
 import { Project } from '../data/tourData';
 import { TourContainer } from './TourContainer';
 import { WelcomeScreen } from './WelcomeScreen';
-import { useTexture } from '@react-three/drei';
 import { ArrowLeft } from 'lucide-react';
 import { MassaLoadingScreen } from './common/MassaLoadingScreen';
 
@@ -44,38 +43,12 @@ export function ClientViewer() {
     }
     setProject(null);
     setStarted(false);
+    const resume = () => { if (document.visibilityState === 'visible') void loadProject(true); };
+    document.addEventListener('visibilitychange', resume);
     void loadProject();
     const timer = window.setInterval(() => { void loadProject(true); }, 240000);
-    return () => { cancelled = true; window.clearInterval(timer); };
+    return () => { cancelled = true; window.clearInterval(timer); document.removeEventListener('visibilitychange', resume); };
   }, [id]);
-
-  // Pre-cargar imágenes para mejorar la velocidad percibida
-  useEffect(() => {
-    if (project && currentRoomId) {
-      const currentRoom = project.rooms[currentRoomId];
-      
-      // 1. Pre-cargar la imagen de la habitación actual (muy útil mientras se muestra el WelcomeScreen)
-      if (currentRoom?.imageUrl) {
-        useTexture.preload(currentRoom.imageUrl);
-      }
-      
-      // 2. Pre-cargar las habitaciones adyacentes (a las que se puede acceder por hotspots)
-      if (currentRoom?.hotspots) {
-        currentRoom.hotspots.forEach(hotspot => {
-          const target = project.rooms[hotspot.targetRoom];
-          if (target?.imageUrl) {
-            useTexture.preload(target.imageUrl);
-          }
-        });
-      }
-
-      // 3. Pre-cargar el minimapa
-      if (project.minimapImage) {
-        const img = new Image();
-        img.src = project.minimapImage;
-      }
-    }
-  }, [project, currentRoomId]);
 
   if (loading) {
     return <MassaLoadingScreen message="MASSA 360°" subMessage="CARGANDO RECORRIDO INMERSIVO" />;

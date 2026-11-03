@@ -97,9 +97,11 @@ function MainPortal() {
         if (!cancelled) { setProjects({}); setSyncError('No se pudo consultar el catálogo. Intenta recargar la página.'); }
       }
     };
+    const resume = () => { if (document.visibilityState === 'visible') void load(); };
+    document.addEventListener('visibilitychange', resume);
     void load();
     const interval = window.setInterval(() => { void load(); }, 240000);
-    return () => { cancelled = true; window.clearInterval(interval); };
+    return () => { cancelled = true; window.clearInterval(interval); document.removeEventListener('visibilitychange', resume); };
   }, [userRole]);
 
   // Cargar datos de proyecto extendidos (Renders, Planos, Avances) para el portal

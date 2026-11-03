@@ -5,6 +5,7 @@ import { OverlayUI } from './OverlayUI';
 import { ArrowLeft, Rotate3d } from 'lucide-react';
 import { EmptyState } from './ui/EmptyState';
 import { ArchitecturalCadBackground } from './ui/ArchitecturalCadBackground';
+import { useImmersiveViewport } from '../hooks/useImmersiveViewport';
 
 interface TourContainerProps {
   currentRoom?: Room;
@@ -31,93 +32,48 @@ export function TourContainer({
   brandLogo,
   brandColor
 }: TourContainerProps) {
+  useImmersiveViewport();
   const [isIdle, setIsIdle] = useState(false);
   const [transitionPhase, setTransitionPhase] = useState<'idle' | 'zooming' | 'fading-in'>('idle');
   const [targetPos, setTargetPos] = useState<[number, number, number] | null>(null);
   const [isGyroEnabled, setIsGyroEnabled] = useState(false);
   const [isGyroSupported, setIsGyroSupported] = useState(false);
 
+  const [isGyroPending, setIsGyroPending] = useState(false);
+  const [gyroMessage, setGyroMessage] = useState('');
+  const gyroRequestPending = useRef(false);
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
-      setIsGyroSupported(true);
-    }
+    setIsGyroSupported(window.isSecureContext && 'DeviceOrientationEvent' in window && navigator.maxTouchPoints > 0);
   }, []);
 
   const handleToggleGyro = async () => {
-    if (typeof (window as any).DeviceOrientationEvent?.requestPermission === 'function') {
-      try {
-        const response = await (window as any).DeviceOrientationEvent.requestPermission();
-        if (response === 'granted') {
-          setIsGyroEnabled(prev => !prev);
-        } else {
-          alert('Permiso de sensores/giroscopio denegado en este dispositivo.');
-        }
-      } catch (err) {
-        console.warn('Error al solicitar permiso de giroscopio:', err);
-      }
-    } else {
-      setIsGyroEnabled(prev => !prev);
+    if (isGyroEnabled) { setIsGyroEnabled(false); setGyroMessage(''); return; }
+    if (gyroRequestPending.current) return;
+    const orientation = window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
+      requestPermission?: () => Promise<string>;
+    };
+    if (!window.isSecureContext || !orientation) {
+      setGyroMessage('Los sensores no están disponibles. Puedes explorar arrastrando con el dedo.');
+      return;
+    }
+    gyroRequestPending.current = true;
+    setIsGyroPending(true);
+    setGyroMessage('');
+    try {
+      const permission = orientation.requestPermission ? await orientation.requestPermission() : 'granted';
+      setIsGyroEnabled(permission === 'granted');
+      if (permission !== 'granted') setGyroMessage('El permiso de movimiento no está habilitado. Puedes seguir explorando con el dedo.');
+    } catch {
+      setIsGyroEnabled(false);
+      setGyroMessage('No se pudieron activar los sensores. Puedes seguir explorando con el dedo.');
+    } finally {
+      gyroRequestPending.current = false;
+      setIsGyroPending(false);
     }
   };
-  
+
   const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Soporte directo para Recorrido 3D Externo / Gemelo Digital (Matterport / Spline / Kuula)
-  if (tourEmbedUrl && tourEmbedUrl.trim()) {
-    return (
-      <div className="relative w-full h-[100dvh] h-screen overflow-hidden bg-black flex flex-col">
-        {/* Floating Topbar */}
-        <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-40 flex items-center justify-between pointer-events-none pt-[calc(env(safe-area-inset-top,8px)+4px)]">
-          <div className="pointer-events-auto flex items-center gap-3 bg-[#0D0D0E]/85 backdrop-blur-2xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
-            {onBackToHome && (
-              <button
-                type="button"
-                onClick={onBackToHome}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-[#9CD01A] text-white hover:text-black text-xs font-bold transition cursor-pointer"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Volver</span>
-              </button>
-            )}
-            <div className="flex items-center gap-2 pl-1 border-l border-white/10">
-              <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
-              <span className="text-xs font-black tracking-wider uppercase">
-                {projectName?.includes('A14') ? (
-                  <>
-                    <span className="text-white">IBIZA</span>{' '}
-                    <span className="text-[#9CD01A]">A14</span>
-                  </>
-                ) : projectName?.includes('F22') ? (
-                  <>
-                    <span className="text-white">HACIENDA</span>{' '}
-                    <span className="text-[#DFC47B]">F22</span>
-                  </>
-                ) : (
-                  <span className="text-white">{projectName}</span>
-                )}
-              </span>
-            </div>
-          </div>
-
-          <div className="pointer-events-auto flex items-center gap-2">
-            <span className="px-3.5 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-[#9CD01A]/30 text-[#9CD01A] text-[10px] font-mono font-bold tracking-widest uppercase flex items-center gap-1.5">
-              <Rotate3d className="w-3.5 h-3.5" />
-              <span>GEMELO DIGITAL 3D</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Embedded Iframe */}
-        <iframe
-          src={tourEmbedUrl}
-          className="w-full h-full border-0"
-          allow="fullscreen; xr-spatial-tracking; vr; gyroscope; accelerometer"
-          title={projectName}
-        />
-      </div>
-    );
-  }
 
   // Limpieza general de temporizadores al desmontar el componente
   useEffect(() => {
@@ -126,6 +82,12 @@ export function TourContainer({
       if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') onBackToHome?.(); };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [onBackToHome]);
 
   // Gestión de rotación automática suave por inactividad (5 segundos)
   const resetIdleTimer = () => {
@@ -183,13 +145,70 @@ export function TourContainer({
     }, 450);
   };
 
+  // Soporte directo para Recorrido 3D Externo / Gemelo Digital (Matterport / Spline / Kuula)
+  if (tourEmbedUrl && tourEmbedUrl.trim()) {
+    return (
+      <div className="tour-viewport relative overflow-hidden bg-black flex flex-col">
+        {/* Floating Topbar */}
+        <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-40 flex items-center justify-between pointer-events-none pt-[calc(env(safe-area-inset-top,8px)+4px)]">
+          <div className="pointer-events-auto flex items-center gap-3 bg-[#0D0D0E]/85 backdrop-blur-2xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
+            {onBackToHome && (
+              <button
+                type="button"
+                onClick={onBackToHome}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-[#9CD01A] text-white hover:text-black text-xs font-bold transition cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Volver</span>
+              </button>
+            )}
+            <div className="flex items-center gap-2 pl-1 border-l border-white/10">
+              <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
+              <span className="text-xs font-black tracking-wider uppercase">
+                {projectName?.includes('A14') ? (
+                  <>
+                    <span className="text-white">IBIZA</span>{' '}
+                    <span className="text-[#9CD01A]">A14</span>
+                  </>
+                ) : projectName?.includes('F22') ? (
+                  <>
+                    <span className="text-white">HACIENDA</span>{' '}
+                    <span className="text-[#DFC47B]">F22</span>
+                  </>
+                ) : (
+                  <span className="text-white">{projectName}</span>
+                )}
+              </span>
+            </div>
+          </div>
+
+          <div className="pointer-events-auto flex items-center gap-2">
+            <span className="px-3.5 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-[#9CD01A]/30 text-[#9CD01A] text-[10px] font-mono font-bold tracking-widest uppercase flex items-center gap-1.5">
+              <Rotate3d className="w-3.5 h-3.5" />
+              <span>GEMELO DIGITAL 3D</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Embedded Iframe */}
+        <iframe
+          src={tourEmbedUrl}
+          className="w-full h-full border-0"
+          allowFullScreen
+          allow="fullscreen; xr-spatial-tracking; vr; gyroscope; accelerometer"
+          title={projectName}
+        />
+      </div>
+    );
+  }
+
   // Habitación segura (si no hay ninguna pasada o seleccionada, usar la primera disponible)
   const safeRoom = currentRoom || Object.values(rooms)[0];
 
   // Si no hay ninguna habitación o no tiene imagen 360 configurada, mostrar Empty State de ultralujo
   if (!safeRoom || !safeRoom.imageUrl) {
     return (
-      <div className="relative w-full h-screen overflow-hidden bg-[#08080A] flex flex-col items-center justify-center p-4 sm:p-6 text-white">
+      <div className="tour-viewport relative overflow-hidden bg-[#08080A] flex flex-col items-center justify-center p-4 sm:p-6 text-white">
         <ArchitecturalCadBackground />
         
         {/* Topbar flotante para volver */}
@@ -228,7 +247,7 @@ export function TourContainer({
   }
 
   return (
-    <div className="relative w-full h-[100dvh] h-screen overflow-hidden bg-black touch-none overscroll-none select-none">
+    <div className="tour-viewport relative overflow-hidden bg-black overscroll-none select-none">
       {/* 3D Canvas Layer */}
       <div className="absolute inset-0 z-0">
         <TourViewer 
@@ -236,7 +255,7 @@ export function TourContainer({
           onNavigate={handleNavigate}
           isTransitioning={transitionPhase === 'zooming'}
           targetPosition={targetPos}
-          isIdle={isIdle && transitionPhase === 'idle'}
+          isIdle={isIdle && transitionPhase === 'idle' && !isGyroEnabled}
           isGyroEnabled={isGyroEnabled}
           brandColor={brandColor}
           brandName={projectName?.includes('F22') ? 'AMHO CONSTRUCCIONES' : 'MASSA HOME'}
@@ -276,6 +295,11 @@ export function TourContainer({
         </div>
       </div>
 
+      {gyroMessage && <div role="status" className="absolute top-20 left-3 right-3 z-40 mx-auto max-w-md rounded-2xl border border-white/20 bg-black/90 p-3 text-xs text-white flex items-center gap-3">
+        <p className="flex-1">{gyroMessage}</p>
+        <button type="button" onClick={() => setGyroMessage('')} className="min-h-11 px-3 underline">Cerrar</button>
+      </div>}
+
       {/* 2D UI Overlay Layer */}
       <div className="absolute inset-0 z-20 pointer-events-none">
         <OverlayUI 
@@ -289,6 +313,7 @@ export function TourContainer({
           brandColor={brandColor}
           isGyroEnabled={isGyroEnabled}
           isGyroSupported={isGyroSupported}
+          isGyroPending={isGyroPending}
           onToggleGyro={handleToggleGyro}
         />
       </div>

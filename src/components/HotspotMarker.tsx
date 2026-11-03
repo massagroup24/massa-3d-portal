@@ -28,7 +28,7 @@ export function HotspotMarker({ hotspot, onClick, brandColor = '#9CD01A' }: Hots
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isDraggingRef.current) {
+    if (e.detail === 0 || !isDraggingRef.current) {
       onClick();
     }
     startPosRef.current = null;
@@ -41,6 +41,7 @@ export function HotspotMarker({ hotspot, onClick, brandColor = '#9CD01A' }: Hots
         type="button"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
+        onPointerCancel={() => { startPosRef.current = null; isDraggingRef.current = true; }}
         onClick={handleClick}
         className="group relative flex flex-col items-center justify-center cursor-pointer pointer-events-auto touch-manipulation select-none p-3 -m-3 outline-none focus:outline-none"
         title={hotspot.label || 'Moverse a este ambiente'}

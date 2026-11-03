@@ -20,15 +20,19 @@ cada etapa se registrarán los cambios, las verificaciones y los pendientes.
 ## 1. Acceso y autorización
 
 Estado: implementación local validada (90 pruebas aprobadas, TypeScript y build
-correctos). Aplicación al servidor pendiente: el usuario eligió ejecución guiada
+correctos). Aplicación al servidor en curso: el usuario eligió ejecución guiada
 desde SQL Editor. La captura de la consulta inicial confirma las columnas de
 avances requeridas y el perfil `admin`. El usuario eligió publicar Hacienda F22 e
 Ibiza A14 y conservar Edinson Jejen y Marquimoda como borradores; la configuración
 inicial está preparada en `supabase/publicacion_inicial_paso_1.sql`. La segunda
 captura confirma `confirmada = true` y `habilitada = true`. El usuario confirmó
-que la web está publicada en Vercel. Vercel CLI está instalado pero no tiene
-sesión ni proyecto vinculado; se preparó el procedimiento de despliegue
-coordinado en `docs/seguridad/despliegue-paso-1-vercel.md`.
+que la web está publicada en Vercel y prefirió actualizarla mediante Git.
+El commit local de implementación es `c0ad004`. Una nueva captura del resultado
+de `publicacion_inicial_paso_1.sql` confirma Hacienda F22 e Ibiza A14 publicados
+y los otros dos proyectos como borradores en el servidor. La captura posterior
+confirma el hook de Auth habilitado con `public.platform_access_token_hook`.
+Quedan pendientes confirmar el cierre de registros nuevos y de Auth anónimo,
+y comprobar funcionalmente una sesión nueva y el catálogo público.
 
 Decisiones confirmadas: única cuenta `juandavidfigueroa4@gmail.com`, con acceso
 real confirmado por el usuario; visitantes limitados a contenido publicado.
@@ -58,6 +62,12 @@ Cierre: comprobación de tipos y pruebas pertinentes aprobadas; documentar por
 separado la preparación local y la aplicación/verificación en el servidor.
 
 ## 2. Guardado confiable
+
+Antes de esta etapa, el usuario solicitó retirar el reel incorrecto de F22 y
+reforzar el recorrido 360° en su PWA de iPhone 16e y en otros dispositivos.
+La implementación y las pruebas específicas se documentan en
+[video y recorrido móvil](video-f22-y-recorrido-movil.md). Estos cambios no
+sustituyen las etapas de guardado, organización, datos y rendimiento pendientes.
 
 Estado: pendiente.
 

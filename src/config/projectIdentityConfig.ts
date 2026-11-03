@@ -85,7 +85,7 @@ export interface ProjectIdentity {
   statusLabel: string;      // Ej: 'Diseño Aprobado • Listo para Construcción'
   brandName: string;        // Ej: 'AMHO CONSTRUCCIONES' o 'MASSA HOME'
   tagline: string;          // Breve memoria conceptual
-  heroVideoUrl: string;     // Video horizontal principal de la primera pantalla
+  heroVideoUrl: string;     // Video horizontal principal; vacío muestra el espacio reservado
   heroVideoPoster?: string; // Poster o fallback del video
   theme: ProjectTheme;
   clientBrand?: ClientBrandConfig;
@@ -877,7 +877,8 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
     statusLabel: 'Diseño Aprobado • Listo para Construcción',
     brandName: 'AMHO CONSTRUCCIONES',
     tagline: 'Escultura habitable concebida por AMHO Construcciones en diálogo entre volúmenes en voladizo, travertino natural, cuarcita exótica y un oasis exterior con piscina desbordante y pabellón gourmet.',
-    heroVideoUrl: '/HACIENDA F22/VIDEO_HACIENDA_F22.mp4',
+    // Cuando esté listo el video oficial, colocar aquí su ruta o URL para activar el reproductor.
+    heroVideoUrl: '',
     heroVideoPoster: '/HACIENDA F22/FACHADA.png',
     theme: {
       primaryColor: '#DFC47B',        // Oro champaña metálico oficial extraído del isotipo AMHO Construcciones

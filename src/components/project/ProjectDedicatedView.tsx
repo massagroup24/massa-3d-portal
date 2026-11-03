@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Volume2, 
@@ -18,7 +19,8 @@ import {
   Sparkles,
   RotateCw,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  Video
 } from 'lucide-react';
 import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, ProjectRender } from '../../config/projectIdentityConfig';
 import { TourContainer } from '../TourContainer';
@@ -371,6 +373,8 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
   const [isMuted, setIsMuted] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
+  const heroVideoUrl = identity.heroVideoUrl.trim();
+  const hasHeroVideo = heroVideoUrl.length > 0;
 
   // Determinar si es Hacienda F22 o un proyecto con su propia configuración (ej. Ibiza A14)
   const isHaciendaF22 = identity.id === 'project_hacienda_f22';
@@ -648,8 +652,9 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
 
   useEffect(() => {
     if (rawProjectData?.rooms) {
-      const firstId = Object.keys(rawProjectData.rooms)[0] || '';
-      if (!activeTourRoomId) setActiveTourRoomId(firstId);
+      const rooms = rawProjectData.rooms;
+      const firstId = rooms[rawProjectData.initialRoomId] ? rawProjectData.initialRoomId : Object.keys(rooms)[0] || '';
+      if (!activeTourRoomId || !rooms[activeTourRoomId]) setActiveTourRoomId(firstId);
     }
   }, [rawProjectData, activeTourRoomId]);
 
@@ -1093,9 +1098,9 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                 boxShadow: `0 25px 80px rgba(0,0,0,0.85), 0 0 55px ${primaryColor}35`
               }}
             >
-              {/* Video Horizontal 16:9 Dedicado del Proyecto */}
-              <video
-                key={identity.heroVideoUrl}
+              {/* La ausencia de un video oficial conserva el espacio sin cargar otro reel. */}
+              {hasHeroVideo ? <video
+                key={heroVideoUrl}
                 ref={videoRef}
                 poster={identity.heroVideoPoster ? encodeURI(identity.heroVideoPoster) : undefined}
                 autoPlay
@@ -1106,8 +1111,34 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                 onTimeUpdate={handleTimeUpdate}
                 className="w-full h-full object-cover object-center filter brightness-[0.97] contrast-[1.04] transition-transform duration-700 group-hover:scale-[1.01]"
               >
-                <source src={encodeURI(identity.heroVideoUrl)} type="video/mp4" />
-              </video>
+                <source src={encodeURI(heroVideoUrl)} type="video/mp4" />
+              </video> : (
+                <div
+                  className="absolute inset-0 flex items-center justify-center p-5 sm:p-10"
+                  style={{ background: `radial-gradient(ellipse at center, ${primaryColor}15, transparent 70%), #08080C` }}
+                >
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-4 sm:inset-6 rounded-xl sm:rounded-2xl border border-dashed pointer-events-none"
+                    style={{ borderColor: `${primaryColor}30` }}
+                  />
+                  <div className="relative z-10 flex flex-col items-center text-center max-w-sm">
+                    <div
+                      className="w-10 h-10 sm:w-16 sm:h-16 mb-3 sm:mb-5 rounded-xl sm:rounded-2xl border flex items-center justify-center"
+                      style={{ borderColor: `${primaryColor}45`, backgroundColor: `${primaryColor}0D`, color: primaryHover }}
+                    >
+                      <Video aria-hidden="true" className="w-5 h-5 sm:w-7 sm:h-7" />
+                    </div>
+                    <span className="text-[9px] sm:text-[11px] font-mono uppercase tracking-[0.2em] mb-1 sm:mb-2" style={{ color: primaryColor }}>
+                      {identity.name}
+                    </span>
+                    <h2 className="text-lg sm:text-3xl font-semibold text-white mb-1.5 sm:mb-3">Video del proyecto</h2>
+                    <p className="text-[11px] sm:text-sm text-white/55 leading-relaxed">
+                      Próximamente podrás ver aquí el video oficial de este proyecto.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Viñeta cinematográfica */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/35 pointer-events-none" />
@@ -1121,9 +1152,11 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                     color: primaryHover
                   }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ backgroundColor: primaryColor }} />
-                  <span className="sm:hidden">4K UHD • REEL {identity.code}</span>
-                  <span className="hidden sm:inline">4K UHD • REEL ARQUITECTÓNICO</span>
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${hasHeroVideo ? 'animate-pulse' : ''}`} style={{ backgroundColor: primaryColor }} />
+                  {hasHeroVideo ? <>
+                    <span className="sm:hidden">4K UHD • REEL {identity.code}</span>
+                    <span className="hidden sm:inline">4K UHD • REEL ARQUITECTÓNICO</span>
+                  </> : <span>VIDEO • PRÓXIMAMENTE</span>}
                 </span>
               </div>
 
@@ -1144,6 +1177,7 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
               )}
 
               {/* Controles del Reproductor */}
+              {hasHeroVideo && <>
               <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-4 sm:left-4 sm:right-4 z-20 flex items-center justify-between gap-2 sm:gap-3">
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <button
@@ -1188,6 +1222,7 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
                   }}
                 />
               </div>
+              </>}
 
             </div>
 
@@ -2228,8 +2263,8 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
       {/* =========================================================================
           7. RECORRIDO 360° INTEGRADO (CONECTADO CON EL ESTUDIO 360°)
           ========================================================================= */}
-      {is360Active && rawProjectData && (
-        <div className="fixed inset-0 z-50 bg-black h-[100dvh] w-full overflow-hidden touch-none overscroll-none">
+      {is360Active && rawProjectData && createPortal(
+        <div role="dialog" aria-modal="true" aria-label="Recorrido 360° inmersivo" className="tour-viewport fixed inset-0 z-[100] bg-black overflow-hidden overscroll-none">
           <TourContainer
             currentRoom={
               rawProjectData.rooms
@@ -2239,6 +2274,7 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
             rooms={rawProjectData.rooms || {}}
             minimapImage={rawProjectData.minimapImage}
             floorPlans={rawProjectData.floorPlans}
+            tourEmbedUrl={rawProjectData.tourType === 'matterport_iframe' ? rawProjectData.tourEmbedUrl : user360EmbedUrl || undefined}
             onNavigate={(targetId) => {
               setActiveTourRoomId(targetId);
               setActive360RoomId(targetId);
@@ -2248,7 +2284,8 @@ function ProjectDedicatedContent({ remoteProject }: { remoteProject: Project }) 
             brandLogo={brand?.logoHorizontalWhite || brand?.logoIcon || (isHaciendaF22 ? '/HACIENDA F22/LOGO AMHO.png' : undefined)}
             brandColor={isHaciendaF22 ? '#DFC47B' : primaryColor}
           />
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
@@ -2270,9 +2307,11 @@ export function ProjectDedicatedView() {
       } catch { if (!cancelled) setProject(null); }
       finally { if (!cancelled) setLoading(false); }
     };
+    const resume = () => { if (document.visibilityState === 'visible') void load(); };
+    document.addEventListener('visibilitychange', resume);
     void load();
     const timer = window.setInterval(() => { void load(); }, 240000);
-    return () => { cancelled = true; window.clearInterval(timer); };
+    return () => { cancelled = true; window.clearInterval(timer); document.removeEventListener('visibilitychange', resume); };
   }, [id]);
   if (loading) return <div role="status" className="min-h-screen bg-black text-white grid place-items-center">Consultando proyecto…</div>;
   if (!project) return <div className="min-h-screen bg-black text-white grid place-items-center"><div><h1>Proyecto no disponible</h1><p>El proyecto no está publicado o no se pudo consultar.</p><a href="/">Volver al inicio</a></div></div>;
