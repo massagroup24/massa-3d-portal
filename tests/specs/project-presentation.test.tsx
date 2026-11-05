@@ -43,6 +43,11 @@ describe('Presentación independiente de cada proyecto', () => {
 
   it('conserva el reel y la identidad de Ibiza sin usar el branding ni el tour de F22', () => {
     const html = renderToStaticMarkup(<ProjectPresentationHero project={a14} identity={getProjectIdentity(a14.id)} renderCount={9} onOpenTour={() => {}} />);
+    expect(html).toContain('project-hero-video-stage');
+    expect(html).toContain('project-f22-title');
+    expect(html).toContain('aria-label="IBIZA A14"');
+    expect(html).toContain('>IBIZA</span>');
+    expect(html).toContain('><span style="color:#9CD01A">A14</span>');
     expect(html).toContain('<video');
     expect(html).toContain('src="/A14.mp4"');
     expect(html.match(/<video[^>]*>/)?.[0]).toContain('loop=""');

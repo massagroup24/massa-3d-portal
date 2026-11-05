@@ -39,13 +39,25 @@ export function ProjectFichaTecnica({ project, technicalSpecs, accentColor = '#D
   ];
   const areaBuilt = technicalSpecs ? formatArea(technicalSpecs.areas.totalConstruction) : formatAreaMetric(project?.area_construida);
   const lotArea = technicalSpecs ? formatArea(technicalSpecs.areas.lot) : formatAreaMetric(project?.area_lote);
-  const highlights = [
+  const primaryHighlights = [
     ['Construcción total', areaBuilt],
     ['Superficie del lote', lotArea],
     ...(project?.habitaciones && project?.banos ? [['Configuración', `${project.habitaciones} hab. · ${project.banos} baños`]] : []),
     ...(project?.numero_pisos ? [['Distribución vertical', `${project.numero_pisos} ${project.numero_pisos === 1 ? 'nivel' : 'niveles'}`]] : []),
     ...(project?.numero_unidades ? [['Número de unidades', String(project.numero_unidades)]] : []),
   ].filter((row): row is string[] => Boolean(row[1]));
+  const fallbackHighlights = [
+    ...(project?.tipo ? [['Tipología', project.tipo.charAt(0).toUpperCase() + project.tipo.slice(1)]] : []),
+    ...(project?.barrio_o_sector ? [['Sector', project.barrio_o_sector]] : []),
+    ...(project?.estado ? [['Estado', project.estado]] : []),
+    ...(project?.año ? [['Año', String(project.año)]] : []),
+  ].filter((row): row is string[] => Boolean(row[1]));
+  const highlights = primaryHighlights.length >= 4
+    ? primaryHighlights
+    : [
+        ...primaryHighlights,
+        ...fallbackHighlights.filter(([label]) => !primaryHighlights.some(([pLabel]) => pLabel === label)),
+      ].slice(0, 4);
   const [areas, ...regulations] = technicalSpecs ? technicalRowGroups(technicalSpecs) : [];
 
   return <section aria-label="Ficha técnica del proyecto" className="text-left" style={{ fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'lining-nums tabular-nums' }}>

@@ -163,8 +163,28 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const lightboxTouchStartX = useRef<number | null>(null);
 
-  // Niveles (solo para Hacienda Club F22 con datos reales de planos)
+  // Niveles arquitectónicos del proyecto (Hacienda Club F22 o niveles configurados en identidad como Ibiza A14)
+  const projectLevels: LevelInfo[] = useMemo(() => {
+    if (isHaciendaF22) return RESIDENCE_LEVELS_F22;
+    if (identity.levels && identity.levels.length > 0) {
+      return identity.levels.map(lvl => ({
+        id: lvl.id,
+        name: lvl.label.split('•')[0].trim(),
+        area: lvl.area.split('•')[0].trim(),
+        role: lvl.summary || lvl.height,
+        spaces: lvl.spaces
+      }));
+    }
+    return [];
+  }, [isHaciendaF22, identity]);
+
   const [activeLevel, setActiveLevel] = useState<string>('nivel-1');
+
+  useEffect(() => {
+    if (projectLevels.length > 0 && !projectLevels.some(lvl => lvl.id === activeLevel)) {
+      setActiveLevel(projectLevels[0].id);
+    }
+  }, [projectLevels, activeLevel]);
 
   // Recorrido 360° en Modal
   const [is360Active, setIs360Active] = useState(false);
@@ -447,7 +467,7 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
               className={`min-h-[38px] px-3 py-1.5 rounded-lg transition-all font-bold active:scale-95 cursor-pointer ${isHaciendaF22 ? 'gold-metallic-text' : ''}`}
               style={{ color: primaryColor }}
             >La firma</button>}
-            {!isHaciendaF22 && <button
+            {!isHaciendaF22 && canonicalProject.id !== 'project_ibiza_a14' && <button
               type="button"
               onClick={() => navigate('/')}
               className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-white/50 hover:text-white border border-white/10 transition-colors cursor-pointer flex items-center gap-1"
@@ -812,50 +832,53 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
                   </div>
                 )}
               </div>
+            </div>
+        )}
 
-              {/* Distribución por Niveles de Planos Verificados */}
-              <div className="mt-8">
-                <span className="gold-metallic-text text-[10px] font-mono font-bold tracking-[0.2em] uppercase block mb-3" style={{ color: primaryColor }}>
-                  Distribución por Niveles • Hacienda Club F22
-                </span>
-                <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-                  {RESIDENCE_LEVELS_F22.map((lvl) => (
-                    <button
-                      key={lvl.id}
-                      onClick={() => handleSelectLevel(lvl.id)}
-                      className={`px-4 py-2 rounded-xl text-xs font-mono uppercase font-bold tracking-wider transition-all cursor-pointer shrink-0 ${
-                        activeLevel === lvl.id
-                          ? 'text-[#060608]'
-                          : 'bg-white/[0.04] text-white/60 hover:text-white border border-white/10'
-                      }`}
-                      style={activeLevel === lvl.id ? { backgroundImage: metallicAccentGradient } : undefined}
-                    >
-                      {lvl.name} ({lvl.area})
-                    </button>
+        {/* Distribución por Niveles del Proyecto */}
+        {projectLevels.length > 0 && (
+          <div id="distribucion-niveles" className="max-w-7xl mx-auto px-4 sm:px-8 mt-10 pt-8 border-t border-white/10 scroll-mt-24">
+            <span className={`${isHaciendaF22 ? 'gold-metallic-text' : ''} text-[10px] font-mono font-bold tracking-[0.2em] uppercase block mb-3`} style={{ color: primaryColor }}>
+              Distribución por Niveles • {canonicalProject.nombre}
+            </span>
+            <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              {projectLevels.map((lvl) => (
+                <button
+                  key={lvl.id}
+                  type="button"
+                  onClick={() => handleSelectLevel(lvl.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-mono uppercase font-bold tracking-wider transition-all cursor-pointer shrink-0 ${
+                    activeLevel === lvl.id
+                      ? 'text-[#060608]'
+                      : 'bg-white/[0.04] text-white/60 hover:text-white border border-white/10'
+                  }`}
+                  style={activeLevel === lvl.id ? { backgroundImage: metallicAccentGradient } : undefined}
+                >
+                  {lvl.name}{lvl.area && !lvl.area.includes('Por definir') ? ` (${lvl.area})` : ''}
+                </button>
+              ))}
+            </div>
+
+            {projectLevels.filter(l => l.id === activeLevel).map((lvl) => (
+              <div
+                key={lvl.id}
+                className="p-5 sm:p-6 rounded-2xl bg-[#0D0D12] border border-white/10"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2 border-b border-white/10 text-xs font-mono">
+                  <span className="text-white/50 shrink-0">Función:</span>
+                  <span className="font-bold text-white sm:text-right">{lvl.role}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-white/80">
+                  {lvl.spaces.map((sp, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <span className="text-white/30">•</span>
+                      <span>{sp}</span>
+                    </div>
                   ))}
                 </div>
-
-                {RESIDENCE_LEVELS_F22.filter(l => l.id === activeLevel).map((lvl) => (
-                  <div
-                    key={lvl.id}
-                    className="p-5 sm:p-6 rounded-2xl bg-[#0D0D12] border border-white/10"
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-white/10 text-xs font-mono">
-                      <span className="text-white/50">Función:</span>
-                      <span className="font-bold text-white">{lvl.role}</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-white/80">
-                      {lvl.spaces.map((sp, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          <span className="text-white/30">•</span>
-                          <span>{sp}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
               </div>
-            </div>
+            ))}
+          </div>
         )}
 
         {/* Avance de Obra: Solo si existen registros */}
@@ -1215,15 +1238,14 @@ export function ProjectDedicatedView() {
     return () => { cancelled = true; window.clearInterval(timer); document.removeEventListener('visibilitychange', resume); };
   }, [id]);
 
-  // Para Hacienda Club F22 no combinamos dos pantallas de carga distintas:
-  // La animación central "HACIENDA CLUB F22" -> división a esquinas (estilo Casa Momo)
-  // actúa como la única secuencia de carga y apertura desde el primer instante.
-  if (previewCanonical?.id === 'project_hacienda_f22') {
-    const f22Project = project || projectsData.project_hacienda_f22;
+  // Para los proyectos canónicos (Hacienda Club F22 e Ibiza A14) no combinamos dos pantallas de carga distintas:
+  // La animación central -> división a esquinas (estilo Casa Momo) actúa como la única secuencia de carga y apertura desde el primer instante.
+  if (previewCanonical?.id === 'project_hacienda_f22' || previewCanonical?.id === 'project_ibiza_a14') {
+    const canonicalRemoteProject = project || projectsData[previewCanonical.id];
     return (
       <ProjectDedicatedContent
         key={previewCanonical.id}
-        remoteProject={f22Project}
+        remoteProject={canonicalRemoteProject}
         isLoading={loading}
       />
     );

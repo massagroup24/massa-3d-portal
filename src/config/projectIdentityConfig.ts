@@ -1059,7 +1059,7 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       borderColor: 'rgba(156, 208, 26, 0.26)',
       badgeBg: '#9CD01A',
       badgeText: '#060804',
-      fontFamilyTitle: "'Syne', 'Montserrat', 'Inter', sans-serif",
+      fontFamilyTitle: "'Inter', 'Helvetica Neue', sans-serif",
       fontFamilyBody: "'Inter', sans-serif"
     },
     clientBrand: {

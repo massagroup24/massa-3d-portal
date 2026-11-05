@@ -73,8 +73,10 @@
     "area_construida": null,
     "area_lote": null,
     "numero_pisos": 2,
-    "alcance": "Diseño",
-    "descripcion_corta": "Vivienda unifamiliar en Condominio Ibiza, Lote A14.",
+    "telefonos_contacto": ["3104771967", "3045882770"],
+    "alcance": "Diseño arquitectónico",
+    "descripcion_corta": "Vivienda unifamiliar de dos niveles en Condominio Ibiza, Lote A14, concebida con aleros bioclimáticos y conexión interior-exterior.",
+    "descripcion_larga": "Residencia unifamiliar distribuida en dos niveles en el Condominio Ibiza (Lote A14): primer nivel social con pórtico de doble altura, salón-comedor integrado, cocina con isla central y terraza exterior con piscina; y segundo nivel privado de habitaciones con balcones orientados para ventilación cruzada y protección solar pasiva.",
     "creditos": [
       {
         "rol": "Diseño arquitectónico",
