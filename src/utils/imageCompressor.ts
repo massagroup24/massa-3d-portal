@@ -57,7 +57,7 @@ export async function compressImage(file: File, maxWidth = 6144, maxHeight = 307
             resolve(compressedFile);
           },
           'image/webp',
-          0.88 // 88% de calidad: nitidez visual arquitectónica intacta pero 10 veces más ligero
+          0.95 // 95% de calidad para preservar nitidez 4K en panoramas equirectangulares 360°
         );
       };
       img.onerror = (error) => reject(error);

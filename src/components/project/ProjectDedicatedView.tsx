@@ -25,7 +25,6 @@ import { Project, projectsData, resolveCanonicalProjectId } from '../../data/tou
 import { getProjectsFromSupabase } from '../../supabase';
 import { SkiperArchitecturalCarousel } from './SkiperArchitecturalCarousel';
 import { SkiperParallaxGallery } from './SkiperParallaxGallery';
-import { getPanoramaSource } from '../../utils/panoramaSource';
 import {
   getCanonicalProjectBySlugOrId,
   CanonicalProject
@@ -597,20 +596,17 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
                     className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing overflow-hidden [touch-action:pan-y]"
                   >
                     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none">
-                      <picture>
-                        <source media="(pointer: coarse)" srcSet={getPanoramaSource(current360Room.image, true)} />
-                        <img
-                          src={current360Room.image}
-                          alt={current360Room.name}
-                          loading="lazy"
-                          className="w-full h-full object-cover select-none transition-transform duration-100 ease-out"
-                          style={{
-                            transform: `scale(${cameraZoom * 1.15}) translate3d(${Math.sin((cameraRotationX * Math.PI) / 180) * 10}%, ${cameraRotationY * 0.35}px, 0)`,
-                            transformOrigin: 'center center',
-                            filter: 'brightness(0.92) contrast(1.06)',
-                          }}
-                        />
-                      </picture>
+                      <img
+                        src={encodeURI(current360Room.image)}
+                        alt={current360Room.name}
+                        loading="eager"
+                        decoding="async"
+                        className="w-full h-full object-cover select-none transition-transform duration-100 ease-out"
+                        style={{
+                          transform: `scale(${cameraZoom * 1.15}) translate3d(${Math.sin((cameraRotationX * Math.PI) / 180) * 10}%, ${cameraRotationY * 0.35}px, 0)`,
+                          transformOrigin: 'center center',
+                        }}
+                      />
                     </div>
 
                     <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/80 pointer-events-none" />

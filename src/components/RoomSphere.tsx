@@ -13,7 +13,8 @@ interface RoomSphereProps {
 }
 
 export function RoomSphere({ room, onNavigate, brandColor = '#9CD01A' }: RoomSphereProps) {
-  const maxTextureSize = useThree(state => state.gl.capabilities.maxTextureSize);
+  const gl = useThree(state => state.gl);
+  const maxTextureSize = gl.capabilities.maxTextureSize;
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [retry, setRetry] = useState(0);
@@ -22,26 +23,38 @@ export function RoomSphere({ room, onNavigate, brandColor = '#9CD01A' }: RoomSph
     let ownedTexture: THREE.Texture | null = null;
     setTexture(null);
     setStatus('loading');
-    const touchDevice = window.matchMedia('(pointer: coarse)').matches;
-    void loadPanoramaTexture(room.imageUrl, maxTextureSize, touchDevice, controller.signal)
-      .then(loaded => {
-        if (controller.signal.aborted) { loaded.dispose(); return; }
-        ownedTexture = loaded;
-        setTexture(loaded);
-        setStatus('ready');
-      })
-      .catch(() => { if (!controller.signal.aborted) setStatus('error'); });
+    const applyLoadedTexture = (loaded: THREE.Texture) => {
+      if (controller.signal.aborted) { loaded.dispose(); return; }
+      const maxAnisotropy = typeof (gl.capabilities as any).getMaxAnisotropy === 'function'
+        ? (gl.capabilities as any).getMaxAnisotropy()
+        : 16;
+      loaded.anisotropy = Math.max(1, maxAnisotropy || 16);
+      loaded.needsUpdate = true;
+      ownedTexture = loaded;
+      setTexture(loaded);
+      setStatus('ready');
+    };
+    // Priorizar siempre la textura original 4K (4096x2048) a máxima resolución de GPU,
+    // usando la copia ligera únicamente como respaldo si la original fallara.
+    void loadPanoramaTexture(room.imageUrl, maxTextureSize, false, controller.signal)
+      .then(applyLoadedTexture)
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        void loadPanoramaTexture(room.imageUrl, maxTextureSize, true, controller.signal)
+          .then(applyLoadedTexture)
+          .catch(() => { if (!controller.signal.aborted) setStatus('error'); });
+      });
     return () => {
       controller.abort();
       ownedTexture?.dispose();
     };
-  }, [room.id, room.imageUrl, maxTextureSize, retry]);
+  }, [room.id, room.imageUrl, maxTextureSize, gl, retry]);
 
   return <group>
     {/* Crear el material con su mapa desde el primer dibujo. Añadir map después
         de compilarlo sin textura deja el shader sin USE_MAP en cargas lentas. */}
     {texture && status === 'ready' && <mesh scale={[-1, 1, 1]}>
-      <sphereGeometry args={[500, 60, 40]} />
+      <sphereGeometry args={[500, 96, 64]} />
       <meshBasicMaterial map={texture} color="#FFFFFF" side={THREE.DoubleSide} toneMapped={false} />
     </mesh>}
     {status !== 'ready' && <Html center zIndexRange={[20, 0]}>

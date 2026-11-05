@@ -141,7 +141,6 @@ export function TourViewer({
   brandColor = '#9CD01A',
   brandName
 }: TourViewerProps) {
-  const [touchDevice] = useState(() => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches);
   const [rendererKey, setRendererKey] = useState(0);
   const [contextLost, setContextLost] = useState(false);
   const restart = useCallback(() => { setContextLost(false); setRendererKey(value => value + 1); }, []);
@@ -152,10 +151,10 @@ export function TourViewer({
     <ViewerBoundary key={rendererKey} onRetry={restart}>
     <Canvas 
       camera={{ position: [0, 0, 0.1], fov: 75 }}
-      dpr={[1, touchDevice ? 1.5 : 2]}
+      dpr={[1, 2.5]}
       gl={{ 
-        powerPreference: touchDevice ? 'default' : 'high-performance',
-        antialias: !touchDevice,
+        powerPreference: 'high-performance',
+        antialias: true,
         alpha: false 
       }}
       fallback={<ViewerUnavailable onRetry={restart} />}
