@@ -10,18 +10,12 @@ import {
   Mail, 
   ArrowUpRight, 
   CheckCircle2,
-  Image as ImageIcon,
   ChevronDown
 } from 'lucide-react';
-import { 
-  COMMERCIAL_RESIDENCES, 
-  CommercialResidence,
-  TRUSTED_PARTNERS_ROW1,
-  TRUSTED_PARTNERS_ROW2
-} from '../../data/commercialData';
+import { CANONICAL_PROJECTS, type CanonicalProject, formatAreaMetric } from '../../data/canonicalProjects';
 import { VipContactModal } from './VipContactModal';
 import { CommercialLoginModal } from './CommercialLoginModal';
-import { Project, CANONICAL_PROJECT_ORDER } from '../../data/tourData';
+import { Project } from '../../data/tourData';
 import { getProjectIdentity } from '../../config/projectIdentityConfig';
 
 interface VipCommercialLandingProps {
@@ -36,7 +30,6 @@ export function VipCommercialLanding({
   onSelectProjectForPortal,
   onOpenMonumentalShowcase,
   onLoginSuccess,
-  projects,
 }: VipCommercialLandingProps) {
   // Estados de Onboarding cinemático:
   // 1. Splash con logo MASSA animado
@@ -44,14 +37,26 @@ export function VipCommercialLanding({
   // 3. Revelación monumental de MASSA HOME
   // 4. Asentamiento con barra difuminada inferior y menús
   const [showSplash, setShowSplash] = useState(true);
-  const [introPhase, setIntroPhase] = useState<'splash' | 'concepts' | 'brand-reveal' | 'settled'>('splash');
-  const [conceptIndex, setConceptIndex] = useState(0);
+  const [introPhase, setIntroPhase] = useState<'splash' | 'settled'>('splash');
 
-  const CONCEPTS = useMemo(() => [
-    { title: 'DISEÑO', subtitle: 'VISIÓN CONTEMPORÁNEA' },
-    { title: 'ARQUITECTURA', subtitle: 'INGENIERÍA DE AUTOR' },
-    { title: 'EXCLUSIVIDAD', subtitle: 'ALTO VALOR RESIDENCIAL' }
-  ], []);
+  const [filterTipo, setFilterTipo] = useState<string>('todos');
+  const [filterEstado, setFilterEstado] = useState<string>('todos');
+  const [filterAño, setFilterAño] = useState<string>('todos');
+
+  const filterOptions = useMemo(() => {
+    const tipos = Array.from(new Set(CANONICAL_PROJECTS.map(p => p.tipo)));
+    const estados = Array.from(new Set(CANONICAL_PROJECTS.map(p => p.estado)));
+    const años = Array.from(new Set(CANONICAL_PROJECTS.map(p => String(p.año))));
+    return { tipos, estados, años };
+  }, []);
+
+  const filteredProjects: CanonicalProject[] = useMemo(() => {
+    return [...CANONICAL_PROJECTS]
+      .filter(p => filterTipo === 'todos' || p.tipo === filterTipo)
+      .filter(p => filterEstado === 'todos' || p.estado === filterEstado)
+      .filter(p => filterAño === 'todos' || String(p.año) === filterAño)
+      .sort((a, b) => b.año - a.año);
+  }, [filterTipo, filterEstado, filterAño]);
 
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -86,176 +91,14 @@ export function VipCommercialLanding({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 1. Temporizador del Splash con logo animado (2.5s para apreciar el logo MASSA)
+  // 1. Temporizador del Splash con logo animado (2s)
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-      setIntroPhase('concepts');
-    }, 2500);
+      setIntroPhase('settled');
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
-
-  // 2. Secuencia cinemática de conceptos sobre el video de fondo
-  useEffect(() => {
-    if (introPhase !== 'concepts') return;
-    setConceptIndex(0);
-
-    const c1 = setTimeout(() => {
-      setConceptIndex(1); // ARQUITECTURA
-    }, 750);
-
-    const c2 = setTimeout(() => {
-      setConceptIndex(2); // EXCLUSIVIDAD
-    }, 1500);
-
-    const c3 = setTimeout(() => {
-      setIntroPhase('brand-reveal'); // Revelación MASSA HOME
-    }, 2250);
-
-    return () => {
-      clearTimeout(c1);
-      clearTimeout(c2);
-      clearTimeout(c3);
-    };
-  }, [introPhase]);
-
-  // 3. Transición de la revelación de marca hacia el estado final asentado
-  useEffect(() => {
-    if (introPhase !== 'brand-reveal') return;
-
-    const brandTimer = setTimeout(() => {
-      setIntroPhase('settled');
-    }, 950);
-
-    return () => clearTimeout(brandTimer);
-  }, [introPhase]);
-
-  // Detector estricto de assets 360 panorámicos, equirrectangulares o placeholders no auténticos
-  const is360OrPlaceholderAsset = (url?: string): boolean => {
-    if (!url || typeof url !== 'string' || !url.trim()) return true;
-    const lower = url.toLowerCase();
-    return (
-      lower.includes('360') ||
-      lower.includes('panorama') ||
-      lower.includes('pano') ||
-      lower.includes('equirectangular') ||
-      lower.includes('sphere') ||
-      lower.includes('.hdr') ||
-      lower.includes('1546484396') ||
-      lower.includes('unsplash.com') ||
-      lower.includes('pan_') ||
-      lower.includes('_pan') ||
-      lower.includes('panor')
-    );
-  };
-
-  // Resuelve el auténtico render principal arquitectónico del proyecto
-  // Si no hay ningún render 2D genuino cargado, retorna cadena vacía para activar el estado explicativo
-  const resolveMainArchitecturalRender = (p: Project): string => {
-    // 1. Renders reales en p.renders
-    if (p.renders && p.renders.length > 0) {
-      const facade = p.renders.find(
-        (r) =>
-          (r.category === 'Fachada' ||
-            r.title?.toLowerCase().includes('fachada') ||
-            r.title?.toLowerCase().includes('principal') ||
-            r.title?.toLowerCase().includes('exterior')) &&
-          !is360OrPlaceholderAsset(r.storage_path)
-      );
-      if (facade?.storage_path) return facade.storage_path;
-
-      const anyRender = p.renders.find((r) => !is360OrPlaceholderAsset(r.storage_path));
-      if (anyRender?.storage_path) return anyRender.storage_path;
-    }
-
-    // 2. heroImage genuino de la obra
-    if (p.heroImage && !is360OrPlaceholderAsset(p.heroImage)) {
-      return p.heroImage;
-    }
-
-    // 3. Galería de imágenes genuina
-    if (p.galleryImages && p.galleryImages.length > 0) {
-      const galleryImg = p.galleryImages.find((img) => !is360OrPlaceholderAsset(img));
-      if (galleryImg) return galleryImg;
-    }
-
-    // 4. Thumbnail si es un render real y no 360 ni placeholder
-    if (p.thumbnail && !is360OrPlaceholderAsset(p.thumbnail)) {
-      return p.thumbnail;
-    }
-
-    // Si no hay render 2D cargado para este proyecto, NO inventar nada: retornar vacío
-    return '';
-  };
-
-  // Mapear los proyectos activos en desarrollo (Marquimoda y Edinson Jején se conservan exclusivamente en el apartado de Recorridos 360° Guardados)
-  const SAVED_TOUR_ONLY_IDS = new Set(['project_1781963945215', 'project_1782912175010']);
-
-  const dynamicResidences: CommercialResidence[] = useMemo(() => {
-    if (projects && Object.keys(projects).length > 0) {
-      const seen = new Set<string>();
-      const list: CommercialResidence[] = [];
-
-      for (const p of Object.values(projects)) {
-        if (!p || !p.id || p.published !== true) continue;
-        const canonicalId = p.id === 'edinson-jejen' ? 'project_1781963945215' 
-          : p.id === 'marquimoda' ? 'project_1782912175010' 
-          : (p.id === 'ibiza-a14' || p.id === 'ibiza') ? 'project_ibiza_a14'
-          : (p.id === 'hacienda-f22' || p.id === 'hacienda') ? 'project_hacienda_f22'
-          : p.id;
-        if (SAVED_TOUR_ONLY_IDS.has(canonicalId)) continue;
-        if (seen.has(canonicalId)) continue;
-        seen.add(canonicalId);
-
-        // Encontrar datos comerciales de enriquecimiento si existen
-        const curated = COMMERCIAL_RESIDENCES.find(c => c.projectId === canonicalId || c.id === canonicalId);
-        const pCat = (p.category as any) || curated?.category || 'villa';
-
-        list.push({
-          id: canonicalId,
-          projectId: canonicalId,
-          name: p.name || curated?.name || 'Obra MASSA',
-          tagline: p.tagline || curated?.tagline || p.description || 'Exclusiva residencia de autor MASSA',
-          category: pCat,
-          categoryLabel: p.categoryLabel || curated?.categoryLabel || 'Residencia de Autor',
-          location: p.location || curated?.location || 'Valle del Cauca, Colombia',
-          zone: p.zone || curated?.zone || 'Zona Exclusiva',
-          areaBuilt: p.areaBuilt || curated?.areaBuilt || '450 m²',
-          areaLot: p.areaLot || curated?.areaLot,
-          bedrooms: canonicalId === 'project_hacienda_f22' ? undefined : p.bedrooms ?? curated?.bedrooms ?? 4,
-          bathrooms: canonicalId === 'project_hacienda_f22' ? undefined : p.bathrooms ?? curated?.bathrooms ?? 5,
-          parkingSpaces: canonicalId === 'project_hacienda_f22' ? undefined : p.parkingSpaces ?? curated?.parkingSpaces ?? 3,
-          priceCOP: p.priceCOP || curated?.priceCOP || 'Obra Privada',
-          priceUSD: p.priceUSD || curated?.priceUSD || 'Proyecto Personalizado',
-          status: (p.status as any) || curated?.status || 'en_obra',
-          statusLabel: p.statusLabel || curated?.statusLabel || 'En Ejecución',
-          hasTour360: !!p.hasTour360,
-          featured: !!p.featured,
-          heroImage: resolveMainArchitecturalRender(p) || (curated?.heroImage && !is360OrPlaceholderAsset(curated.heroImage) ? curated.heroImage : ''),
-          galleryImages: (p.galleryImages && p.galleryImages.length > 0)
-            ? p.galleryImages.filter((img) => !is360OrPlaceholderAsset(img))
-            : (curated?.galleryImages || (p.renders ? p.renders.filter((r) => !is360OrPlaceholderAsset(r.storage_path)).map((r) => r.storage_path) : [])),
-          highlights: p.highlights && p.highlights.length > 0 ? p.highlights : (curated?.highlights || []),
-          description: p.description || curated?.description || ''
-        });
-      }
-
-      // Orden canónico estricto: 1. Hacienda F22, 2. Ibiza A14, 3. Edinson Jején, 4. Marquimoda
-      list.sort((a, b) => {
-        const idxA = CANONICAL_PROJECT_ORDER.indexOf(a.id);
-        const idxB = CANONICAL_PROJECT_ORDER.indexOf(b.id);
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        if (idxA !== -1) return -1;
-        if (idxB !== -1) return 1;
-        return 0;
-      });
-
-      if (list.length > 0) {
-        return list;
-      }
-    }
-    return [];
-  }, [projects]);
 
   return (
     <div className="relative min-h-screen w-full bg-[#08090D] text-[#F5F5F5] font-sans selection:bg-[#9CD01A] selection:text-[#08090D] overflow-x-hidden">
@@ -275,7 +118,7 @@ export function VipCommercialLanding({
             className="fixed inset-0 z-50 bg-[#070709] flex flex-col items-center justify-center p-6 cursor-pointer select-none overflow-hidden"
             onClick={() => {
               setShowSplash(false);
-              setIntroPhase('concepts');
+              setIntroPhase('settled');
             }}
           >
             {/* Resplandor ambiental de fondo arquitectónico */}
@@ -340,105 +183,10 @@ export function VipCommercialLanding({
             <source src="/VIDEO H4.mp4" type="video/mp4" />
           </video>
           {/* Overlay suave y dinámico para garantizar máxima legibilidad */}
-          <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none ${
-            introPhase === 'concepts' || introPhase === 'brand-reveal'
-              ? 'bg-black/60' 
-              : 'bg-gradient-to-t from-[#08090D] via-black/25 to-black/40'
-          }`} />
+          <div className="absolute inset-0 transition-opacity duration-700 pointer-events-none bg-gradient-to-t from-[#08090D] via-black/25 to-black/40" />
         </div>
 
-        {/* BOTÓN DISCRETO PARA OMITIR INTRO */}
-        <AnimatePresence>
-          {introPhase !== 'settled' && !showSplash && (
-            <m.button
-              type="button"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.25 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIntroPhase('settled');
-              }}
-              style={{ top: "max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))", right: "max(1.5rem, env(safe-area-inset-right, 0px))" }}
-              className="absolute z-40 px-4 py-1.5 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 hover:border-[#9CD01A]/60 text-white/80 hover:text-white font-mono text-[11px] font-bold tracking-widest uppercase backdrop-blur-md transition-all shadow-xl cursor-pointer"
-            >
-              Omitir intro ✕
-            </m.button>
-          )}
-        </AnimatePresence>
 
-        {/* SECUENCIA CINEMÁTICA RÁPIDA: DISEÑO • ARQUITECTURA • EXCLUSIVIDAD */}
-        <AnimatePresence mode="wait">
-          {introPhase === 'concepts' && (
-            <m.div
-              key={`concept-screen-${conceptIndex}`}
-              initial={{ opacity: 0, scale: 0.94, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 z-40 flex flex-col items-center justify-center p-6 text-center select-none pointer-events-none"
-            >
-              {/* Resplandor focal esmeralda */}
-              <div className="absolute w-[450px] sm:w-[650px] h-[300px] sm:h-[400px] bg-[#9CD01A]/15 rounded-full blur-[110px] pointer-events-none -z-10" />
-
-              {/* Badge superior */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-black/60 border border-[#9CD01A]/40 backdrop-blur-md mb-5 shadow-2xl">
-                <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-ping" />
-                <span className="text-[10px] sm:text-xs font-mono font-bold tracking-[0.35em] text-[#9CD01A] uppercase">
-                  {CONCEPTS[conceptIndex].subtitle}
-                </span>
-              </div>
-
-              {/* Título de gran escala del concepto */}
-              <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-[0.16em] sm:tracking-[0.24em] uppercase filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.95)]">
-                {CONCEPTS[conceptIndex].title}
-              </h2>
-
-              {/* Indicadores lineales de progreso */}
-              <div className="flex items-center gap-2 mt-8">
-                {CONCEPTS.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === conceptIndex ? 'w-10 bg-[#9CD01A] shadow-[0_0_12px_#9CD01A]' : 'w-2 bg-white/20'
-                    }`}
-                  />
-                ))}
-              </div>
-            </m.div>
-          )}
-        </AnimatePresence>
-
-        {/* REVELACIÓN MONUMENTAL DE MASSA HOME */}
-        <AnimatePresence>
-          {introPhase === 'brand-reveal' && (
-            <m.div
-              key="brand-reveal-screen"
-              initial={{ opacity: 0, scale: 0.88, filter: 'blur(16px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 1.05, filter: 'blur(12px)' }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 z-40 flex flex-col items-center justify-center p-6 text-center select-none pointer-events-none"
-            >
-              <div className="absolute w-[500px] h-[350px] bg-[#9CD01A]/20 rounded-full blur-[130px] pointer-events-none -z-10" />
-
-              <m.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35 }}
-                className="mb-3 text-xs sm:text-sm font-mono tracking-[0.45em] uppercase text-white/80 font-bold"
-              >
-                BIENVENIDO A
-              </m.div>
-
-              <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-[0.88] uppercase select-none filter drop-shadow-[0_25px_60px_rgba(0,0,0,0.95)]">
-                MASSA<br />
-                <span className="text-[#9CD01A] drop-shadow-[0_0_45px_rgba(156,208,26,0.7)]">HOME</span>
-              </h1>
-            </m.div>
-          )}
-        </AnimatePresence>
 
         {/* HEADER SUPERIOR: LOGO A LA IZQUIERDA Y MENÚ VERTICAL A LA DERECHA */}
         <m.header
@@ -726,11 +474,11 @@ export function VipCommercialLanding({
       </section>
 
 
-      {/* 3. SECCIÓN: PROYECTOS EN DESARROLLO (ACORDEÓN HOVER EXPANDIBLE) */}
+      {/* 3. SECCIÓN: PROYECTOS EN DESARROLLO */}
       <section id="proyectos" className="relative py-20 sm:py-28 px-4 sm:px-8 lg:px-14 bg-[#08090D] border-t border-white/[0.08]">
         
-        {/* Cabecera de Sección */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-10 sm:mb-14">
+        {/* Cabecera de Sección & Filtros (solo por: tipo, estado y año) */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8 sm:mb-10">
           <div className="max-w-3xl text-left">
             <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-[#9CD01A] uppercase block mb-2">
               • PORTAFOLIO EN CURSO
@@ -738,28 +486,61 @@ export function VipCommercialLanding({
             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight">
               Proyectos en desarrollo
             </h2>
-            <p className="text-xs sm:text-sm text-white/60 mt-3 max-w-xl font-normal leading-relaxed">
-              Obras arquitectónicas activas en nuestro estudio. Pasa el cursor sobre cada proyecto para desplegar sus especificaciones y acceder a su gemelo digital inmersivo 360°.
-            </p>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-end">
-            <span className="px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-white/60 font-mono text-[11px] font-bold tracking-wider uppercase">
-              {dynamicResidences.length} {dynamicResidences.length === 1 ? 'OBRA EN CURSO' : 'OBRAS EN CURSO'}
-            </span>
+          {/* Filtros solo por: tipo, estado y año */}
+          <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto self-start sm:self-end">
+            <div className="flex items-center justify-between gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-mono min-w-0">
+              <span className="text-white/40 shrink-0">Tipo:</span>
+              <select
+                value={filterTipo}
+                onChange={(e) => setFilterTipo(e.target.value)}
+                className="bg-transparent text-white focus:outline-none cursor-pointer capitalize min-w-0 truncate"
+              >
+                <option value="todos" className="bg-[#121216] text-white">Todos</option>
+                {filterOptions.tipos.map(t => (
+                  <option key={t} value={t} className="bg-[#121216] text-white capitalize">{t}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center justify-between gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-mono min-w-0">
+              <span className="text-white/40 shrink-0">Estado:</span>
+              <select
+                value={filterEstado}
+                onChange={(e) => setFilterEstado(e.target.value)}
+                className="bg-transparent text-white focus:outline-none cursor-pointer min-w-0 truncate"
+              >
+                <option value="todos" className="bg-[#121216] text-white">Todos</option>
+                {filterOptions.estados.map(e => (
+                  <option key={e} value={e} className="bg-[#121216] text-white">{e}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center justify-between gap-1 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-mono min-w-0">
+              <span className="text-white/40 shrink-0">Año:</span>
+              <select
+                value={filterAño}
+                onChange={(e) => setFilterAño(e.target.value)}
+                className="bg-transparent text-white focus:outline-none cursor-pointer min-w-0 truncate"
+              >
+                <option value="todos" className="bg-[#121216] text-white">Todos</option>
+                {filterOptions.años.map(a => (
+                  <option key={a} value={a} className="bg-[#121216] text-white">{a}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Acordeón Interactivo de Proyectos (Horizontal en Desktop, Vertical en Móvil) */}
+        {/* Listado / Acordeón de Proyectos (orden descendente por año) */}
         <div className="flex flex-col lg:flex-row gap-4 lg:h-[620px] w-full">
-          {dynamicResidences.map((residence, idx) => {
+          {filteredProjects.map((project, idx) => {
             const isActive = activeProjectIndex === idx;
-            const hasRealRender = !!residence.heroImage;
-            const isHacienda = residence.id === 'project_hacienda_f22';
-            const identity = getProjectIdentity(residence.id);
+            const isHacienda = project.id === 'project_hacienda_f22';
+            const identity = getProjectIdentity(project.id);
             const brand = identity.clientBrand;
-            // Solo Hacienda F22 tiene marca de cliente externo (AMHO Construcciones con acentos champagne gold)
-            // Ibiza A14 conserva la identidad de autor insigne de MASSA con su verde lima característico (#9CD01A)
             const isCustomBrand = Boolean(brand && isHacienda);
             const primaryColor = identity.theme.primaryColor || (isHacienda ? '#DFC47B' : '#9CD01A');
             const metallicGradient =
@@ -768,20 +549,18 @@ export function VipCommercialLanding({
                 ? 'linear-gradient(135deg, #B89752 0%, #DFC47B 32%, #F7E8A8 50%, #D1B16B 74%, #9E7D3B 100%)'
                 : 'linear-gradient(135deg, #729B0E 0%, #9CD01A 35%, #D4FF5E 52%, #8CBF14 76%, #5B7E08 100%)');
 
-            const facadeRender =
-              identity.heroVideoPoster ||
-              residence.heroImage ||
-              (residence.id === 'project_hacienda_f22' ? '/HACIENDA F22/FACHADA.png' : '/IBIZA A14/01-F004.jpg');
+            const facadeRender = project.imagen_principal;
+            const areaFormatted = formatAreaMetric(project.area_construida);
 
             return (
               <div
-                key={residence.id || `proj-${idx}`}
+                key={project.id || `proj-${idx}`}
                 onMouseEnter={() => setActiveProjectIndex(idx)}
                 onClick={() => {
                   if (!isActive) {
                     setActiveProjectIndex(idx);
                   } else {
-                    onSelectProjectForPortal(residence.projectId || residence.id);
+                    onSelectProjectForPortal(project.id);
                   }
                 }}
                 className={`relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-700 ease-out border ${
@@ -794,46 +573,33 @@ export function VipCommercialLanding({
                       : 'lg:flex-[1] flex-none min-h-[90px] lg:min-h-0 border-[#9CD01A]/20 hover:border-[#9CD01A]/50'
                 }`}
               >
-                {/* Visual de Fondo Unificado: Render Fotorrealista de Fachada en Alta Definición para ambas obras */}
-                {facadeRender ? (
-                  <>
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#101218] via-[#0b0c10] to-[#06070a] overflow-hidden">
-                      <img
-                        src={encodeURI(facadeRender)}
-                        alt={residence.name}
-                        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out ${
-                          isActive
-                            ? 'scale-105 filter brightness-[0.78] contrast-[1.08]'
-                            : 'filter brightness-[0.38] contrast-[0.95] grayscale-[15%]'
-                        }`}
-                        loading="eager"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent pointer-events-none" />
-                  </>
-                ) : (
-                  /* Fondo Técnico CAD cuando no hay render 2D asignado */
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#13141a] via-[#0e0f13] to-[#090a0d]">
-                    <div
-                      className="absolute inset-0 opacity-[0.08] pointer-events-none"
-                      style={{
-                        backgroundImage: `linear-gradient(${primaryColor} 1px, transparent 1px), linear-gradient(90deg, ${primaryColor} 1px, transparent 1px)`,
-                        backgroundSize: '24px 24px'
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none" />
-                  </div>
-                )}
+                {/* Visual de Fondo: Render de Fachada */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#101218] via-[#0b0c10] to-[#06070a] overflow-hidden">
+                  <img
+                    src={encodeURI(facadeRender)}
+                    alt={project.nombre}
+                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out ${
+                      isActive
+                        ? 'scale-105 filter brightness-[0.78] contrast-[1.08]'
+                        : 'filter brightness-[0.38] contrast-[0.95] grayscale-[15%]'
+                    }`}
+                    loading="eager"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent pointer-events-none" />
 
                 {/* CONTENIDO CUANDO EL PROYECTO NO ESTÁ ACTIVO */}
                 {!isActive && (
-                  <div className="absolute inset-0 p-5 sm:p-6 flex lg:flex-col items-center lg:items-start justify-between z-10 select-none">
-                    <div className="flex items-center gap-2">
+                  <div className="absolute inset-0 p-4 sm:p-6 flex lg:flex-col items-center lg:items-start justify-between z-10 select-none gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       <span
                         className="text-xs font-mono font-bold"
                         style={{ color: primaryColor }}
                       >
                         0{idx + 1}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-[9px] font-mono font-bold uppercase tracking-wider text-white">
+                        Render
                       </span>
                       {brand?.logoIcon && (
                         <img
@@ -845,21 +611,9 @@ export function VipCommercialLanding({
                     </div>
                     <h3
                       style={{ fontFamily: identity.theme.fontFamilyTitle }}
-                      className="text-base sm:text-lg lg:text-2xl font-black uppercase tracking-wider lg:[writing-mode:vertical-rl] lg:rotate-180 truncate select-none"
+                      className="text-sm sm:text-lg lg:text-2xl font-black uppercase tracking-wider lg:[writing-mode:vertical-rl] lg:rotate-180 truncate select-none"
                     >
-                      <span className="text-white">{identity.titlePrefix || (isHacienda ? 'HACIENDA' : 'IBIZA')}</span>{' '}
-                      <span
-                        className="inline-block font-black"
-                        style={{
-                          backgroundImage: metallicGradient,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          color: primaryColor,
-                          filter: `drop-shadow(0 0 16px ${primaryColor}75)`
-                        }}
-                      >
-                        {identity.titleHighlight || (isHacienda ? 'F22' : 'A14')}
-                      </span>
+                      <span className="text-white">{project.nombre}</span>
                     </h3>
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-colors ${
@@ -873,33 +627,36 @@ export function VipCommercialLanding({
                   </div>
                 )}
 
-                {/* CONTENIDO CUANDO EL PROYECTO ESTÁ ACTIVO (Panel Extendido con Identidad Propia) */}
+                {/* CONTENIDO CUANDO EL PROYECTO ESTÁ ACTIVO (Tarjeta estricta: imagen, nombre, tipo, ciudad, año, estado y área) */}
                 {isActive && (
-                  <div className="absolute inset-0 p-6 sm:p-10 flex flex-col justify-between z-10 text-left select-none">
+                  <div className="absolute inset-0 p-5 sm:p-10 flex flex-col justify-between z-10 text-left select-none">
                     {/* Barra Superior */}
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider text-white">
+                          Render
+                        </span>
                         <span
-                          className={`px-3.5 py-1.5 rounded-full font-black text-xs tracking-wider uppercase ${
+                          className={`px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full font-black text-[10px] sm:text-xs tracking-wider uppercase ${
                             isCustomBrand ? 'text-[#060608] shadow-[0_4px_15px_rgba(223,196,123,0.35)]' : 'bg-[#9CD01A] text-black'
                           }`}
                           style={isCustomBrand ? { backgroundImage: metallicGradient } : undefined}
                         >
-                          {identity.lot ? `OBRA 0${idx + 1} • ${identity.lot}` : `OBRA 0${idx + 1}`}
+                          OBRA 0{idx + 1}
                         </span>
                         <span
-                          className={`px-3 py-1 rounded-full bg-black/65 backdrop-blur-md border font-mono text-[11px] font-bold tracking-wider uppercase ${
+                          className={`px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md border font-mono text-[10px] sm:text-[11px] font-bold tracking-wider uppercase ${
                             isCustomBrand
                               ? 'border-[#DFC47B]/35 text-[#F1E29B]'
                               : 'border-white/10 text-white/80'
                           }`}
                         >
-                          {identity.categoryLabel || residence.categoryLabel || 'Residencia de Autor'}
+                          {project.tipo}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {residence.hasTour360 && (
+                        {project.hasTour360 && (
                           <span
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/65 backdrop-blur-md border text-[11px] font-mono font-bold ${
                               isCustomBrand
@@ -915,7 +672,7 @@ export function VipCommercialLanding({
                           </span>
                         )}
 
-                        {brand?.logoHorizontalWhite ? (
+                        {brand?.logoHorizontalWhite && (
                           <div className="hidden sm:flex items-center px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border border-[#DFC47B]/40 shadow-lg">
                             <img
                               src={encodeURI(brand.logoHorizontalWhite)}
@@ -923,104 +680,70 @@ export function VipCommercialLanding({
                               className="h-5 w-auto object-contain"
                             />
                           </div>
-                        ) : (
-                          <span className="text-xs font-mono text-white/50 tracking-widest hidden sm:inline">
-                            {identity.brandName || 'MASSA HOME'}
-                          </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Información Principal y Llamado a la Acción */}
+                    {/* Información Principal */}
                     <div className="max-w-2xl">
                       <span
                         className={`text-xs sm:text-sm font-mono font-bold tracking-wider uppercase block mb-1 ${
                           isCustomBrand ? 'text-[#F1E29B]' : 'text-[#9CD01A]'
                         }`}
                       >
-                        {identity.locationFull || `${residence.location || 'Cúcuta, Colombia'} • ${residence.zone || 'Zona Exclusiva'}`}
+                        {project.ciudad}, {project.departamento}{project.barrio_o_sector ? ` • ${project.barrio_o_sector}` : ''}
                       </span>
 
                       <h3
                         style={{ fontFamily: identity.theme.fontFamilyTitle }}
-                        className="text-3xl sm:text-5xl lg:text-6xl font-black mb-3 tracking-tight uppercase leading-none select-none"
+                        className="text-3xl sm:text-5xl lg:text-6xl font-black mb-3 tracking-tight uppercase leading-none select-none text-white"
                       >
-                        <span className="text-white">{identity.titlePrefix || (isHacienda ? 'HACIENDA' : 'IBIZA')}</span>{' '}
-                        <span
-                          className="inline-block bg-clip-text text-transparent font-black"
-                          style={{
-                            backgroundImage: metallicGradient,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            color: primaryColor,
-                            filter: `drop-shadow(0 0 25px ${primaryColor}55)`
-                          }}
-                        >
-                          {identity.titleHighlight || (isHacienda ? 'F22' : 'A14')}
-                        </span>
+                        {project.nombre}
                       </h3>
 
-                      {(!hasRealRender && !isHacienda) ? (
-                        <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
-                          <div className="flex items-center gap-2 mb-1.5 text-[#9CD01A]">
-                            <ImageIcon className="w-4 h-4 shrink-0" />
-                            <span className="text-xs font-black uppercase tracking-wider text-white">
-                              Render principal no asignado
-                            </span>
-                          </div>
-                          <p className="text-xs sm:text-sm text-white/70 leading-relaxed font-normal">
-                            Esta obra se encuentra activa en nuestro estudio. Ingresa a los detalles para consultar la ficha técnica oficial y explorar su <span className="text-[#9CD01A] font-semibold">recorrido virtual 360° interactivo</span>.
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-xs sm:text-base text-white/85 leading-relaxed mb-6 font-medium line-clamp-2">
-                          {identity.tagline || residence.tagline || residence.description}
-                        </p>
-                      )}
+                      <p className="text-xs sm:text-base text-white/85 leading-relaxed mb-6 font-medium line-clamp-2">
+                        {project.descripcion_corta}
+                      </p>
 
-                      {/* Chips de especificaciones clave */}
+                      {/* Tarjeta de campos estrictos: tipo, ciudad, año, estado y área (solo si existe) */}
                       <div className="flex flex-wrap items-center gap-2.5 mb-6 text-xs font-mono">
-                        <div
-                          className={`px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border text-white/80 ${
-                            isCustomBrand ? 'border-[#DFC47B]/30' : 'border-white/10'
-                          }`}
-                        >
-                          <span className="text-white/40 mr-1.5">Área:</span>
-                          <span className="font-bold text-white">{identity.specs?.areaBuilt || residence.areaBuilt}</span>
+                        <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                          <span className="text-white/40 mr-1.5">Tipo:</span>
+                          <span className="font-bold text-white capitalize">{project.tipo}</span>
                         </div>
-                        <div
-                          className={`px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border text-white/80 ${
-                            isCustomBrand ? 'border-[#DFC47B]/30' : 'border-white/10'
-                          }`}
-                        >
+                        <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                          <span className="text-white/40 mr-1.5">Ciudad:</span>
+                          <span className="font-bold text-white">{project.ciudad}</span>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                          <span className="text-white/40 mr-1.5">Año:</span>
+                          <span className="font-bold text-white">{project.año}</span>
+                        </div>
+                        <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
                           <span className="text-white/40 mr-1.5">Estado:</span>
                           <span
                             className="font-bold"
                             style={{ color: isCustomBrand ? '#F1E29B' : primaryColor }}
                           >
-                            {identity.statusLabel || residence.statusLabel || 'En Ejecución'}
+                            {project.estado}
                           </span>
                         </div>
-                        <div
-                          className={`px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border text-white/80 hidden sm:block ${
-                            isCustomBrand ? 'border-[#DFC47B]/30' : 'border-white/10'
-                          }`}
-                        >
-                          <span className="text-white/40 mr-1.5">{brand ? 'Firma:' : 'Modalidad:'}</span>
-                          <span className="font-bold text-white">
-                            {brand ? brand.companyName : (residence.priceCOP || 'Inversión Privada')}
-                          </span>
-                        </div>
+                        {areaFormatted && (
+                          <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                            <span className="text-white/40 mr-1.5">Área:</span>
+                            <span className="font-bold text-white">{areaFormatted}</span>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Botón Principal Personalizado según la Marca del Proyecto */}
+                      {/* Botón Principal */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectProjectForPortal(residence.projectId || residence.id);
+                          onSelectProjectForPortal(project.id);
                         }}
-                        className={`px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 cursor-pointer hover:scale-105 active:scale-95 ${
+                        className={`w-full sm:w-auto justify-center px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-black text-[11px] sm:text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 cursor-pointer hover:scale-105 active:scale-95 ${
                           isCustomBrand
                             ? 'text-[#060608] border border-[#F7E8A8]/55 shadow-[0_10px_30px_rgba(223,196,123,0.4)]'
                             : 'bg-[#9CD01A] hover:bg-white text-black shadow-2xl'
@@ -1028,9 +751,11 @@ export function VipCommercialLanding({
                         style={isCustomBrand ? { backgroundImage: metallicGradient } : undefined}
                       >
                         <span>
-                          {isCustomBrand
-                            ? `Explorar Proyecto ${brand?.shortName} & Gemelo 360°`
-                            : 'Explorar Ficha & Gemelo Digital 360°'}
+                          {project.hasTour360
+                            ? isCustomBrand
+                              ? `Explorar Proyecto ${brand?.shortName} & Gemelo 360°`
+                              : 'Explorar Ficha & Gemelo Digital 360°'
+                            : 'Explorar Proyecto'}
                         </span>
                         <ArrowUpRight className="w-4 h-4 font-black" />
                       </button>
@@ -1042,67 +767,6 @@ export function VipCommercialLanding({
           })}
         </div>
 
-      </section>
-
-
-      {/* 4. SECCIÓN: RESPALDO CORPORATIVO & EMPRESAS QUE CONFÍAN EN MASSA */}
-      <section className="relative py-16 sm:py-24 bg-white border-y border-black/[0.06] overflow-hidden text-center select-none">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-14 mb-8">
-          <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-[0.25em] text-[#648D08] uppercase block mb-2">
-            • ALIANZAS ESTRATÉGICAS & CLIENTES CORPORATIVOS
-          </span>
-          <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-[#0D0E12]">
-            Empresas que confían en MASSA GROUP
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-500 max-w-xl mx-auto mt-2 font-normal">
-            Más de 30 marcas, líderes empresariales e instituciones que han desarrollado proyectos con nuestra firma.
-          </p>
-        </div>
-
-        {/* Carrusel Marquee de ancho total con difuminado lateral hacia blanco */}
-        <div 
-          className="w-full overflow-hidden py-4 space-y-4 sm:space-y-5"
-          style={{
-            maskImage: 'linear-gradient(to right, transparent 0px, black 40px, black calc(100% - 40px), transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 40px, black calc(100% - 40px), transparent 100%)'
-          }}
-        >
-          {/* Carril 1 */}
-          <div className="animate-marquee-left flex gap-5 sm:gap-6 items-center py-1">
-            {[...TRUSTED_PARTNERS_ROW1, ...TRUSTED_PARTNERS_ROW1].map((partner, idx) => (
-              <div
-                key={`partner-r1-${idx}`}
-                className="h-20 sm:h-24 md:h-28 w-48 sm:w-56 md:w-64 shrink-0 rounded-2xl bg-white border border-gray-100 hover:border-[#9CD01A] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300 flex items-center justify-center p-4 group"
-                title={partner.name}
-              >
-                <img
-                  src={partner.logo}
-                  alt={partner.name}
-                  className="max-h-11 sm:max-h-14 max-w-[82%] object-contain group-hover:scale-105 transition-all duration-300"
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Carril 2 */}
-          <div className="animate-marquee-right flex gap-5 sm:gap-6 items-center py-1">
-            {[...TRUSTED_PARTNERS_ROW2, ...TRUSTED_PARTNERS_ROW2].map((partner, idx) => (
-              <div
-                key={`partner-r2-${idx}`}
-                className="h-20 sm:h-24 md:h-28 w-48 sm:w-56 md:w-64 shrink-0 rounded-2xl bg-white border border-gray-100 hover:border-[#9CD01A] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300 flex items-center justify-center p-4 group"
-                title={partner.name}
-              >
-                <img
-                  src={partner.logo}
-                  alt={partner.name}
-                  className="max-h-11 sm:max-h-14 max-w-[82%] object-contain group-hover:scale-105 transition-all duration-300"
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* 5. SECCIÓN: CANALES DE CONTACTO & REDES SOCIALES MULTIMEDIA (DISEÑO MINIMALISTA DE ALTA DENSIDAD) */}
@@ -1147,7 +811,7 @@ export function VipCommercialLanding({
               <div className="divide-y divide-white/[0.06] border-y border-white/[0.08]">
                 {/* 1. WHATSAPP */}
                 <a
-                  href="https://wa.me/573108924410?text=Hola%20Massa%20Group,%20estoy%20interesado%20en%20conocer%20m%C3%A1s%20sobre%20sus%20proyectos%20arquitect%C3%B3nicos."
+                  href="https://wa.me/573104771967?text=Hola%20Massa%20Group,%20estoy%20interesado%20en%20conocer%20m%C3%A1s%20sobre%20sus%20proyectos%20arquitect%C3%B3nicos."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group relative flex items-center justify-between py-3.5 px-3 sm:px-4 hover:bg-[#25D366]/[0.04] transition-all duration-200"
@@ -1166,7 +830,7 @@ export function VipCommercialLanding({
                         </span>
                       </div>
                       <div className="text-xs font-mono text-white/50 group-hover:text-white/80 transition-colors">
-                        +57 310 892 4410
+                        +57 310 477 1967 • +57 304 588 2770
                       </div>
                     </div>
                   </div>
@@ -1180,7 +844,7 @@ export function VipCommercialLanding({
 
                 {/* 2. LLAMADA TELEFÓNICA */}
                 <a
-                  href="tel:+573108924410"
+                  href="tel:+573104771967"
                   className="group relative flex items-center justify-between py-3.5 px-3 sm:px-4 hover:bg-[#9CD01A]/[0.04] transition-all duration-200"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
@@ -1197,7 +861,7 @@ export function VipCommercialLanding({
                         </span>
                       </div>
                       <div className="text-xs font-mono text-white/50 group-hover:text-white/80 transition-colors">
-                        +57 310 892 4410
+                        +57 310 477 1967 • +57 304 588 2770
                       </div>
                     </div>
                   </div>
@@ -1473,7 +1137,7 @@ export function VipCommercialLanding({
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#9CD01A]" />
-                    <span>Construcción integral llave en mano sin sobrecostos</span>
+                    <span>Construcción integral de alta precisión sin sobrecostos</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#9CD01A]" />

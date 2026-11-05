@@ -131,7 +131,7 @@ export function InvestmentEstimator({ onOpenConsultation }: InvestmentEstimatorP
 Me gustaría coordinar una reunión privada con el Arquitecto Líder para revisar la viabilidad y recibir el dossier comercial.`;
 
     const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/573108924410?text=${encoded}`, '_blank');
+    window.open(`https://wa.me/573104771967?text=${encoded}`, '_blank');
   };
 
   return (
@@ -153,7 +153,7 @@ Me gustaría coordinar una reunión privada con el Arquitecto Líder para revisa
             Proyecta la Inversión de tu <span className="text-[#9CD01A]">Residencia de Autor</span>
           </h2>
           <p className="text-sm sm:text-base text-white/70 max-w-2xl mx-auto font-medium leading-relaxed">
-            Personaliza el metraje, ubicación y nivel de acabados. Obtén un rango de inversión en tiempo real con garantía de entrega llave en mano y sin sobrecostos ocultos.
+            Personaliza el metraje, ubicación y nivel de acabados. Obtén un rango de inversión en tiempo real con alcance integral de diseño y construcción sin sobrecostos ocultos.
           </p>
         </div>
 
@@ -351,7 +351,7 @@ Me gustaría coordinar una reunión privada con el Arquitecto Líder para revisa
               {/* Badge Superior */}
               <div className="flex items-center justify-between mb-6">
                 <span className="text-[10px] font-mono font-bold tracking-widest text-[#9CD01A] uppercase px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30">
-                  ESTIMACIÓN DE INVERSIÓN LLAVE EN MANO
+                  ESTIMACIÓN DE INVERSIÓN INTEGRAL
                 </span>
                 <span className="flex items-center gap-1 text-[11px] font-semibold text-white/50">
                   <ShieldCheck className="w-3.5 h-3.5 text-[#9CD01A]" />
@@ -399,7 +399,7 @@ Me gustaría coordinar una reunión privada con el Arquitecto Líder para revisa
                 </div>
                 <div className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-[#9CD01A] shrink-0 mt-0.5" />
-                  <span><strong>Construcción Llave en Mano:</strong> Estructura, acabados de ultralujo y dirección de obra.</span>
+                  <span><strong>Construcción Integral:</strong> Estructura, acabados de ultralujo y dirección de obra.</span>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <Clock className="w-4 h-4 text-[#9CD01A] shrink-0 mt-0.5" />

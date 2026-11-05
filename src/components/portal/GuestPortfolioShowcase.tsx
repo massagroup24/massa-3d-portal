@@ -19,7 +19,7 @@ export interface PortfolioWork {
 export const PORTFOLIO_WORKS: PortfolioWork[] = [
   {
     id: 'project_hacienda_f22',
-    name: 'HACIENDA F22',
+    name: 'HACIENDA CLUB F22',
     category: HACIENDA_F22_TECHNICAL.typology,
     location: 'Cúcuta, Norte de Santander',
     area: F22_AREA_BUILT,
@@ -362,7 +362,7 @@ export function GuestPortfolioShowcase({
       onContactCommercial();
     } else {
       const msg = encodeURIComponent("Hola Massa Group, estuve explorando su portafolio público VIEW y quisiera cotizar un diseño arquitectónico.");
-      window.open(`https://wa.me/573108924410?text=${msg}`, '_blank');
+      window.open(`https://wa.me/573104771967?text=${msg}`, '_blank');
     }
   };
 

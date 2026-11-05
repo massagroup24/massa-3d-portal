@@ -44,7 +44,7 @@ export function Header({
       onContact();
     } else {
       const msg = encodeURIComponent(`Hola Massa Group, estoy explorando el proyecto ${projectName} en su portal VIEW y quisiera agendar una asesoría de diseño.`);
-      window.open(`https://wa.me/573108924410?text=${msg}`, '_blank');
+      window.open(`https://wa.me/573104771967?text=${msg}`, '_blank');
     }
   };
 

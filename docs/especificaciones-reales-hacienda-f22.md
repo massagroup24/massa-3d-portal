@@ -13,11 +13,11 @@ sin evaluación normativa ni certificación técnica adicional.
 | Zona piscina | 56,96 m² |
 | Total área primer piso | 323,06 m² |
 | Segundo piso | 198,78 m² |
-| Tercer piso | 50,00 m² |
+| Tercer piso | 70,25 m² |
 | Área libre | 320,94 m² |
-| Construcción total | 514,88 m² |
+| Construcción total | 592,09 m² |
 | Índice de ocupación | 0,41 |
-| Índice de construcción | 0,80 |
+| Índice de construcción | 0,91 |
 | Grupo de ocupación | Residencial |
 | Subgrupo de ocupación | R1 |
 | Número de salidas | 2 |
@@ -28,7 +28,7 @@ Los valores se conservan tal como aparecen. La comprobación aritmética muestra
 
 - 223,78 + 42,32 + 56,96 = 323,06 m².
 - 323,06 + 320,94 = 644,00 m².
-- 223,78 + 42,32 + 198,78 + 50,00 = 514,88 m².
+- 323,06 + 198,78 + 70,25 = 592,09 m² (Total primer piso + segundo piso + tercer piso).
 
 ## Implementación
 

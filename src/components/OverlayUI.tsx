@@ -59,7 +59,7 @@ export function OverlayUI({
     Object.values(rooms || {}).forEach(r => {
       if (r.floorLevel) set.add(r.floorLevel);
     });
-    // Resguardo directo para Hacienda F22
+    // Resguardo directo para Hacienda Club F22
     if (currentRoom?.id?.includes('f22') || minimapImage?.includes('F22') || minimapImage?.includes('f22')) {
       set.add('Piso 1');
       set.add('Piso 2');

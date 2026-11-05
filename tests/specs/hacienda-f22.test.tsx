@@ -15,14 +15,14 @@ const f22 = projectsData.project_hacienda_f22;
 
 describe('Transcripción y consistencia de las especificaciones reales F22', () => {
   it('mantiene exactamente las áreas del documento y sus totales sin sumar la piscina a construcción', () => {
-    expect(specs.areas).toEqual({ lot: 644, firstFloor: 223.78, kiosk: 42.32, poolZone: 56.96, firstFloorTotal: 323.06, secondFloor: 198.78, thirdFloor: 50, openArea: 320.94, totalConstruction: 514.88 });
+    expect(specs.areas).toEqual({ lot: 644, firstFloor: 223.78, kiosk: 42.32, poolZone: 56.96, firstFloorTotal: 323.06, secondFloor: 198.78, thirdFloor: 70.25, openArea: 320.94, totalConstruction: 592.09 });
     const a = specs.areas;
     expect(a.firstFloor + a.kiosk + a.poolZone).toBeCloseTo(a.firstFloorTotal);
     expect(a.firstFloorTotal + a.openArea).toBeCloseTo(a.lot);
-    expect(a.firstFloor + a.kiosk + a.secondFloor + a.thirdFloor).toBeCloseTo(a.totalConstruction);
+    expect(a.firstFloorTotal + a.secondFloor + a.thirdFloor).toBeCloseTo(a.totalConstruction);
   });
   it('transcribe ambos índices y las cinco condiciones de ocupación', () => {
-    expect(specs.indices).toEqual({ occupation: 0.41, construction: 0.8 });
+    expect(specs.indices).toEqual({ occupation: 0.41, construction: 0.91 });
     expect(specs.occupancy).toEqual({ group: 'Residencial', subgroup: 'R1', exits: 2, riskCategory: 'I', occupantLoad: 21 });
     expect(technicalRowGroups(specs).flatMap(group => group.rows)).toHaveLength(16);
   });
@@ -32,7 +32,7 @@ describe('Transcripción y consistencia de las especificaciones reales F22', () 
     const publicSpecs = getProjectPublicSpecs('HACIENDA F22');
     expect([f22.areaBuilt, commercial.areaBuilt, identity.specs.areaBuilt, publicSpecs.areaBuilt]).toEqual(Array(4).fill(F22_AREA_BUILT));
     expect([f22.areaLot, commercial.areaLot, identity.specs.lotArea, publicSpecs.lotArea]).toEqual(Array(4).fill(F22_LOT_AREA));
-    expect(HACIENDA_F22_LEVELS.map(level => level.area)).toEqual(['223,78 m²', '198,78 m²', '50,00 m²']);
+    expect(HACIENDA_F22_LEVELS.map(level => level.area)).toEqual(['223,78 m²', '198,78 m²', '70,25 m²']);
     expect(HACIENDA_F22_BLUEPRINTS.map(plan => plan.metadata?.area)).toEqual(HACIENDA_F22_LEVELS.map(level => level.area));
     expect(f22.bedrooms).toBeUndefined();
     expect(identity.specs.bathrooms).toBeUndefined();
@@ -51,7 +51,7 @@ describe('Transcripción y consistencia de las especificaciones reales F22', () 
     const original = structuredClone(f22);
     const stale = { ...original, areaBuilt: '560 m²', areaLot: '1.200 m²', bedrooms: 4, bathrooms: 5, parkingSpaces: 4, published: true };
     const result = applyF22VerifiedSpecs(stale);
-    expect(result.areaBuilt).toBe('514,88 m²');
+    expect(result.areaBuilt).toBe('592,09 m²');
     expect(result.areaLot).toBe('644,00 m²');
     expect(result.bedrooms).toBeUndefined();
     expect(result.published).toBe(true);

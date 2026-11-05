@@ -9,11 +9,11 @@
     "poolZone": 56.96,
     "firstFloorTotal": 323.06,
     "secondFloor": 198.78,
-    "thirdFloor": 50.00,
+    "thirdFloor": 70.25,
     "openArea": 320.94,
-    "totalConstruction": 514.88
+    "totalConstruction": 592.09
   },
-  "indices": { "occupation": 0.41, "construction": 0.80 },
+  "indices": { "occupation": 0.41, "construction": 0.91 },
   "occupancy": {
     "group": "Residencial",
     "subgroup": "R1",

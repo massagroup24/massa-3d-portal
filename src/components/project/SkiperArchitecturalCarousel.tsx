@@ -36,7 +36,7 @@ export function SkiperArchitecturalCarousel({
   const primaryHover = identity?.theme.primaryHover || '#F1E29B';
   const brandLogoHorizontal = identity?.clientBrand?.logoHorizontalWhite || '/HACIENDA F22/branding/amho-horizontal-white.png';
   const brandName = identity?.brandName || 'AMHO Construcciones';
-  const projectName = identity?.name || 'HACIENDA F22';
+  const projectName = identity?.name || 'HACIENDA CLUB F22';
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
@@ -157,6 +157,7 @@ export function SkiperArchitecturalCarousel({
         <div className="flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 flex-nowrap sm:flex-wrap overflow-x-auto pb-2 sm:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((cat) => {
             const isActive = activeCategory === cat.name;
+            const isGoldTheme = primaryColor.toUpperCase() === '#DFC47B';
             return (
               <button
                 key={cat.name}
@@ -165,7 +166,7 @@ export function SkiperArchitecturalCarousel({
                 style={
                   isActive
                     ? {
-                        backgroundColor: primaryColor,
+                        background: isGoldTheme ? 'linear-gradient(135deg, #9C772C 0%, #DFC47B 35%, #FFF4BE 52%, #C9A654 75%, #8C6924 100%)' : primaryColor,
                         color: '#060608',
                         borderColor: primaryColor,
                         boxShadow: `0 4px 20px ${primaryColor}55`,
@@ -225,9 +226,9 @@ export function SkiperArchitecturalCarousel({
         }
       >
         <CarouselContent 
-          className="flex h-[285px] sm:h-[600px] md:h-[700px] lg:h-[800px] xl:h-[860px] 2xl:h-[900px] w-full items-center"
+          className="flex h-[340px] sm:h-[600px] md:h-[700px] lg:h-[800px] xl:h-[860px] 2xl:h-[900px] w-full items-center"
           style={{
-            ['--stage-height' as any]: isMobile ? '285px' : 'clamp(560px, 78vh, 880px)'
+            ['--stage-height' as any]: isMobile ? '340px' : 'clamp(560px, 78vh, 880px)'
           }}
         >
           {displayedRenders.map((render, index) => {
@@ -243,8 +244,8 @@ export function SkiperArchitecturalCarousel({
                 style={
                   isMobile
                     ? {
-                        width: '88vw',
-                        maxWidth: '420px',
+                        width: '90vw',
+                        maxWidth: '440px',
                       }
                     : {
                         // Amplio espacio de vista previa monumental respetando la proporción nativa del render
@@ -290,12 +291,19 @@ export function SkiperArchitecturalCarousel({
                 >
                   <div className="relative h-full w-full bg-[#08080C] flex items-center justify-center p-1 sm:p-2">
                     {hasImage ? (
-                      <img
-                        src={encodeURI(render.url)}
-                        alt={render.title}
-                        loading="lazy"
-                        className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl sm:rounded-2xl transition-transform duration-700 ease-out"
-                      />
+                      <>
+                        <img
+                          src={encodeURI(render.url)}
+                          alt={render.title}
+                          loading="lazy"
+                          className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl sm:rounded-2xl transition-transform duration-700 ease-out"
+                        />
+                        <div className="absolute top-3 left-3 z-20">
+                          <span className="px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-[10px] font-mono font-bold uppercase tracking-wider text-white">
+                            Render
+                          </span>
+                        </div>
+                      </>
                     ) : (
                       /* Estado Arquitectónico Estructurado cuando el render está en proceso de carga */
                       <div
@@ -427,8 +435,8 @@ export function SkiperArchitecturalCarousel({
             >
               <div className="flex items-center gap-2 mb-1">
                 <span
-                  className="text-[10px] sm:text-[11px] font-mono tracking-[0.22em] uppercase font-bold"
-                  style={{ color: primaryHover }}
+                  className={cn("text-[10px] sm:text-[11px] font-mono tracking-[0.22em] uppercase font-bold", primaryColor.toUpperCase() === '#DFC47B' && "gold-metallic-text")}
+                  style={primaryColor.toUpperCase() === '#DFC47B' ? undefined : { color: primaryHover }}
                 >
                   {activeRender.category}
                 </span>
@@ -445,11 +453,11 @@ export function SkiperArchitecturalCarousel({
         </AnimatePresence>
 
         {/* Barra de control táctil ergonómica para móvil */}
-        <div className="flex sm:hidden items-center justify-center gap-4 mt-3">
+        <div className="flex sm:hidden items-center justify-center gap-3 mt-3">
           <button
             type="button"
             onClick={() => api?.scrollPrev()}
-            className="px-3.5 py-1.5 rounded-full bg-white/[0.06] text-white border border-white/15 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1"
+            className="min-h-[40px] px-4 py-2 rounded-full bg-white/[0.06] text-white border border-white/15 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform"
           >
             <ChevronLeft className="w-3.5 h-3.5" style={{ color: primaryColor }} />
             <span>Anterior</span>
@@ -464,7 +472,7 @@ export function SkiperArchitecturalCarousel({
                 borderColor: `${primaryColor}65`,
                 color: primaryHover,
               }}
-              className="px-3.5 py-1.5 rounded-full border text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5"
+              className="min-h-[40px] px-4 py-2 rounded-full border text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform"
             >
               <Maximize2 className="w-3 h-3" />
               <span>Ver 4K</span>
@@ -474,7 +482,7 @@ export function SkiperArchitecturalCarousel({
           <button
             type="button"
             onClick={() => api?.scrollNext()}
-            className="px-3.5 py-1.5 rounded-full bg-white/[0.06] text-white border border-white/15 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1"
+            className="min-h-[40px] px-4 py-2 rounded-full bg-white/[0.06] text-white border border-white/15 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform"
           >
             <span>Siguiente</span>
             <ChevronRight className="w-3.5 h-3.5" style={{ color: primaryColor }} />

@@ -38,7 +38,7 @@ export function GuestHome({
   heroImage = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop',
   onBackToPortfolio,
 }: GuestHomeProps) {
-  const whatsappUrl = `https://wa.me/573108924410?text=${encodeURIComponent(`Hola Massa Group, estuve viendo el proyecto ${projectName} en su portal público VIEW y me gustaría cotizar un diseño.`)}`;
+  const whatsappUrl = `https://wa.me/573104771967?text=${encodeURIComponent(`Hola Massa Group, estuve viendo el proyecto ${projectName} en su portal público VIEW y me gustaría cotizar un diseño.`)}`;
 
   if (specs.technicalSpecs) return <div className="space-y-6 pb-36">
     <div className="flex flex-wrap items-center gap-3">
@@ -374,7 +374,7 @@ export function GuestHome({
             <div className="relative z-10 p-5 sm:p-7 flex items-end justify-between gap-3 sm:gap-4">
               <div>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/30 text-[10px] font-bold text-[#9CD01A] uppercase tracking-wider mb-1.5 sm:mb-2">
-                  <CreditCard className="w-3 h-3" /> Presupuesto Llave en Mano
+                  <CreditCard className="w-3 h-3" /> Presupuesto Integral
                 </span>
                 <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-0.5 sm:mb-1 group-hover:text-[#9CD01A] transition-colors">
                   Valor & Forma de Pago
@@ -507,7 +507,7 @@ export function GuestHome({
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-[#9CD01A] shrink-0" />
             <div className="text-xs text-white/80">
-              <strong className="text-white">Garantía Total Llave en Mano:</strong> Sin sobrecostos imprevistos. Cotización respaldada por contrato de obra a precio cerrado.
+              <strong className="text-white">Garantía de Obra Integral:</strong> Sin sobrecostos imprevistos. Cotización respaldada por contrato de obra a precio cerrado.
             </div>
           </div>
           <button
@@ -556,7 +556,7 @@ export function GuestHome({
           </a>
 
           <a
-            href="tel:+573108924410"
+            href="tel:+573104771967"
             className="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition cursor-pointer"
             title="Llamar a Massa Group"
           >

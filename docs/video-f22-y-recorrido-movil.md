@@ -1,24 +1,56 @@
 # Video de F22 y recorrido 360° en móvil
 
-## Video oficial pendiente
+## Video oficial configurado
 
-Se desactivó el reel de inicio de Hacienda F22 porque el usuario indicó que no
-pertenece al proyecto. Se conserva el marco 16:9 y la identidad AMHO, con el texto
-«Video del proyecto» y «Próximamente». No se renderiza ni se descarga un video
-vacío ni se muestran controles de reproducción cuando no hay URL configurada.
+El video entregado el 4 de noviembre de 2026 está en
+`public/HACIENDA F22/HACIENDA CLUB F22.mp4`. La ruta pública
+`/HACIENDA F22/HACIENDA CLUB F22.mp4` se configura tanto en el campo `video` de
+`src/data/projects.json` como en `heroVideoUrl` de la identidad F22 en
+`src/config/projectIdentityConfig.ts`.
 
-Para añadir el video real:
+El archivo contiene video H.264 de 1920 × 1080 a 30 fps y audio AAC estéreo,
+con una duración de 36,5 segundos. El reproductor conserva la proporción 16:9,
+la portada de fachada y la identidad AMHO. Inicia en silencio, permite
+pausar, activar el sonido y abrir pantalla completa. Al terminar, el reproductor
+muestra un cierre de AMHO durante 2,8 segundos: aparece su logo, una línea dorada
+y el nombre del proyecto; después reinicia el video. El cierre se implementa en
+la web, sin volver a codificar el MP4. Respeta la preferencia de movimiento
+reducido y permite reiniciar el video con el botón de reproducción. Los demás
+proyectos conservan su bucle habitual. Si el navegador bloquea
+la reproducción automática, se puede iniciar con el botón de reproducción.
+Las rutas con espacios se codifican al asignarlas al reproductor.
+Se reorganizó el contenedor MP4 con `faststart`, sin recodificar imagen ni audio,
+para que los metadatos de reproducción estén al principio del archivo.
 
-1. Colocar el archivo definitivo en `public/HACIENDA F22/`, o disponer de su URL.
-2. En `src/config/projectIdentityConfig.ts`, dentro de
-   `PROJECT_IDENTITIES.project_hacienda_f22`, asignar su ruta a `heroVideoUrl`.
-   Ejemplo: `heroVideoUrl: '/HACIENDA F22/VIDEO_OFICIAL_F22.mp4'`.
-3. Publicar la actualización de la web. El reproductor y sus controles aparecen
-   al configurar la URL; no hay que reconstruir el espacio de la página.
+Cuando no hay URL se conserva el espacio «Próximamente»; si la carga falla se
+muestra el aviso de video no disponible. El reel anterior no se utiliza.
 
-El archivo anterior se conserva en disco y está desactivado en la configuración.
-No volver a usarlo como video oficial sin reemplazar su contenido por el real.
-Los demás proyectos conservan sus URLs de video existentes.
+Validación de esta integración: las 13 pruebas de presentación pasan; se
+decodificó el MP4 completo sin errores y se verificó que `moov` precede a `mdat`.
+La compilación de código de Vite en memoria (`write: false`, `copyPublicDir: false`)
+finalizó correctamente. El build normal no terminó por falta de espacio en disco
+al copiar otro video público (`VIDEO H4.mp4`). La ejecución conjunta de las
+pruebas de especificaciones agotó memoria en PGlite; la suite de presentación
+se ejecutó por separado correctamente. No se comprobó reproducción en un
+dispositivo físico ni se publicó el cambio.
+
+La presentación usa Inter con números alineados a la altura de las mayúsculas.
+El título forma dos líneas de la misma escala: «HACIENDA» y «CLUB F22», con F22
+en dorado sólido. Esta composición se aplica solo a Hacienda Club F22.
+El orden visual es encabezado con video, carrusel y muro de
+renders, ficha técnica, recorrido 360°, memoria descriptiva y firma de la
+constructora. La ficha prioriza áreas y datos generales en un solo panel; los
+índices y ocupaciones se consultan mediante un desplegable. Se conservan los
+16 datos técnicos documentados. TypeScript y las pruebas de presentación
+verifican la integración; la revisión visual con Chrome quedó bloqueada por
+la comprobación de URL de la herramienta de control del navegador.
+
+La cabecera incluye «Compartir proyecto» también en móvil. Comparte la URL
+`/proyecto/{slug}` usando el dominio donde se abre la página, sin consultas ni
+anclas. Usa el menú nativo cuando está disponible; en su defecto copia el enlace
+y confirma la copia. Si el portapapeles está bloqueado, muestra el enlace
+seleccionado en un diálogo. Cancelar el menú no copia nada. Se verificaron seis
+casos de compartir y las 13 pruebas de presentación, además de TypeScript.
 
 ## Recorrido inmersivo
 
@@ -107,7 +139,8 @@ dispositivos con recursos insuficientes.
 
 Después de publicar, comprobar en la PWA real y en un navegador de escritorio:
 
-1. Abrir F22: debe aparecer el espacio reservado y no el reel anterior.
+1. Abrir F22: debe reproducirse `HACIENDA CLUB F22.mp4`; comprobar pausa, sonido
+   y pantalla completa.
 2. Entrar al recorrido y arrastrar en horizontal y vertical.
 3. Cambiar varios ambientes mediante hotspots, carrusel y plano.
 4. Girar el teléfono y comprobar que «Volver» y los controles siguen visibles.

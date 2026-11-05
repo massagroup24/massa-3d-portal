@@ -61,7 +61,7 @@ export function applyF22VerifiedSpecs(project: Project): Project {
   const rooms: Record<string, Room> = Object.fromEntries(Object.entries(project.rooms || {}).filter(([, room]) => room && typeof room === 'object').map(([id, room]) => {
     const name = F22_ROOM_NAMES[f22AssetName(room.imageUrl || '')] || 'Ambiente del recorrido';
     const { area: _area, materials: _materials, height: _height, ...navigation } = room as Room & { area?: unknown; materials?: unknown; height?: unknown };
-    return [id, { ...navigation, name, description: `Recorrido 360° de Hacienda F22: ${name.toLowerCase()}.` }];
+    return [id, { ...navigation, name, description: `Recorrido 360° de Hacienda Club F22: ${name.toLowerCase()}.` }];
   }));
   for (const room of Object.values(rooms)) {
     room.hotspots = (room.hotspots || []).map(hotspot => ({ ...hotspot, label: `Ir a ${rooms[hotspot.targetRoom]?.name || 'otro ambiente'}` }));
@@ -70,10 +70,10 @@ export function applyF22VerifiedSpecs(project: Project): Project {
     specs: _specs, publicSpecs: _publicSpecs, materials: _materials, finishes: _finishes, ...rest
   } = project as Project & { specs?: unknown; publicSpecs?: unknown; materials?: unknown; finishes?: unknown };
   return {
-    ...rest, rooms, areaBuilt: F22_AREA_BUILT, areaLot: F22_LOT_AREA,
+    ...rest, name: 'HACIENDA CLUB F22', rooms, areaBuilt: F22_AREA_BUILT, areaLot: F22_LOT_AREA,
     categoryLabel: technical.typology, tagline: F22_SUMMARY, description: F22_SUMMARY,
     statusLabel: 'Proyecto residencial', technicalSpecs: technical, highlights: F22_HIGHLIGHTS,
-    renders: project.renders?.map(render => ({ ...render, title: f22RenderTitle(render.storage_path), description: 'Visualización arquitectónica de Hacienda F22.' })),
+    renders: project.renders?.map(render => ({ ...render, title: f22RenderTitle(render.storage_path), description: 'Visualización arquitectónica de Hacienda Club F22.' })),
   };
 }
 

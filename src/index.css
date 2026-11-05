@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@800;900&family=Outfit:wght@800;900&family=Syne:wght@700;800;900&family=Unbounded:wght@800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@800;900&family=Outfit:wght@800;900&family=Playfair+Display:wght@700;800;900&family=Syne:wght@700;800;900&family=Unbounded:wght@800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -24,6 +24,8 @@
     overflow-y: auto;
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -34,6 +36,16 @@
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-x: none;
+  }
+
+  button,
+  a,
+  summary,
+  select,
+  input,
+  [role="button"] {
+    touch-action: manipulation;
   }
 
   #root {
@@ -61,6 +73,118 @@
   height: 100vh;
   height: 100dvh;
   min-height: 0;
+}
+
+.project-f22-title {
+  font-family: 'Cinzel', 'Playfair Display', 'Syne', Georgia, serif;
+  font-weight: 900;
+  font-size: clamp(1.95rem, 6.2vw, 5.2rem);
+  line-height: 0.96;
+  letter-spacing: 0.025em;
+  font-variant-numeric: lining-nums proportional-nums;
+  font-feature-settings: "lnum" 1, "pnum" 1;
+  text-wrap: balance;
+  color: #FFFDF8;
+  filter:
+    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 10px 28px rgba(0, 0, 0, 0.85))
+    drop-shadow(0 0 22px rgba(223, 196, 123, 0.25));
+}
+
+/* Efecto oro 24k metalizado cepillado para textos, cifras e insignias doradas */
+.project-f22-title span > span[style],
+.gold-metallic-text {
+  background-image: linear-gradient(
+    135deg,
+    #8C6924 0%,
+    #D6B464 16%,
+    #FFF4BE 34%,
+    #DFC47B 50%,
+    #9C772C 66%,
+    #FBF0B9 82%,
+    #B69040 100%
+  ) !important;
+  background-size: 200% auto;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.gold-metallic-bg {
+  background-image: linear-gradient(
+    135deg,
+    #9E7D3B 0%,
+    #DFC47B 28%,
+    #FFF2B2 50%,
+    #C9A658 74%,
+    #8E6C2A 100%
+  ) !important;
+}
+
+@keyframes f22-central-wave-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.project-f22-word-enter-1 {
+  color: #FFFDF8;
+  animation: f22-central-wave-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.project-f22-word-enter-2 {
+  color: #FFFDF8;
+  animation: f22-central-wave-in 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes project-loader-beam {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+.animate-project-loader-beam {
+  animation: project-loader-beam 1.65s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Cierre de marca del reel F22: entrada breve, firma y fundido antes del reinicio. */
+@keyframes project-outro-stage {
+  0% { opacity: 0; }
+  12%, 88% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes project-outro-logo {
+  0%, 8% { opacity: 0; transform: translateY(10px) scale(0.96); filter: blur(5px); }
+  30%, 88% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: translateY(-3px) scale(1.01); filter: blur(0); }
+}
+@keyframes project-outro-line {
+  0%, 20% { transform: scaleX(0); opacity: 0; }
+  45%, 88% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+.project-brand-outro { animation: project-outro-stage 2.8s ease both; }
+.project-brand-outro-logo { animation: project-outro-logo 2.8s ease both; }
+.project-brand-outro-caption { animation: project-outro-stage 2.8s ease both; }
+.project-brand-outro-line { animation: project-outro-line 2.8s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .project-brand-outro, .project-brand-outro-logo, .project-brand-outro-caption, .project-brand-outro-line,
+  .project-f22-word-enter-1, .project-f22-word-enter-2 { animation: none; }
 }
 
 /* Animación física de shake para errores de autenticación */

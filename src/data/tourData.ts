@@ -479,7 +479,7 @@ export const projectsData: Record<string, Project> = {
 
   'project_hacienda_f22': {
     id: 'project_hacienda_f22',
-    name: 'HACIENDA F22',
+    name: 'HACIENDA CLUB F22',
     tagline: F22_SUMMARY,
     category: 'villa',
     categoryLabel: HACIENDA_F22_TECHNICAL.typology,
@@ -518,23 +518,23 @@ export const projectsData: Record<string, Project> = {
       '/HACIENDA F22/TERRAZA.png'
     ],
     renders: [
-      { id: 'h22-r-dron', title: "Vista aérea", storage_path: '/HACIENDA F22/FACHADA DRON.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 1 },
-      { id: 'h22-r-1', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 2 },
-      { id: 'h22-r-2', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA 2.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 3 },
-      { id: 'h22-r-3', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA 3.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 4 },
-      { id: 'h22-r-n1', title: "Fachada nocturna", storage_path: '/HACIENDA F22/FACHADA NOCHE.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 5 },
-      { id: 'h22-r-n2', title: "Fachada nocturna", storage_path: '/HACIENDA F22/FACHADA NOCHE 2.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 6 },
-      { id: 'h22-r-4', title: "Fachada posterior", storage_path: '/HACIENDA F22/FACHADA TRASERA.jpg', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 7 },
-      { id: 'h22-r-5', title: "Fachada posterior", storage_path: '/HACIENDA F22/FACHADA TRASERA 2.jpg', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 8 },
-      { id: 'h22-r-6', title: "Vestíbulo", storage_path: '/HACIENDA F22/VESTIBULO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 9 },
-      { id: 'h22-r-7', title: "Sala y comedor", storage_path: '/HACIENDA F22/SALA.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 10 },
-      { id: 'h22-r-8', title: "Cocina", storage_path: '/HACIENDA F22/COCINA.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 11 },
-      { id: 'h22-r-9', title: "Piscina", storage_path: '/HACIENDA F22/PISCINA.jpg', category: 'Zonas Comunes', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 12 },
-      { id: 'h22-r-10', title: "Terraza y kiosco", storage_path: '/HACIENDA F22/TERRAZA.png', category: 'Zonas Comunes', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 13 },
-      { id: 'h22-r-11', title: "Sala de TV", storage_path: '/HACIENDA F22/SALA TV.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 14 },
-      { id: 'h22-r-12', title: "Habitación principal", storage_path: '/HACIENDA F22/DORMITORIO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 15 },
-      { id: 'h22-r-13', title: "Vestier", storage_path: '/HACIENDA F22/VESTIER.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 16 },
-      { id: 'h22-r-14', title: "Baño", storage_path: '/HACIENDA F22/BANO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda F22.', order_index: 17 }
+      { id: 'h22-r-dron', title: "Vista aérea", storage_path: '/HACIENDA F22/FACHADA DRON.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 1 },
+      { id: 'h22-r-1', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 2 },
+      { id: 'h22-r-2', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA 2.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 3 },
+      { id: 'h22-r-3', title: "Fachada principal", storage_path: '/HACIENDA F22/FACHADA 3.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 4 },
+      { id: 'h22-r-n1', title: "Fachada nocturna", storage_path: '/HACIENDA F22/FACHADA NOCHE.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 5 },
+      { id: 'h22-r-n2', title: "Fachada nocturna", storage_path: '/HACIENDA F22/FACHADA NOCHE 2.png', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 6 },
+      { id: 'h22-r-4', title: "Fachada posterior", storage_path: '/HACIENDA F22/FACHADA TRASERA.jpg', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 7 },
+      { id: 'h22-r-5', title: "Fachada posterior", storage_path: '/HACIENDA F22/FACHADA TRASERA 2.jpg', category: 'Fachada', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 8 },
+      { id: 'h22-r-6', title: "Vestíbulo", storage_path: '/HACIENDA F22/VESTIBULO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 9 },
+      { id: 'h22-r-7', title: "Sala y comedor", storage_path: '/HACIENDA F22/SALA.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 10 },
+      { id: 'h22-r-8', title: "Cocina", storage_path: '/HACIENDA F22/COCINA.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 11 },
+      { id: 'h22-r-9', title: "Piscina", storage_path: '/HACIENDA F22/PISCINA.jpg', category: 'Zonas Comunes', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 12 },
+      { id: 'h22-r-10', title: "Terraza y kiosco", storage_path: '/HACIENDA F22/TERRAZA.png', category: 'Zonas Comunes', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 13 },
+      { id: 'h22-r-11', title: "Sala de TV", storage_path: '/HACIENDA F22/SALA TV.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 14 },
+      { id: 'h22-r-12', title: "Habitación principal", storage_path: '/HACIENDA F22/DORMITORIO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 15 },
+      { id: 'h22-r-13', title: "Vestier", storage_path: '/HACIENDA F22/VESTIER.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 16 },
+      { id: 'h22-r-14', title: "Baño", storage_path: '/HACIENDA F22/BANO.jpg', category: 'Interiores', description: 'Visualización arquitectónica de Hacienda Club F22.', order_index: 17 }
     ],
     rooms: {
           "room_f22_bbq": {
@@ -584,7 +584,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/BBQ.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Recorrido 360° de Hacienda F22: kiosco.",
+                "description": "Recorrido 360° de Hacienda Club F22: kiosco.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 22,
@@ -658,7 +658,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/SALA.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Recorrido 360° de Hacienda F22: sala.",
+                "description": "Recorrido 360° de Hacienda Club F22: sala.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 65,
@@ -712,7 +712,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/COCINA_1.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Recorrido 360° de Hacienda F22: cocina.",
+                "description": "Recorrido 360° de Hacienda Club F22: cocina.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 58,
@@ -746,7 +746,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/HAB PPAL 1.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Recorrido 360° de Hacienda F22: habitación principal.",
+                "description": "Recorrido 360° de Hacienda Club F22: habitación principal.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 43,
@@ -780,7 +780,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/ESTUDIO.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Recorrido 360° de Hacienda F22: estudio.",
+                "description": "Recorrido 360° de Hacienda Club F22: estudio.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 76,
@@ -804,7 +804,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/HAB AUX.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Recorrido 360° de Hacienda F22: habitación auxiliar.",
+                "description": "Recorrido 360° de Hacienda Club F22: habitación auxiliar.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 76,
@@ -868,7 +868,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/PASILLO 2P.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Recorrido 360° de Hacienda F22: pasillo del segundo piso.",
+                "description": "Recorrido 360° de Hacienda Club F22: pasillo del segundo piso.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 71,
@@ -892,7 +892,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/SALA TV.jpg",
                 "floorLevel": "Piso 3",
-                "description": "Recorrido 360° de Hacienda F22: sala de tv.",
+                "description": "Recorrido 360° de Hacienda Club F22: sala de tv.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-3.png",
                 "minimapPosition": {
                       "x": 72,
@@ -916,7 +916,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/VESTIER.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Recorrido 360° de Hacienda F22: vestier.",
+                "description": "Recorrido 360° de Hacienda Club F22: vestier.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 63,
@@ -950,7 +950,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/WCPPAL.jpg",
                 "floorLevel": "Piso 2",
-                "description": "Recorrido 360° de Hacienda F22: baño principal.",
+                "description": "Recorrido 360° de Hacienda Club F22: baño principal.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-2.png",
                 "minimapPosition": {
                       "x": 58,
@@ -1024,7 +1024,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/ESCALERAS.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Recorrido 360° de Hacienda F22: escaleras.",
+                "description": "Recorrido 360° de Hacienda Club F22: escaleras.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 74,
@@ -1078,7 +1078,7 @@ export const projectsData: Record<string, Project> = {
                 ],
                 "imageUrl": "/HACIENDA F22/360/ZONA SOCIAL.jpg",
                 "floorLevel": "Piso 1",
-                "description": "Recorrido 360° de Hacienda F22: zona piscina.",
+                "description": "Recorrido 360° de Hacienda Club F22: zona piscina.",
                 "floorPlanImage": "/HACIENDA F22/360/PLANOS/P1-1.png",
                 "minimapPosition": {
                       "x": 48,
@@ -1176,7 +1176,7 @@ export function normalizeProject(raw: any): Project {
     let roomFloorLevel = roomData.floorLevel ? String(roomData.floorLevel) : undefined;
     let roomFloorPlanImage = roomData.floorPlanImage ? String(roomData.floorPlanImage) : undefined;
 
-    // Resguardo automático para Hacienda F22
+    // Resguardo automático para Hacienda Club F22
     if ((id === 'project_hacienda_f22' || id === 'hacienda-f22') && !roomFloorLevel) {
       if (['room_f22_pasillo', 'room_f22_master', 'room_f22_vestier', 'room_f22_wc_ppal', 'room_f22_hab_aux'].includes(roomId)) {
         roomFloorLevel = 'Piso 2';

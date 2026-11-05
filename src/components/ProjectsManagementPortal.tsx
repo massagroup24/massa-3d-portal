@@ -88,7 +88,7 @@ export function ProjectsManagementPortal({
     const isHacienda = project.id === 'project_hacienda_f22';
     const isIbiza = project.id === 'project_ibiza_a14' || project.name?.includes('A14');
     const brand = identity.clientBrand;
-    // Solo Hacienda F22 tiene marca de cliente externo (AMHO Construcciones con acentos champagne gold)
+    // Solo Hacienda Club F22 tiene marca de cliente externo (AMHO Construcciones con acentos champagne gold)
     // Ibiza A14 y los demás proyectos de autor conservan la identidad insigne verde de MASSA (#9CD01A)
     const isCustomBrand = Boolean(brand && isHacienda);
     const primaryColor = isHacienda ? '#DFC47B' : '#9CD01A';
@@ -536,7 +536,7 @@ export function ProjectsManagementPortal({
 
             <p className="text-xs sm:text-sm text-white/60 mt-2 max-w-2xl leading-relaxed">
               {activeSection === 'create'
-                ? 'Selecciona cualquiera de los proyectos creados actualmente (Hacienda F22 de AMHO Construcciones o Residencia Ibiza A14) para subir sus esferas 360°, enlazar puntos de navegación (hotspots) y configurar su plano interactivo.'
+                ? 'Selecciona cualquiera de los proyectos creados actualmente (Hacienda Club F22 de AMHO Construcciones o Residencia Ibiza A14) para subir sus esferas 360°, enlazar puntos de navegación (hotspots) y configurar su plano interactivo.'
                 : 'Apartado de recorridos 360° creados y guardados en tu biblioteca (incluyendo Sede Marquimoda y Residencia Edinson Jején). Puedes visualizarlos en pantalla completa, compartir su link directo o editar sus escenas.'}
             </p>
           </div>

@@ -39,8 +39,8 @@ export function ClientHome({
     name: 'Mateo Rossi',
     role: 'Director de Proyecto MASSA',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
-    phone: '+57 310 892 4410',
-    whatsapp: '573108924410'
+    phone: '+57 310 477 1967',
+    whatsapp: '573104771967'
   },
   onContactArchitect
 }: ClientHomeProps) {

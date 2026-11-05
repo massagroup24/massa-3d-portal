@@ -261,72 +261,7 @@ const DEFAULT_BLUEPRINTS: ProjectMediaItem[] = [
   }
 ];
 
-const DEFAULT_PROGRESS: ProgressUpdateItem[] = [
-  {
-    id: 'prog-1',
-    project_id: 'default',
-    title: 'Acabados en Madera y Carpintería Fija',
-    description: 'Instalación de paneles en roble europeo en sala y habitación principal. Avance al 85% de carpintería general.',
-    phase_name: 'FASE 3: ACABADOS DE LUJO',
-    progress_percentage: 68,
-    update_date: 'Octubre 2026',
-    published: true,
-    media: [
-      {
-        id: 'pm-1',
-        progress_id: 'prog-1',
-        media_type: 'photo',
-        storage_path: 'https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=1200&q=80',
-        caption: 'Colocación de cielorrasos e iluminación técnica perimetral.'
-      },
-      {
-        id: 'pm-2',
-        progress_id: 'prog-1',
-        media_type: 'photo',
-        storage_path: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80',
-        caption: 'Enchape en porcelanato de gran formato en cocina.'
-      }
-    ]
-  },
-  {
-    id: 'prog-2',
-    project_id: 'default',
-    title: 'Estructura Metálica y Mampostería Completa',
-    description: 'Fundición de losa de entrepiso y levantamiento de muros divisorios en bloque termoacústico.',
-    phase_name: 'FASE 2: OBRA GRUESA',
-    progress_percentage: 45,
-    update_date: 'Agosto 2026',
-    published: true,
-    media: [
-      {
-        id: 'pm-3',
-        progress_id: 'prog-2',
-        media_type: 'photo',
-        storage_path: 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1200&q=80',
-        caption: 'Estructura portante completada y revisada por interventoría técnica.'
-      }
-    ]
-  },
-  {
-    id: 'prog-3',
-    project_id: 'default',
-    title: 'Cimentación y Movimiento de Tierras',
-    description: 'Excavación, micropilotes a 12 metros y fundición de zapatas aisladas con concreto de 4000 PSI.',
-    phase_name: 'FASE 1: CIMENTACIÓN',
-    progress_percentage: 20,
-    update_date: 'Mayo 2026',
-    published: true,
-    media: [
-      {
-        id: 'pm-4',
-        progress_id: 'prog-3',
-        media_type: 'photo',
-        storage_path: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1200&q=80',
-        caption: 'Plataforma nivelada y anclajes estructurales iniciales.'
-      }
-    ]
-  }
-];
+const DEFAULT_PROGRESS: ProgressUpdateItem[] = [];
 
 export async function getProjectPortalData(projectId: string, fallbackProject?: Project): Promise<ProjectPortalData> {
   const { data: allowed, error: accessError } = await supabase.rpc('is_platform_admin');
@@ -336,13 +271,13 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
   if (projectError || !available) throw new Error('Proyecto no disponible.');
   const result = await loadPortalData();
   if (['project_hacienda_f22', 'hacienda-f22'].includes(projectId)) {
-    result.publicSpecs = getProjectPublicSpecs('HACIENDA F22');
-    result.renders = result.renders.map(render => ({ ...render, title: f22RenderTitle(render.storage_path), metadata: { ...render.metadata, description: 'Visualización arquitectónica de Hacienda F22.' } }));
+    result.publicSpecs = getProjectPublicSpecs('HACIENDA CLUB F22');
+    result.renders = result.renders.map(render => ({ ...render, title: f22RenderTitle(render.storage_path), metadata: { ...render.metadata, description: 'Visualización arquitectónica de Hacienda Club F22.' } }));
     result.blueprints = result.blueprints.map(blueprint => {
       const index = ['P1-1.png', 'P1-2.png', 'P1-3.png'].findIndex(filename => blueprint.storage_path.split('?')[0].endsWith('/' + filename));
       const { area: _area, description: _description, ...metadata } = blueprint.metadata || {};
       const level = F22_LEVELS[index];
-      return { ...blueprint, title: level ? 'Planta axonométrica • ' + level.name : 'Plano de Hacienda F22', metadata: level ? { ...metadata, level: level.name, area: level.area, description: level.spaces.join(' • ') } : metadata };
+      return { ...blueprint, title: level ? 'Planta axonométrica • ' + level.name : 'Plano de Hacienda Club F22', metadata: level ? { ...metadata, level: level.name, area: level.area, description: level.spaces.join(' • ') } : metadata };
     });
   }
   return resolveStorageReferences(supabase, result, supabaseUrl, 'project-vault');
@@ -372,8 +307,8 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
     const isHacienda = lowerId.includes('hacienda') || (rawData.name && rawData.name.toLowerCase().includes('hacienda')) || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('hacienda'));
     const isMq = lowerId.includes('marquimoda') || projectId === 'project_1782912175010' || (rawData.name && rawData.name.toLowerCase().includes('marquimoda'));
 
-    const projectName = rawData.name || fallbackProject?.name || (isIbiza ? 'IBIZA A14' : isHacienda ? 'HACIENDA F22' : isMq ? 'SEDE MARQUIMODA' : 'RESIDENCIA JEJÉN');
-    const clientName = isMq ? 'Marquimoda S.A.S.' : isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda F22' : ((rawData as any).clientName || 'Edinson Jején');
+    const projectName = isHacienda ? 'HACIENDA CLUB F22' : rawData.name || fallbackProject?.name || (isIbiza ? 'IBIZA A14' : isMq ? 'SEDE MARQUIMODA' : 'RESIDENCIA JEJÉN');
+    const clientName = isMq ? 'Marquimoda S.A.S.' : isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda Club F22' : ((rawData as any).clientName || 'Edinson Jején');
 
     // Renders
     let renders = (mediaRows || []).filter(m => m.type === 'render' && !m.storage_path.includes('unsplash.com'));
@@ -446,27 +381,17 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
       currentProgress: projRow?.current_progress ?? (isIbiza || isHacienda ? 15 : isMq ? 82 : 68),
       isPublic: projRow?.published_for_client === true,
       architect: {
-        name: projRow?.architect_name || 'Mateo Rossi',
-        role: projRow?.architect_role || 'Director de Proyecto MASSA',
-        avatar: projRow?.architect_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-        phone: projRow?.architect_phone || '+57 310 892 4410',
-        whatsapp: projRow?.architect_whatsapp || '573108924410'
+        name: projRow?.architect_name || 'Massa Group',
+        role: projRow?.architect_role || 'Dirección de Arquitectura e Ingeniería',
+        avatar: projRow?.architect_avatar || '/MASSA_USO.png',
+        phone: projRow?.architect_phone || '+57 310 477 1967 / +57 304 588 2770',
+        whatsapp: projRow?.architect_whatsapp || '573104771967'
       },
       renders,
       blueprints,
       progressUpdates,
       publicSpecs,
-      beforeAfterComparison: isMq ? {
-        beforeImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80',
-        beforeLabel: 'Enero 2026 • Estado Inicial de Planta Libre',
-        afterImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=85',
-        afterLabel: 'Estado Actual • Habilitación Arquitectónica 82%'
-      } : {
-        beforeImage: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1600&q=80',
-        beforeLabel: 'Mayo 2026 • Terreno y Cimentación',
-        afterImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=85',
-        afterLabel: 'Estado Actual • Estructura & Acabados 68%'
-      }
+      beforeAfterComparison: undefined
     };
   } catch (err) {
     console.warn('Error cargando portal data, retornando fallback seguro:', err);
@@ -474,36 +399,26 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
     const isIbiza = lowerId.includes('ibiza') || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('ibiza'));
     const isHacienda = lowerId.includes('hacienda') || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('hacienda'));
     const isMqFallback = lowerId.includes('marquimoda') || projectId === 'project_1782912175010' || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('marquimoda'));
-    const fallbackName = isIbiza ? 'IBIZA A14' : isHacienda ? 'HACIENDA F22' : isMqFallback ? 'SEDE MARQUIMODA' : (fallbackProject?.name || 'RESIDENCIA JEJÉN');
+    const fallbackName = isIbiza ? 'IBIZA A14' : isHacienda ? 'HACIENDA CLUB F22' : isMqFallback ? 'SEDE MARQUIMODA' : (fallbackProject?.name || 'RESIDENCIA JEJÉN');
     return {
       id: projectId,
       name: fallbackName,
-      clientName: isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda F22' : isMqFallback ? 'Marquimoda S.A.S.' : 'Edinson Jején',
+      clientName: isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda Club F22' : isMqFallback ? 'Marquimoda S.A.S.' : 'Edinson Jején',
       currentPhase: isIbiza || isHacienda ? 'FASE 1: PREVENTA & ESTUDIOS TÉCNICOS' : isMqFallback ? 'FASE 4: HABILITACIÓN ARQUITECTÓNICA' : 'FASE 3: ACABADOS DE LUJO',
       currentProgress: isIbiza || isHacienda ? 15 : isMqFallback ? 82 : 68,
       isPublic: available.published_for_client === true,
       architect: {
-        name: 'Mateo Rossi',
-        role: 'Director de Proyecto MASSA',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-        phone: '+57 310 892 4410',
-        whatsapp: '573108924410'
+        name: 'Massa Group',
+        role: 'Dirección de Arquitectura e Ingeniería',
+        avatar: '/MASSA_USO.png',
+        phone: '+57 310 477 1967 / +57 304 588 2770',
+        whatsapp: '573104771967'
       },
       renders: isIbiza ? IBIZA_A14_RENDERS : isHacienda ? HACIENDA_F22_RENDERS : [],
       blueprints: isIbiza ? IBIZA_A14_BLUEPRINTS : isHacienda ? HACIENDA_F22_BLUEPRINTS : DEFAULT_BLUEPRINTS,
       progressUpdates: isAdmin ? DEFAULT_PROGRESS : [],
       publicSpecs: getProjectPublicSpecs(fallbackName),
-      beforeAfterComparison: isMqFallback ? {
-        beforeImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=80',
-        beforeLabel: 'Enero 2026 • Estado Inicial de Planta Libre',
-        afterImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=85',
-        afterLabel: 'Estado Actual • Habilitación Arquitectónica 82%'
-      } : {
-        beforeImage: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1600&q=80',
-        beforeLabel: 'Mayo 2026 • Terreno y Cimentación',
-        afterImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=85',
-        afterLabel: 'Estado Actual • Estructura & Acabados 68%'
-      }
+      beforeAfterComparison: undefined
     };
   }
 }
@@ -517,57 +432,22 @@ export function getProjectPublicSpecs(projectName: string): ProjectPublicSpecs {
   
   if (isIbiza) {
     return {
-      areaBuilt: 'Por definir m²',
+      areaBuilt: '',
       lotArea: 'Lote A14',
-      levels: '2 Plantas + Terraza',
-      typology: 'Villa Campestre de Autor',
+      levels: '2 niveles',
+      typology: 'Vivienda',
       location: 'Cúcuta, Norte de Santander',
       year: '2026',
-      architecturalStyle: 'Arquitectura Contemporánea Tropical',
-      designConcept: 'Concebida para el disfrute del clima y la luz de Cúcuta. Volumetría horizontal con generosos aleros de protección solar, ventilación cruzada continua e integración fluida entre salón, terraza y piscina.',
-      keyFeatures: [
-        'Distribución arquitectónica a medida con integración bioclimática',
-        'Sala social a doble altura conectada directamente a la terraza exterior',
-        'Cocina de autor abierta con isla central y despensa integrada',
-        'Piscina privada con solárium húmedo y jardín perimetral',
-        'Master Suite con vestidor privado y balcón hacia la vegetación',
-        'Garaje cubierto para 3 vehículos y accesos de servicio independientes'
-      ],
-      materials: [
-        { name: 'Piedra Natural & Concreto', category: 'Fachadas', description: 'Revestimiento pétreo térmico con acentos en concreto arquitectónico visto.' },
-        { name: 'Carpintería en Roble / Teca', category: 'Interiores & Decks', description: 'Madera natural tratada para alto confort térmico y biofilia.' },
-        { name: 'Porcelanato Gran Formato', category: 'Pisos & Baños', description: 'Placas rectificadas antideslizantes de textura sedosa.' },
-        { name: 'Ventanería de Control Térmico', category: 'Envolvente', description: 'Perfilería hermética en aluminio anodizado con vidrio de control solar.' }
-      ],
-      spatialProgram: [
-        { zone: 'Nivel 1 • Área Social & Relax', spaces: ['Hall de Acceso', 'Sala & Comedor en doble altura', 'Cocina Gourmet abierta', 'Terraza Apergolada con BBQ', 'Piscina & Deck', 'Baño Social', 'Zona de Ropas & Cuarto de Servicio'] },
-        { zone: 'Nivel 2 • Área Íntima', spaces: ['Master Suite con Vestidor y Baño Spa', 'Habitación 2 con Baño Privado', 'Habitación 3 con Baño Privado', 'Estar de Alcobas / Sala TV'] }
-      ],
+      architecturalStyle: 'Vivienda unifamiliar',
+      designConcept: 'Vivienda unifamiliar en Condominio Ibiza, Lote A14.',
+      keyFeatures: [],
+      materials: [],
+      spatialProgram: [],
       locationDetails: {
-        city: 'Cúcuta, NDS',
-        neighborhood: 'Condominio Campestre Ibiza',
+        city: 'Cúcuta, Norte de Santander',
+        neighborhood: 'Condominio Ibiza',
         lotNumber: 'Lote A14',
-        environment: 'Condominio cerrado de alta plusvalía, vigilancia 24/7, vías pavimentadas y club social campestre.'
-      },
-      finishes: {
-        flooring: 'Porcelanato rectificado de gran formato 120x60 cm mate.',
-        carpentry: 'Puertas de piso a techo en madera natural con cerraduras magnéticas.',
-        kitchen: 'Muebles termoformados de cierre lento con mesón en cuarzo / granito exótico.',
-        bathrooms: 'Sanitarios suspendidos y grifería monocontrol de alta gama en negro mate.',
-        facade: 'Envolvente mixta en revoque hidrófugo, lamas de aluminio y piedra natural.',
-        automation: 'Puntos domóticos previstos para iluminación, cortinas y sonido.'
-      },
-      financials: {
-        priceCOP: 'A consultar con el arquitecto',
-        priceUSD: 'Inversión personalizada',
-        downPayment: '30% Cuota Inicial durante planeación',
-        milestones: '50% en cuotas mensuales durante construcción',
-        delivery: '20% contra entrega de llaves y escrituración',
-        customTerms: [
-          'Presupuesto cerrado llave en mano',
-          'Acompañamiento en trámites fiduciarios o bancarios',
-          'Plan de pagos adaptable al cronograma de obra'
-        ]
+        environment: ''
       }
     };
   }
@@ -683,7 +563,7 @@ export function getProjectPublicSpecs(projectName: string): ProjectPublicSpecs {
       priceUSD: 'Proyecto Personalizado',
       downPayment: 'Estructura por hitos de ejecución',
       milestones: 'Desembolsos contra actas de interventoría técnica',
-      delivery: 'Entrega llave en mano con acabados de autor'
+      delivery: 'Entrega integral con acabados de autor'
     }
   };
 }

@@ -60,7 +60,7 @@ export function ProjectConfigurator({ initialProject, onClose, onSave, isNewProj
     Object.values(project.rooms || {}).forEach(r => {
       if (r.floorLevel) set.add(r.floorLevel);
     });
-    // Si no hay ninguno especificado o es Hacienda F22, asegurar los 3 pisos canónicos
+    // Si no hay ninguno especificado o es Hacienda Club F22, asegurar los 3 pisos canónicos
     if (set.size === 0) {
       set.add('Piso 1');
     }

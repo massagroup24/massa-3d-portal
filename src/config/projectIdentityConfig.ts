@@ -75,7 +75,7 @@ export interface ProjectIdentity {
   id: string;
   slug: string;
   code: string;             // Ej: 'F22' o 'A14'
-  name: string;             // Ej: 'HACIENDA F22' o 'IBIZA A14'
+  name: string;             // Ej: 'HACIENDA CLUB F22' o 'IBIZA A14'
   titlePrefix: string;      // Ej: 'HACIENDA' o 'IBIZA'
   titleHighlight: string;   // Ej: 'F22' o 'A14'
   categoryLabel: string;    // Ej: 'RESIDENCIA CAMPESTRE DE AUTOR'
@@ -110,7 +110,7 @@ export interface ProjectIdentity {
   rooms360?: ProjectRoom360[];
 }
 
-// Colección completa de los 33 renders arquitectónicos de HACIENDA F22 con proporciones nativas exactas
+// Colección completa de los 33 renders arquitectónicos de HACIENDA CLUB F22 con proporciones nativas exactas
 export const HACIENDA_F22_RENDERS: ProjectRender[] = [
   // 1. FACHADAS & EXTERIORES (8)
   {
@@ -118,7 +118,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Vista aérea",
     url: '/HACIENDA F22/FACHADA DRON.png',
     category: "Fachada & Exteriores",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1536,
     height: 1024,
     aspectRatio: 1.50
@@ -128,7 +128,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Fachada principal",
     url: '/HACIENDA F22/FACHADA.png',
     category: "Fachada & Exteriores",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
@@ -138,7 +138,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Fachada principal",
     url: '/HACIENDA F22/FACHADA 2.png',
     category: "Fachada & Exteriores",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1446,
     height: 1087,
     aspectRatio: 1.33
@@ -148,7 +148,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Fachada principal",
     url: '/HACIENDA F22/FACHADA 3.png',
     category: "Fachada & Exteriores",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1446,
     height: 1087,
     aspectRatio: 1.33
@@ -158,7 +158,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Fachada nocturna",
     url: '/HACIENDA F22/FACHADA NOCHE.png',
     category: "Fachada & Exteriores",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1446,
     height: 1088,
     aspectRatio: 1.33
@@ -168,7 +168,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Fachada nocturna",
     url: '/HACIENDA F22/FACHADA NOCHE 2.png',
     category: "Fachada & Exteriores",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
@@ -178,7 +178,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Fachada posterior",
     url: '/HACIENDA F22/FACHADA TRASERA.jpg',
     category: "Fachada & Exteriores",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
@@ -188,7 +188,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Fachada posterior",
     url: '/HACIENDA F22/FACHADA TRASERA 2.jpg',
     category: "Fachada & Exteriores",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1619,
     height: 971,
     aspectRatio: 1.67
@@ -200,7 +200,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Vestíbulo",
     url: '/HACIENDA F22/VESTIBULO.jpg',
     category: "Bienvenida & Salón",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
@@ -210,7 +210,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Vestíbulo",
     url: '/HACIENDA F22/VESTIBULO 2.jpg',
     category: "Bienvenida & Salón",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
@@ -220,7 +220,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Sala y comedor",
     url: '/HACIENDA F22/SALA.jpg',
     category: "Bienvenida & Salón",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1671,
     height: 941,
     aspectRatio: 1.78
@@ -230,7 +230,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Sala y comedor",
     url: '/HACIENDA F22/SALA 2.jpg',
     category: "Bienvenida & Salón",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
@@ -240,7 +240,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Sala y comedor",
     url: '/HACIENDA F22/SALA 3.png',
     category: "Bienvenida & Salón",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1521,
     height: 1034,
     aspectRatio: 1.47
@@ -252,7 +252,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Cocina",
     url: '/HACIENDA F22/COCINA.jpg',
     category: "Cocina de Autor",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
@@ -262,7 +262,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Cocina",
     url: '/HACIENDA F22/COCINA 2.jpg',
     category: "Cocina de Autor",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
@@ -272,7 +272,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Cocina",
     url: '/HACIENDA F22/COCINA 3.jpg',
     category: "Cocina de Autor",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
@@ -284,7 +284,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Piscina",
     url: '/HACIENDA F22/PISCINA.jpg',
     category: "Piscina & BBQ",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
@@ -294,7 +294,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Piscina",
     url: '/HACIENDA F22/PISCINA 2.jpg',
     category: "Piscina & BBQ",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1447,
     height: 1087,
     aspectRatio: 1.33
@@ -304,7 +304,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Terraza y kiosco",
     url: '/HACIENDA F22/TERRAZA.png',
     category: "Piscina & BBQ",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1448,
     height: 1086,
     aspectRatio: 1.33
@@ -314,7 +314,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Terraza y kiosco",
     url: '/HACIENDA F22/TERRAZA 2.jpg',
     category: "Piscina & BBQ",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
@@ -326,7 +326,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Sala de TV",
     url: '/HACIENDA F22/SALA TV.jpg',
     category: "Entretenimiento & Estudio",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
@@ -336,7 +336,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Sala de TV",
     url: '/HACIENDA F22/SALA TV 2.jpg',
     category: "Entretenimiento & Estudio",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
@@ -346,7 +346,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Sala de TV",
     url: '/HACIENDA F22/SALA TV 3.png',
     category: "Entretenimiento & Estudio",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1254,
     height: 1114,
     aspectRatio: 1.13
@@ -356,7 +356,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Estudio",
     url: '/HACIENDA F22/OFICINA.jpg',
     category: "Entretenimiento & Estudio",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
@@ -368,7 +368,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Habitación principal",
     url: '/HACIENDA F22/DORMITORIO.jpg',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1522,
     height: 1033,
     aspectRatio: 1.47
@@ -378,7 +378,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Habitación principal",
     url: '/HACIENDA F22/DORMITORIO 2.jpg',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1254,
     height: 1254,
     aspectRatio: 1.00
@@ -388,7 +388,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Habitación",
     url: '/HACIENDA F22/HABITACION.jpg',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1536,
     height: 1024,
     aspectRatio: 1.50
@@ -398,7 +398,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Habitación",
     url: '/HACIENDA F22/HABITACION 2.jpg',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
@@ -408,7 +408,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Habitación",
     url: '/HACIENDA F22/HABITACION 3.jpg',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1448,
     height: 1086,
     aspectRatio: 1.33
@@ -418,7 +418,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Vestier",
     url: '/HACIENDA F22/VESTIER.jpg',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 941,
     height: 1672,
     aspectRatio: 0.56 // Vertical / Portrait
@@ -428,7 +428,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Baño",
     url: '/HACIENDA F22/BANO.jpg',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1672,
     height: 941,
     aspectRatio: 1.78
@@ -438,7 +438,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Baño",
     url: '/HACIENDA F22/BANO 2.png',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1521,
     height: 1034,
     aspectRatio: 1.47
@@ -448,7 +448,7 @@ export const HACIENDA_F22_RENDERS: ProjectRender[] = [
     title: "Baño",
     url: '/HACIENDA F22/BANO 3.jpg',
     category: "Habitaciones y baños",
-    description: 'Visualización arquitectónica de Hacienda F22.',
+    description: 'Visualización arquitectónica de Hacienda Club F22.',
     width: 1521,
     height: 1034,
     aspectRatio: 1.47
@@ -975,13 +975,13 @@ export const IBIZA_A14_ROOMS_360: ProjectRoom360[] = [
 
 // Registro oficial de identidades de proyecto
 export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
-  // PROYECTO 1: HACIENDA F22 (Identidad independiente White-Label para AMHO CONSTRUCCIONES)
+  // PROYECTO 1: HACIENDA CLUB F22 (Identidad independiente White-Label para AMHO CONSTRUCCIONES)
   'project_hacienda_f22': {
     id: 'project_hacienda_f22',
     slug: 'hacienda-f22',
     code: 'F22',
-    name: 'HACIENDA F22',
-    titlePrefix: 'HACIENDA',
+    name: 'HACIENDA CLUB F22',
+    titlePrefix: 'HACIENDA CLUB',
     titleHighlight: 'F22',
     categoryLabel: 'VIVIENDA NO VIS UNIFAMILIAR',
     urbanization: 'CONDOMINIO HACIENDA',
@@ -992,8 +992,7 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
     statusLabel: 'Proyecto residencial',
     brandName: 'AMHO CONSTRUCCIONES',
     tagline: F22_SUMMARY,
-    // Cuando esté listo el video oficial, colocar aquí su ruta o URL para activar el reproductor.
-    heroVideoUrl: '',
+    heroVideoUrl: '/HACIENDA F22/HACIENDA CLUB F22.mp4',
     heroVideoPoster: '/HACIENDA F22/FACHADA.png',
     theme: {
       primaryColor: '#DFC47B',        // Oro champaña metálico oficial extraído del isotipo AMHO Construcciones
@@ -1004,7 +1003,7 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       borderColor: 'rgba(223, 196, 123, 0.28)',
       badgeBg: '#DFC47B',
       badgeText: '#060608',
-      fontFamilyTitle: "'Syne', 'Montserrat', 'Inter', sans-serif",
+      fontFamilyTitle: "'Inter', 'Helvetica Neue', sans-serif",
       fontFamilyBody: "'Inter', sans-serif"
     },
     clientBrand: {
@@ -1287,5 +1286,15 @@ export function openProjectInNewTab(projectId: string) {
   const identity = getProjectIdentity(projectId);
   const targetSlug = identity.slug || identity.id || projectId;
   const url = `/proyecto/${encodeURIComponent(targetSlug)}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
+  const isTouchMobile =
+    typeof window !== 'undefined' &&
+    (window.innerWidth < 768 || window.matchMedia?.('(pointer: coarse)').matches);
+  if (isTouchMobile) {
+    window.location.assign(url);
+    return;
+  }
+  const opened = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!opened) {
+    window.location.assign(url);
+  }
 }
