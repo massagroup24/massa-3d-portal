@@ -27,7 +27,7 @@ export function ProjectFichaTecnica({ project, technicalSpecs, accentColor = '#D
   const generalRows: string[][] = [
     ...(project?.tipo ? [['Tipología', project.tipo.charAt(0).toUpperCase() + project.tipo.slice(1)]] : []),
     ...(project?.año ? [['Año', String(project.año)]] : []),
-    ...(project?.ciudad ? [['Ubicación', [project.ciudad, project.departamento].filter(Boolean).join(', ')]] : []),
+    ...(project?.ciudad ? [['Ubicación', [project.ciudad, project.departamento].filter(Boolean).join(' / ')]] : []),
     ...(project?.barrio_o_sector ? [['Sector', project.barrio_o_sector]] : []),
     ...(project?.habitaciones ? [['Habitaciones', `${project.habitaciones} habitaciones`]] : []),
     ...(project?.banos ? [['Baños', `${project.banos} baños`]] : []),

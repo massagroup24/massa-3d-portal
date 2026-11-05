@@ -455,11 +455,11 @@ export function getProjectPublicSpecs(projectName: string): ProjectPublicSpecs {
   if (isHacienda) {
     return {
       areaBuilt: F22_AREA_BUILT, lotArea: F22_LOT_AREA, levels: '3 pisos',
-      typology: HACIENDA_F22_TECHNICAL.typology, location: 'Cúcuta, Norte de Santander',
+      typology: HACIENDA_F22_TECHNICAL.typology, location: 'Villa del Rosario (Boconó) / Norte de Santander',
       year: '', architecturalStyle: 'Proyecto residencial', designConcept: F22_SUMMARY,
       keyFeatures: F22_HIGHLIGHTS, materials: [], technicalSpecs: HACIENDA_F22_TECHNICAL,
       spatialProgram: F22_LEVELS.map(level => ({ zone: level.name, spaces: level.spaces })),
-      locationDetails: { city: 'Cúcuta, Norte de Santander', neighborhood: 'Condominio Hacienda', lotNumber: 'Lote F22', environment: '' }
+      locationDetails: { city: 'Villa del Rosario (Boconó) / Norte de Santander', neighborhood: 'Hacienda Club', lotNumber: 'Lote F22', environment: '' }
     };
   }
 

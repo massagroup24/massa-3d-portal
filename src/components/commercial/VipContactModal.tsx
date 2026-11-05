@@ -142,7 +142,7 @@ export function VipContactModal({
                   onChange={(e) => setInterest(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl bg-[#1c1c1f] border border-white/10 text-white text-sm focus:outline-none focus:border-[#9CD01A] transition cursor-pointer"
                 >
-                  <option value="HACIENDA CLUB F22 (Cúcuta)">HACIENDA CLUB F22 • Condominio Hacienda (Lote F22)</option>
+                  <option value="HACIENDA CLUB F22 (Villa del Rosario - Boconó)">HACIENDA CLUB F22 • Hacienda Club (Lote F22)</option>
                   <option value="IBIZA A14 (Cúcuta)">IBIZA A14 • Condominio Ibiza (Lote A14)</option>
                   <option value="RESIDENCIA JEJÉN (Cali)">RESIDENCIA JEJÉN • Cali (480 m²)</option>
                   <option value="SEDE MARQUIMODA">SEDE CORPORATIVA MARQUIMODA (620 m²)</option>

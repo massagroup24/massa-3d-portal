@@ -254,12 +254,12 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
           </div>
 
           {/* 5. TÍTULO PROTAGONISTA EN CAPA SUPERIOR z-30 (ENCIMA DEL FILTRO OSCURO):
-              INICIA EN EL CENTRO Y SE DESPLAZA A ESQUINA SUPERIOR IZQUIERDA (HACIENDA) E INFERIOR DERECHA (CLUB F22) */}
+              INICIA EN EL CENTRO Y SE DESPLAZA A ESQUINA SUPERIOR IZQUIERDA (HACIENDA CLUB) E INFERIOR DERECHA (F22) */}
           <h1
             aria-label={identity.name}
             className="project-f22-title pointer-events-none absolute inset-0 z-30 uppercase text-[#FFFDF8]"
           >
-            {/* Parte 1: HACIENDA -> Del centro a la esquina superior izquierda */}
+            {/* Parte 1: HACIENDA CLUB -> Del centro a la esquina superior izquierda */}
             <span
               key={`f22-top-${introRunId}`}
               className={`project-f22-word-enter-1 absolute block whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
@@ -267,24 +267,24 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
                   ? 'left-3.5 top-14 sm:left-8 sm:top-16 lg:left-12 lg:top-20 translate-x-0 translate-y-0 scale-100 text-left'
                   : 'left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 scale-105 text-center'
               }`}
-            >Hacienda</span>
+            >Hacienda Club</span>
 
-            {/* Parte 2: CLUB F22 -> Del centro a la esquina inferior derecha */}
+            {/* Parte 2: F22 -> Del centro a la esquina inferior derecha */}
             <span
               key={`f22-bottom-${introRunId}`}
               className={`project-f22-word-enter-2 absolute block whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isSplit
-                  ? 'right-3.5 bottom-[9.8rem] sm:right-8 sm:bottom-20 lg:right-12 lg:bottom-20 translate-x-0 translate-y-0 scale-100 text-right'
-                  : 'right-1/2 bottom-[39%] translate-x-1/2 translate-y-1/2 scale-105 text-center'
+                  ? 'right-3.5 bottom-[9.8rem] sm:right-8 sm:bottom-20 lg:right-12 lg:bottom-20 translate-x-0 translate-y-0 scale-110 sm:scale-125 origin-bottom-right text-right'
+                  : 'right-1/2 bottom-[39%] translate-x-1/2 translate-y-1/2 scale-110 text-center'
               }`}
-            >Club <span style={{ color }}>F22</span></span>
+            ><span style={{ color }}>F22</span></span>
           </h1>
 
-          {/* Detalle dorado decorativo justo debajo de HACIENDA en la esquina superior izquierda (CAPA z-30) */}
+          {/* Detalle dorado decorativo justo debajo de HACIENDA CLUB en la esquina superior izquierda (CAPA z-30) */}
           <div
             aria-hidden="true"
             style={{
-              top: 'calc(clamp(3.5rem, 4.8vw, 5rem) + clamp(1.95rem, 6.2vw, 5.2rem) + 0.55rem)'
+              top: 'calc(clamp(3.5rem, 4.8vw, 5rem) + clamp(1.52rem, 5.3vw, 4.75rem) + 0.55rem)'
             }}
             className={`pointer-events-none absolute left-3.5 sm:left-8 lg:left-12 z-30 flex items-center gap-2.5 transition-all duration-700 delay-300 ${
               isSplit ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
@@ -292,7 +292,7 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
           >
             <span className="h-[2px] w-10 sm:w-20 rounded-full" style={{ backgroundImage: gradient }} />
             <span className="gold-metallic-text text-[8px] sm:text-[10px] font-mono font-bold uppercase tracking-[0.22em] sm:tracking-[0.26em]" style={{ color: hoverColor }}>
-              Arquitectura residencial · Cúcuta
+              Arquitectura residencial · Villa del Rosario (Boconó)
             </span>
           </div>
 

@@ -7,7 +7,7 @@ export const formatTechnicalNumber = (value: number) => value.toLocaleString('es
 export const formatArea = (value: number) => `${formatTechnicalNumber(value)} m²`;
 export const F22_AREA_BUILT = formatArea(technical.areas.totalConstruction);
 export const F22_LOT_AREA = formatArea(technical.areas.lot);
-export const F22_SUMMARY = `Vivienda no VIS unifamiliar en el lote F22 de Condominio Hacienda, con ${F22_AREA_BUILT} de construcción total sobre un lote de ${F22_LOT_AREA}, distribuida en tres pisos.`;
+export const F22_SUMMARY = `Vivienda no VIS unifamiliar en el lote F22 de Hacienda Club, con ${F22_AREA_BUILT} de construcción total sobre un lote de ${F22_LOT_AREA}, distribuida en tres pisos.`;
 export const F22_HIGHLIGHTS = [
   `Primer piso: ${formatArea(technical.areas.firstFloor)}`,
   `Kiosco: ${formatArea(technical.areas.kiosk)}`,

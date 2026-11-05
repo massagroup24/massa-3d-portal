@@ -78,7 +78,7 @@
 .project-f22-title {
   font-family: 'Cinzel', 'Playfair Display', 'Syne', Georgia, serif;
   font-weight: 900;
-  font-size: clamp(1.95rem, 6.2vw, 5.2rem);
+  font-size: clamp(1.52rem, 5.3vw, 4.75rem);
   line-height: 0.96;
   letter-spacing: 0.025em;
   font-variant-numeric: lining-nums proportional-nums;

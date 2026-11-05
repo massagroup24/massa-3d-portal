@@ -42,8 +42,8 @@ SET data = (p.data - 'bedrooms' - 'bathrooms' - 'parkingSpaces' - 'specs' - 'pub
   "areaBuilt": "592,09 m²",
   "areaLot": "644,00 m²",
   "categoryLabel": "Vivienda no VIS unifamiliar",
-  "tagline": "Vivienda no VIS unifamiliar en el lote F22 de Condominio Hacienda, con 592,09 m² de construcción total sobre un lote de 644,00 m², distribuida en tres pisos.",
-  "description": "Vivienda no VIS unifamiliar en el lote F22 de Condominio Hacienda, con 592,09 m² de construcción total sobre un lote de 644,00 m², distribuida en tres pisos.",
+  "tagline": "Vivienda no VIS unifamiliar en el lote F22 de Hacienda Club, con 592,09 m² de construcción total sobre un lote de 644,00 m², distribuida en tres pisos.",
+  "description": "Vivienda no VIS unifamiliar en el lote F22 de Hacienda Club, con 592,09 m² de construcción total sobre un lote de 644,00 m², distribuida en tres pisos.",
   "statusLabel": "Proyecto residencial",
   "technicalSpecs": {
     "revision": "f22-cuadro-areas-2026-11-03",

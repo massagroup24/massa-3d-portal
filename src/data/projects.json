@@ -6,9 +6,9 @@
     "tipo": "vivienda",
     "estado": "En diseño",
     "año": 2026,
-    "ciudad": "Cúcuta",
+    "ciudad": "Villa del Rosario (Boconó)",
     "departamento": "Norte de Santander",
-    "barrio_o_sector": "Condominio Hacienda",
+    "barrio_o_sector": "Hacienda Club",
     "area_construida": 592.09,
     "area_lote": 644.00,
     "numero_pisos": 3,
@@ -16,7 +16,7 @@
     "banos": 7,
     "telefonos_contacto": ["3104771967", "3045882770"],
     "alcance": "Diseño y construcción",
-    "descripcion_corta": "Vivienda unifamiliar de tres niveles en Condominio Hacienda, con 592,09 m² de construcción sobre un lote de 644,00 m².",
+    "descripcion_corta": "Vivienda unifamiliar de tres niveles en Hacienda Club, Villa del Rosario (Boconó), con 592,09 m² de construcción sobre un lote de 644,00 m².",
     "descripcion_larga": "Proyecto residencial unifamiliar distribuido en tres niveles: primer piso con zona social, kiosco y piscina (323,06 m²); segundo piso con área privada (198,78 m²); y tercer piso (70,25 m²), sobre un lote de 644,00 m² con 320,94 m² de área libre.",
     "creditos": [
       {

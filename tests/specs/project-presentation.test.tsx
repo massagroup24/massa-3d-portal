@@ -32,8 +32,8 @@ describe('Presentación independiente de cada proyecto', () => {
     expect(html).toContain('font-family:&#x27;Inter&#x27;');
     expect(html).toContain('project-f22-title');
     expect(html).toContain('aria-label="HACIENDA CLUB F22"');
-    expect(html).toContain('>Hacienda</span>');
-    expect(html).toContain('>Club <span style="color:#DFC47B">F22</span>');
+    expect(html).toContain('>Hacienda Club</span>');
+    expect(html).toContain('><span style="color:#DFC47B">F22</span>');
     expect(html).not.toContain('text-[1.55em]');
     expect(html.match(/<video[^>]*>/)?.[0]).not.toContain('loop=');
     expect(html).not.toContain('id="sello-constructora-amho"');
