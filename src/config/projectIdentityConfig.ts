@@ -5,6 +5,13 @@
  */
 
 import { F22_AREA_BUILT, F22_LOT_AREA, F22_SUMMARY, F22_LEVELS, HACIENDA_F22_TECHNICAL, type ProjectTechnicalSpecs } from '../data/haciendaF22Specs';
+import amhoHorizontalWhiteInline from '../assets/branding/amho-horizontal-white.png?inline';
+import amhoHorizontalDarkInline from '../assets/branding/amho-horizontal-dark.png?inline';
+import amhoVerticalWhiteInline from '../assets/branding/amho-vertical-white.png?inline';
+import amhoVerticalDarkInline from '../assets/branding/amho-vertical-dark.png?inline';
+import amhoIconInline from '../assets/branding/amho-icon.png?inline';
+import massaLogoInline from '../assets/branding/massa-uso.png?inline';
+import massaCubeInline from '../assets/branding/massa-cube-transparent.png?inline';
 
 export interface ProjectTheme {
   primaryColor: string;     // Color de acento primario (ej. #9CD01A o #DFC47B)
@@ -1011,11 +1018,11 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       shortName: 'AMHO',
       subtitle: 'ARQUITECTURA • INGENIERÍA • CONSTRUCCIÓN DE AUTOR',
       tagline: 'Excelencia constructiva, precisión estructural y diseño residencial de ultra-lujo.',
-      logoHorizontalWhite: '/HACIENDA F22/branding/amho-horizontal-white.png',
-      logoHorizontalDark: '/HACIENDA F22/branding/amho-horizontal-dark.png',
-      logoVerticalWhite: '/HACIENDA F22/branding/amho-vertical-white.png',
-      logoVerticalDark: '/HACIENDA F22/branding/amho-vertical-dark.png',
-      logoIcon: '/HACIENDA F22/branding/amho-icon.png',
+      logoHorizontalWhite: amhoHorizontalWhiteInline,
+      logoHorizontalDark: amhoHorizontalDarkInline,
+      logoVerticalWhite: amhoVerticalWhiteInline,
+      logoVerticalDark: amhoVerticalDarkInline,
+      logoIcon: amhoIconInline,
       metallicGradient: 'linear-gradient(135deg, #B89752 0%, #DFC47B 32%, #F7E8A8 50%, #D1B16B 74%, #9E7D3B 100%)'
     },
     specs: {
@@ -1067,11 +1074,11 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       shortName: 'MASSA',
       subtitle: 'ARQUITECTURA BIOCLIMÁTICA • INGENIERÍA • GEMELOS DIGITALES',
       tagline: 'Diseño residencial contemporáneo de alto estándar, confort térmico pasivo y precisión técnica en cada detalle.',
-      logoHorizontalWhite: '/MASSA_USO.png',
-      logoHorizontalDark: '/MASSA_USO.png',
-      logoVerticalWhite: '/MASSA_USO.png',
-      logoVerticalDark: '/MASSA_USO.png',
-      logoIcon: '/massa-cube-transparent.png',
+      logoHorizontalWhite: massaLogoInline,
+      logoHorizontalDark: massaLogoInline,
+      logoVerticalWhite: massaLogoInline,
+      logoVerticalDark: massaLogoInline,
+      logoIcon: massaCubeInline,
       metallicGradient: 'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)'
     },
     specs: {

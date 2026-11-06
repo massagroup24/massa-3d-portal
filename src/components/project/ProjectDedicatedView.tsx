@@ -711,7 +711,14 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
 
                       <div className="flex items-center gap-1.5 pointer-events-auto bg-black/75 backdrop-blur-md border border-white/15 p-1 rounded-xl">
                         {brand?.logoIcon && (
-                          <img src={encodeURI(brand.logoIcon)} alt="AMHO" className="w-5 h-5 object-contain mr-1 ml-0.5" />
+                          <img
+                            src={brand.logoIcon}
+                            alt=""
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            className="w-5 h-5 object-contain mr-1 ml-0.5"
+                          />
                         )}
                         <button
                           type="button"
@@ -1060,7 +1067,14 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-white/45">
           <div className="flex items-center gap-3">
             {brand?.logoHorizontalWhite && (
-              <img src={encodeURI(brand.logoHorizontalWhite)} alt={brand.companyName} className="h-6 w-auto object-contain" />
+              <img
+                src={brand.logoHorizontalWhite}
+                alt=""
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+                className="h-6 w-auto object-contain"
+              />
             )}
             <span>{canonicalProject.nombre} • {canonicalProject.ciudad}</span>
           </div>
@@ -1232,7 +1246,7 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
             }}
             onBackToHome={() => setIs360Active(false)}
             projectName={isHaciendaF22 ? 'HACIENDA CLUB F22 • AMHO CONSTRUCCIONES' : canonicalProject.nombre}
-            brandLogo={brand?.logoHorizontalWhite || brand?.logoIcon || (isHaciendaF22 ? '/HACIENDA F22/LOGO AMHO.png' : undefined)}
+            brandLogo={brand?.logoHorizontalWhite || brand?.logoIcon || (isHaciendaF22 ? '/branding/amho-horizontal-white.png' : undefined)}
             brandColor={isHaciendaF22 ? '#DFC47B' : primaryColor}
           />
         </div>,
@@ -1324,8 +1338,11 @@ export function ProjectDedicatedView() {
             />
             {brand?.logoIcon ? (
               <img
-                src={encodeURI(brand.logoIcon)}
-                alt={brand.companyName}
+                src={brand.logoIcon}
+                alt=""
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
                 className="relative z-10 h-9 w-9 object-contain"
               />
             ) : (

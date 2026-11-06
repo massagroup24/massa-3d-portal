@@ -71,7 +71,7 @@ export function Header({
             {isF22 ? (
               <div className="flex items-center gap-2">
                 <img
-                  src="/HACIENDA F22/LOGO AMHO.png"
+                  src="/branding/amho-horizontal-white.png"
                   alt="AMHO CONSTRUCCIONES"
                   className="h-7 sm:h-8 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(223,196,123,0.35)] transition-transform duration-300 group-hover:scale-105"
                 />

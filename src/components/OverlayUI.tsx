@@ -132,7 +132,7 @@ export function OverlayUI({
 
   const handleBack = onBackToHome || (() => { window.location.href = '/'; });
   const isAmho = brandColor === '#DFC47B' || currentRoom?.imageUrl?.includes('HACIENDA') || currentRoom?.id?.includes('f22');
-  const resolvedLogo = brandLogo || (isAmho ? '/HACIENDA F22/LOGO AMHO.png' : '/MASSA_REBRANDING.png');
+  const resolvedLogo = brandLogo || (isAmho ? '/branding/amho-horizontal-white.png' : '/MASSA_USO.png');
 
   return (
     <div

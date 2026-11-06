@@ -270,7 +270,7 @@ function MainPortal() {
         onBackToHome={handleBackToPortal}
         tourEmbedUrl={currentProject.tourType === 'matterport_iframe' ? currentProject.tourEmbedUrl : undefined}
         projectName={currentProject.name}
-        brandLogo={currentProject.id === 'project_hacienda_f22' ? '/HACIENDA F22/LOGO AMHO.png' : undefined}
+        brandLogo={currentProject.id === 'project_hacienda_f22' ? '/branding/amho-horizontal-white.png' : undefined}
         brandColor={currentProject.id === 'project_hacienda_f22' ? '#DFC47B' : undefined}
       />
     );

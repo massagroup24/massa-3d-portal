@@ -14,6 +14,7 @@ import { CANONICAL_PROJECTS, type CanonicalProject, formatAreaMetric } from '../
 import { CommercialLoginModal } from './CommercialLoginModal';
 import { Project } from '../../data/tourData';
 import { getProjectIdentity } from '../../config/projectIdentityConfig';
+import massaLogoInline from '../../assets/branding/massa-uso.png?inline';
 
 interface VipCommercialLandingProps {
   onSelectProjectForPortal: (projectId: string) => void;
@@ -196,7 +197,7 @@ export function VipCommercialLanding({
           {/* Logo Minimalista Superior Izquierdo */}
           <a href="#hero" className="flex items-center group py-2">
             <img
-              src="/MASSA_USO.png"
+              src={massaLogoInline}
               alt="MASSA HOME"
               className="h-8 sm:h-10 md:h-11 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(156,208,26,0.35)] transition-transform duration-300 group-hover:scale-105"
             />
@@ -583,13 +584,6 @@ export function VipCommercialLanding({
                       <span className="px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-[9px] font-mono font-bold uppercase tracking-wider text-white">
                         Render
                       </span>
-                      {brand?.logoIcon && (
-                        <img
-                          src={encodeURI(brand.logoIcon)}
-                          alt={brand.shortName}
-                          className="w-4 h-4 object-contain"
-                        />
-                      )}
                     </div>
                     <h3
                       style={{ fontFamily: identity.theme.fontFamilyTitle }}
@@ -655,10 +649,17 @@ export function VipCommercialLanding({
                         )}
 
                         {brand?.logoHorizontalWhite && (
-                          <div className="hidden sm:flex items-center px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border border-[#DFC47B]/40 shadow-lg">
+                          <div
+                            className={`hidden sm:flex items-center px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border shadow-lg ${
+                              isCustomBrand ? 'border-[#DFC47B]/40' : 'border-[#9CD01A]/40'
+                            }`}
+                          >
                             <img
-                              src={encodeURI(brand.logoHorizontalWhite)}
-                              alt={brand.companyName}
+                              src={brand.logoHorizontalWhite.startsWith('data:') ? brand.logoHorizontalWhite : encodeURI(brand.logoHorizontalWhite)}
+                              alt=""
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
                               className="h-5 w-auto object-contain"
                             />
                           </div>
@@ -808,7 +809,7 @@ export function VipCommercialLanding({
                     </span>
                   </div>
                   <img
-                    src="/MASSA_USO.png"
+                    src={massaLogoInline}
                     alt="MASSA GROUP"
                     className="h-5 sm:h-7 w-auto object-contain opacity-90 shrink-0"
                   />
@@ -1040,7 +1041,7 @@ export function VipCommercialLanding({
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <img
-              src="/MASSA_USO.png"
+              src={massaLogoInline}
               alt="MASSA HOME"
               className="h-7 sm:h-8 w-auto object-contain"
             />
@@ -1157,7 +1158,7 @@ export function VipCommercialLanding({
                       {/* Sello Superior Izquierdo sobre la fotografía (en pantallas sm+ para dejar 100% despejada la foto en móvil) */}
                       <div className="hidden sm:flex absolute top-4 left-4 items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/15">
                         <img
-                          src="/MASSA_USO.png"
+                          src={massaLogoInline}
                           alt="MASSA"
                           className="h-5 w-auto object-contain"
                         />

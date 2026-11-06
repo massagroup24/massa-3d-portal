@@ -248,7 +248,16 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full border bg-black/60 backdrop-blur-md px-3 py-1 text-[9px] font-mono uppercase tracking-[0.18em] text-white/75"
               style={{ borderColor: 'rgba(255,255,255,0.12)' }}
             >
-              {brand && <img src={encodeURI(brand.logoIcon)} alt="" className="h-3.5 w-3.5 object-contain" />}
+              {brand && (
+                <img
+                  src={brand.logoIcon}
+                  alt=""
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                  className="h-3.5 w-3.5 object-contain"
+                />
+              )}
               <span>{brand?.companyName || identity.brandName} · {identity.lot}</span>
             </span>
           </div>
@@ -269,8 +278,11 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
                 style={{ borderColor: `${color}45` }}
               >
                 <img
-                  src={encodeURI(brand.logoHorizontalWhite)}
-                  alt={brand.companyName}
+                  src={brand.logoHorizontalWhite}
+                  alt=""
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                   className="h-3.5 w-auto object-contain sm:h-6"
                 />
               </div>
@@ -392,8 +404,11 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
               Una visión que toma forma
             </span>
             <img
-              src={encodeURI(brand.logoHorizontalWhite)}
-              alt={brand.companyName}
+              src={brand.logoHorizontalWhite}
+              alt=""
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
               className="project-brand-outro-logo w-[65%] max-w-[330px] object-contain"
             />
             <div className="project-brand-outro-line my-5 h-px w-20" style={{ background: gradient }} />
