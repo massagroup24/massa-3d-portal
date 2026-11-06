@@ -16,7 +16,6 @@ import { Tour360Section } from './components/portal/Tour360Section';
 import { ProgressTimeline } from './components/portal/ProgressTimeline';
 import { ArchitectContactModal } from './components/portal/ArchitectContactModal';
 import { GuestHome } from './components/portal/GuestHome';
-import { GuestPortfolioShowcase } from './components/portal/GuestPortfolioShowcase';
 import { VipCommercialLanding } from './components/commercial/VipCommercialLanding';
 import { ProjectSpecs } from './components/portal/ProjectSpecs';
 import { getProjectPortalData, getProjectPublicSpecs, ProjectPortalData } from './services/portalService';
@@ -71,7 +70,7 @@ function MainPortal() {
     }
   });
   const [tourStarted, setTourStarted] = useState(false);
-  const [guestView, setGuestView] = useState<'commercial' | 'showcase' | 'project'>('commercial');
+  const [guestView, setGuestView] = useState<'commercial' | 'project'>('commercial');
   const [syncError, setSyncError] = useState<string | null>(null);
   const [portalData, setPortalData] = useState<ProjectPortalData | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -302,46 +301,18 @@ function MainPortal() {
   const currentDisplayName = portalData?.name || currentProject?.name || (activeProjectId && (projects[activeProjectId]?.name)) || 'RESIDENCIA JEJÉN';
 
   // 5. Plataforma Comercial VIP para Invitados (Entrada Abierta de Alto Impacto por Defecto)
-  if (userRole === 'guest' && guestView !== 'showcase' && guestView !== 'project') {
+  if (userRole === 'guest' && guestView !== 'project') {
     return (
       <VipCommercialLanding
         projects={projects}
         onSelectProjectForPortal={handleSelectProjectForCommercial}
         onLaunch360Tour={(projId) => handleStart360Tour(projId)}
-        onOpenMonumentalShowcase={() => setGuestView('showcase')}
         onLoginSuccess={handleLoginSuccess}
       />
     );
   }
 
-  // 6. Pantalla de Bienvenida y Portafolio Monumental para Invitados (Modo Galería)
-  if (userRole === 'guest' && guestView === 'showcase') {
-    return (
-      <>
-        <GuestPortfolioShowcase
-          availableProjectIds={Object.keys(projects)}
-          onSelectProject={(projectId) => {
-            openProjectInNewTab(projectId);
-          }}
-          onOpenLogin={() => {
-            setUserRole('portal');
-          }}
-          onContactCommercial={() => setIsContactModalOpen(true)}
-          onBackToCommercial={() => setGuestView('commercial')}
-        />
-        {portalData?.architect && (
-          <ArchitectContactModal
-            isOpen={isContactModalOpen}
-            onClose={() => setIsContactModalOpen(false)}
-            architect={portalData.architect}
-            projectName={currentDisplayName}
-          />
-        )}
-      </>
-    );
-  }
-
-  // 7. Portal con Sistema de Diseño visionOS (Cliente & Invitado en Obra Activa)
+  // 6. Portal con Sistema de Diseño visionOS (Cliente & Invitado en Obra Activa)
   const publicProjectsList = (() => {
     const seenNames = new Set<string>();
     const list: { id: string; name: string }[] = [];

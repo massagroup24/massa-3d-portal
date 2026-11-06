@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@800;900&family=Outfit:wght@800;900&family=Playfair+Display:wght@700;800;900&family=Syne:wght@700;800;900&family=Unbounded:wght@800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700;800;900&family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@800;900&family=Outfit:wght@800;900&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,600;1,700;1,800&family=Syne:wght@700;800;900&family=Unbounded:wght@800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -91,8 +91,10 @@
     drop-shadow(0 0 22px rgba(223, 196, 123, 0.25));
 }
 
-/* Efecto oro 24k metalizado cepillado para textos, cifras e insignias doradas */
-.project-f22-title span > span[style],
+/* Efecto oro 24k metalizado cepillado para textos, cifras e insignias doradas (F22) */
+.project-f22-title span > span[style*="#DFC47B"],
+.project-f22-title span > span[style*="#dfc47b"],
+.project-f22-title span > span[style*="223, 196, 123"],
 .gold-metallic-text {
   background-image: linear-gradient(
     135deg,
@@ -103,6 +105,27 @@
     #9C772C 66%,
     #FBF0B9 82%,
     #B69040 100%
+  ) !important;
+  background-size: 200% auto;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Efecto verde corporativo MASSA (#9CD01A) metalizado cepillado para A14 */
+.project-f22-title span > span[style*="#9CD01A"],
+.project-f22-title span > span[style*="#9cd01a"],
+.project-f22-title span > span[style*="156, 208, 26"],
+.massa-metallic-text {
+  background-image: linear-gradient(
+    135deg,
+    #4E6E08 0%,
+    #8EC115 16%,
+    #E4FF8A 34%,
+    #9CD01A 50%,
+    #5F870A 66%,
+    #DAFF6E 82%,
+    #7CB010 100%
   ) !important;
   background-size: 200% auto;
   -webkit-background-clip: text !important;
@@ -138,6 +161,23 @@
 .project-f22-word-enter-2 {
   color: #FFFDF8;
   animation: f22-central-wave-in 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+}
+
+/* Tipografía caligráfica orgánica inspirada en el pórtico de entrada del Condominio Ibiza */
+.project-ibiza-wordmark {
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  text-transform: lowercase;
+  font-size: clamp(3.3rem, 9.8vw, 8.2rem);
+  line-height: 0.86;
+  letter-spacing: 0.045em;
+  color: #F7F2E7;
+  padding-right: 0.18em;
+  padding-bottom: 0.14em;
+  filter:
+    drop-shadow(0 4px 14px rgba(0, 0, 0, 0.92))
+    drop-shadow(0 10px 26px rgba(0, 0, 0, 0.82));
 }
 
 .no-scrollbar {

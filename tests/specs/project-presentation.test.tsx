@@ -45,8 +45,9 @@ describe('Presentación independiente de cada proyecto', () => {
     const html = renderToStaticMarkup(<ProjectPresentationHero project={a14} identity={getProjectIdentity(a14.id)} renderCount={9} onOpenTour={() => {}} />);
     expect(html).toContain('project-hero-video-stage');
     expect(html).toContain('project-f22-title');
+    expect(html).toContain('project-ibiza-wordmark');
     expect(html).toContain('aria-label="IBIZA A14"');
-    expect(html).toContain('>IBIZA</span>');
+    expect(html).toContain('>ibiza<svg');
     expect(html).toContain('><span style="color:#9CD01A">A14</span>');
     expect(html).toContain('<video');
     expect(html).toContain('src="/A14.mp4"');

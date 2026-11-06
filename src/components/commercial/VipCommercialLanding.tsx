@@ -2,10 +2,8 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, 
-  Sparkles, 
   Phone, 
   Compass, 
-  ArrowRight, 
   X, 
   Mail, 
   ArrowUpRight, 
@@ -13,7 +11,6 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { CANONICAL_PROJECTS, type CanonicalProject, formatAreaMetric } from '../../data/canonicalProjects';
-import { VipContactModal } from './VipContactModal';
 import { CommercialLoginModal } from './CommercialLoginModal';
 import { Project } from '../../data/tourData';
 import { getProjectIdentity } from '../../config/projectIdentityConfig';
@@ -21,14 +18,12 @@ import { getProjectIdentity } from '../../config/projectIdentityConfig';
 interface VipCommercialLandingProps {
   onSelectProjectForPortal: (projectId: string) => void;
   onLaunch360Tour?: (projectId?: string) => void;
-  onOpenMonumentalShowcase: () => void;
   onLoginSuccess: (role: 'client' | 'architect' | 'guest', userName?: string) => void;
   projects?: Record<string, Project>;
 }
 
 export function VipCommercialLanding({
   onSelectProjectForPortal,
-  onOpenMonumentalShowcase,
   onLoginSuccess,
 }: VipCommercialLandingProps) {
   // Estados de Onboarding cinemático:
@@ -58,9 +53,7 @@ export function VipCommercialLanding({
       .sort((a, b) => b.año - a.año);
   }, [filterTipo, filterEstado, filterAño]);
 
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [selectedResidenceForContact] = useState<string | undefined>(undefined);
   const [activeInfoModal, setActiveInfoModal] = useState<'quienes-somos' | null>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -327,17 +320,6 @@ export function VipCommercialLanding({
             transition={{ duration: 0.75, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-left md:text-right max-w-lg flex flex-col md:items-end"
           >
-            
-            <button
-              type="button"
-              onClick={onOpenMonumentalShowcase}
-              className="group inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 hover:bg-black/80 border border-[#9CD01A]/40 mb-3 text-[10px] font-mono tracking-widest text-[#9CD01A] uppercase transition cursor-pointer"
-            >
-              <Sparkles className="w-3 h-3 text-[#9CD01A]" />
-              <span>MODO GALERÍA MONUMENTAL</span>
-              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight filter drop-shadow-[0_8px_25px_rgba(0,0,0,0.9)]">
               Portafolio Proyectos <br />
               <span className="text-[#9CD01A]">de Alto Valor</span>
@@ -769,307 +751,314 @@ export function VipCommercialLanding({
 
       </section>
 
-      {/* 5. SECCIÓN: CANALES DE CONTACTO & REDES SOCIALES MULTIMEDIA (DISEÑO MINIMALISTA DE ALTA DENSIDAD) */}
-      <section id="contacto" className="relative py-12 sm:py-16 px-4 sm:px-8 lg:px-14 bg-[#07070A] border-t border-white/[0.08] overflow-hidden text-left">
-        
-        {/* Resplandor ambiental sutil */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-[#9CD01A]/[0.025] rounded-full blur-[140px] pointer-events-none" />
+      {/* 5. SECCIÓN: ESTUDIO, CONCIERGE & ECOSISTEMA DIGITAL (EXPERIENCIA ARQUITECTÓNICA BENTO) */}
+      <section id="contacto" className="relative py-16 sm:py-24 px-4 sm:px-8 lg:px-14 bg-[#060709] border-t border-white/[0.08] overflow-hidden text-left">
+        {/* Retícula arquitectónica sutil y resplandor ambiental */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)',
+            backgroundSize: '56px 56px',
+          }}
+        />
+        <div className="pointer-events-none absolute -top-24 left-1/4 w-[520px] h-[320px] bg-[#9CD01A]/[0.06] rounded-full blur-[150px]" />
+        <div className="pointer-events-none absolute bottom-0 right-1/4 w-[460px] h-[280px] bg-[#9CD01A]/[0.04] rounded-full blur-[140px]" />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          
-          {/* Cabecera Editorial Compacta */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-8 sm:mb-10 pb-6 border-b border-white/[0.08]">
+          {/* Cabecera Editorial Monumental */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10 sm:mb-12">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30 mb-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A] animate-pulse" />
-                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-[#9CD01A] uppercase">
-                  CANALES & REDES OFICIALES
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/35 mb-3">
+                <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
+                <span className="massa-metallic-text text-[10px] font-mono font-bold tracking-[0.24em] uppercase">
+                  CONCIERGE ARQUITECTÓNICO • MASSA GROUP
                 </span>
               </div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
-                Canales de Contacto <span className="text-[#9CD01A]">& Redes Sociales</span>
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[0.98] uppercase">
+                Proyectemos tu <br className="hidden sm:block" />
+                <span className="massa-metallic-text">Próxima Obra</span>
               </h2>
             </div>
-            <p className="text-xs sm:text-sm text-white/60 max-w-lg font-normal leading-relaxed">
-              Comunícate directamente con nuestro equipo técnico para cotizar tu proyecto o síguenos para explorar renders 4K, recorridos 360° y avance de obras en vivo.
+            <p className="text-xs sm:text-sm text-white/65 max-w-md font-normal leading-relaxed border-l-2 border-[#9CD01A]/50 pl-4">
+              Atención directa con dirección arquitectónica para diseño residencial de autor, estructuración técnica y recorridos inmersivos 360° en tiempo real.
             </p>
           </div>
 
-          {/* Directorio Arquitectónico Minimalista (2 Columnas Divididas por Líneas Finas, Sin Cuadros Pesados) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-            
-            {/* COLUMNA 1: ATENCIÓN DIRECTA */}
-            <div>
-              <div className="flex items-center justify-between mb-2.5 px-1">
-                <span className="text-[11px] font-mono font-bold text-[#9CD01A] uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A]" />
-                  Atención Directa & Cotizaciones
+          {/* COMPOSICIÓN BENTO ARQUITECTÓNICA (NO TABLA) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+            {/* TARJETA PROTAGONISTA (7 COLUMNAS): CONCIERGE DIRECTO WHATSAPP, LLAMADA Y CORREO */}
+            <div className="lg:col-span-7 relative rounded-[24px] sm:rounded-[28px] overflow-hidden border border-[#9CD01A]/35 bg-[#0B0D11]/95 p-5 sm:p-8 lg:p-10 flex flex-col justify-between shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_45px_rgba(156,208,26,0.08)] group">
+              {/* Imagen arquitectónica velada de fondo para dar profundidad espacial */}
+              <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-20 group-hover:opacity-25 transition-opacity duration-700">
+                <img
+                  src="/IBIZA A14/01-F004.jpg"
+                  alt=""
+                  className="w-full h-full object-cover object-center scale-105 group-hover:scale-100 transition-transform duration-1000 filter brightness-75 contrast-125"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#08090C] via-[#08090C]/90 to-[#08090C]/55" />
+              </div>
+
+              <div className="relative z-10">
+                <div className="flex flex-wrap items-center justify-between gap-2.5 mb-5 sm:mb-6">
+                  <div className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/15 max-w-full">
+                    <span className="w-2 h-2 rounded-full bg-[#25D366] animate-ping shrink-0" />
+                    <span className="text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-[0.12em] sm:tracking-[0.18em] text-white/90 truncate">
+                      Línea Directa Dirección • Respuesta Inmediata
+                    </span>
+                  </div>
+                  <img
+                    src="/MASSA_USO.png"
+                    alt="MASSA GROUP"
+                    className="h-5 sm:h-7 w-auto object-contain opacity-90 shrink-0"
+                  />
+                </div>
+
+                <span className="text-[10px] font-mono uppercase tracking-[0.18em] sm:tracking-[0.22em] text-white/45 block mb-1.5">
+                  WhatsApp Oficial & Atención Telefónica
                 </span>
-                <span className="text-[10px] font-mono text-white/40">Respuesta Inmediata</span>
+                <div className="text-2xl sm:text-4xl lg:text-[2.6rem] font-black tracking-tight text-white font-mono tabular-nums mb-3">
+                  +57 313 <span className="massa-metallic-text">305 1060</span>
+                </div>
+                <p className="text-xs sm:text-sm text-white/70 max-w-xl leading-relaxed mb-6 sm:mb-7">
+                  Habla directamente con nuestro equipo de arquitectura e ingeniería para evaluar tu lote, cotizar un proyecto desde cero o solicitar el dossier técnico de nuestras obras en desarrollo.
+                </p>
+
+                {/* Acciones Principales: WhatsApp + Llamada */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
+                  <a
+                    href="https://wa.me/573133051060?text=Hola%20Massa%20Group,%20estoy%20interesado%20en%20recibir%20asesor%C3%ADa%20sobre%20sus%20proyectos%20arquitect%C3%B3nicos."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      backgroundImage: 'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)',
+                      boxShadow: '0 12px 32px rgba(156, 208, 26, 0.32)',
+                    }}
+                    className="min-h-[50px] px-4 sm:px-5 py-3.5 rounded-2xl text-[#060804] font-black text-xs uppercase tracking-wider flex items-center justify-between gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.585 1.77.893 2.791.894h.005c3.182 0 5.768-2.587 5.769-5.766.001-1.543-.599-2.994-1.69-4.086-1.09-1.091-2.541-1.694-4.085-1.694zm7.391 1.621c1.558 1.558 2.416 3.63 2.416 5.834 0 4.549-3.702 8.25-8.254 8.25-.001 0-.001 0 0 0-1.408 0-2.79-.364-4.004-1.054l-5.58 1.462 1.488-5.438c-.764-1.282-1.168-2.748-1.168-4.22 0-4.55 3.702-8.251 8.255-8.251 2.204 0 4.276.858 5.834 2.417zm-4.09 5.86c-.198-.099-1.171-.577-1.353-.643-.182-.066-.314-.099-.446.099-.133.197-.513.643-.629.775-.116.132-.232.148-.43.05-.198-.099-.836-.308-1.592-.982-.589-.526-.987-1.176-1.103-1.374-.116-.198-.012-.305.087-.404.089-.089.198-.232.297-.348.099-.116.132-.198.198-.33.066-.132.033-.248-.017-.348-.05-.099-.446-1.072-.611-1.469-.161-.387-.325-.334-.446-.34-.116-.006-.248-.007-.38-.007-.132 0-.348.05-.53.248-.182.198-.694.677-.694 1.653 0 .975.71 1.916.81 2.048.099.132 1.398 2.134 3.387 2.991.473.204.842.326 1.13.418.475.151.907.129 1.248.078.38-.057 1.171-.479 1.336-.942.166-.462.166-.859.116-.942-.049-.082-.181-.132-.38-.231z"/></svg>
+                      <span className="truncate">Iniciar Chat en WhatsApp</span>
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 shrink-0" />
+                  </a>
+
+                  <a
+                    href="tel:+573133051060"
+                    className="min-h-[50px] px-4 sm:px-5 py-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 hover:border-[#9CD01A]/50 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-between gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Phone className="w-4 h-4 text-[#9CD01A] shrink-0" />
+                      <span className="truncate">Llamada Telefónica</span>
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-[#9CD01A] shrink-0" />
+                  </a>
+                </div>
               </div>
 
-              <div className="divide-y divide-white/[0.06] border-y border-white/[0.08]">
-                {/* 1. WHATSAPP */}
-                <a
-                  href="https://wa.me/573104771967?text=Hola%20Massa%20Group,%20estoy%20interesado%20en%20conocer%20m%C3%A1s%20sobre%20sus%20proyectos%20arquitect%C3%B3nicos."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative flex items-center justify-between py-3.5 px-3 sm:px-4 hover:bg-[#25D366]/[0.04] transition-all duration-200"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center text-[#25D366] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(37,211,102,0.15)] shrink-0">
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.585 1.77.893 2.791.894h.005c3.182 0 5.768-2.587 5.769-5.766.001-1.543-.599-2.994-1.69-4.086-1.09-1.091-2.541-1.694-4.085-1.694zm7.391 1.621c1.558 1.558 2.416 3.63 2.416 5.834 0 4.549-3.702 8.25-8.254 8.25-.001 0-.001 0 0 0-1.408 0-2.79-.364-4.004-1.054l-5.58 1.462 1.488-5.438c-.764-1.282-1.168-2.748-1.168-4.22 0-4.55 3.702-8.251 8.255-8.251 2.204 0 4.276.858 5.834 2.417zm-4.09 5.86c-.198-.099-1.171-.577-1.353-.643-.182-.066-.314-.099-.446.099-.133.197-.513.643-.629.775-.116.132-.232.148-.43.05-.198-.099-.836-.308-1.592-.982-.589-.526-.987-1.176-1.103-1.374-.116-.198-.012-.305.087-.404.089-.089.198-.232.297-.348.099-.116.132-.198.198-.33.066-.132.033-.248-.017-.348-.05-.099-.446-1.072-.611-1.469-.161-.387-.325-.334-.446-.34-.116-.006-.248-.007-.38-.007-.132 0-.348.05-.53.248-.182.198-.694.677-.694 1.653 0 .975.71 1.916.81 2.048.099.132 1.398 2.134 3.387 2.991.473.204.842.326 1.13.418.475.151.907.129 1.248.078.38-.057 1.171-.479 1.336-.942.166-.462.166-.859.116-.942-.049-.082-.181-.132-.38-.231z"/></svg>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white group-hover:text-[#25D366] transition-colors truncate">
-                          WhatsApp Oficial
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 uppercase">
-                          Chat Directo
-                        </span>
-                      </div>
-                      <div className="text-xs font-mono text-white/50 group-hover:text-white/80 transition-colors">
-                        +57 310 477 1967 • +57 304 588 2770
-                      </div>
-                    </div>
+              {/* Franja Inferior de Correo Oficial dentro de la Tarjeta Protagonista */}
+              <a
+                href="mailto:massagroup24@gmail.com"
+                className="relative z-10 mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group/mail"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/15 flex items-center justify-center text-[#9CD01A] group-hover/mail:border-[#9CD01A]/50 transition-colors shrink-0">
+                    <Mail className="w-4 h-4" />
                   </div>
-                  <div className="flex items-center gap-2 text-[#25D366] shrink-0 pl-3">
-                    <span className="text-xs font-bold hidden sm:inline opacity-80 group-hover:opacity-100">
-                      Iniciar Chat
+                  <div className="min-w-0">
+                    <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.14em] sm:tracking-[0.18em] text-white/45 block truncate">
+                      Correo Oficial • Planos, Licitaciones & Dossier
                     </span>
-                    <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </div>
-                </a>
-
-                {/* 2. LLAMADA TELEFÓNICA */}
-                <a
-                  href="tel:+573104771967"
-                  className="group relative flex items-center justify-between py-3.5 px-3 sm:px-4 hover:bg-[#9CD01A]/[0.04] transition-all duration-200"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#9CD01A]/15 border border-[#9CD01A]/30 flex items-center justify-center text-[#9CD01A] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(156,208,26,0.15)] shrink-0">
-                      <Phone className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white group-hover:text-[#9CD01A] transition-colors truncate">
-                          Llamada Telefónica
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#9CD01A]/10 text-[#9CD01A] border border-[#9CD01A]/20 uppercase">
-                          Línea Directa
-                        </span>
-                      </div>
-                      <div className="text-xs font-mono text-white/50 group-hover:text-white/80 transition-colors">
-                        +57 310 477 1967 • +57 304 588 2770
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#9CD01A] shrink-0 pl-3">
-                    <span className="text-xs font-bold hidden sm:inline opacity-80 group-hover:opacity-100">
-                      Llamar a MASSA
+                    <span className="text-xs sm:text-base font-mono font-bold text-white group-hover/mail:text-[#9CD01A] transition-colors break-all sm:break-normal block">
+                      massagroup24@gmail.com
                     </span>
-                    <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </div>
-                </a>
-
-                {/* 3. CORREO COMERCIAL */}
-                <a
-                  href="mailto:comercial@massagroup.co"
-                  className="group relative flex items-center justify-between py-3.5 px-3 sm:px-4 hover:bg-white/[0.04] transition-all duration-200"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.1)] shrink-0">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white group-hover:text-white transition-colors truncate">
-                          Correo Comercial
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-white/10 text-white/80 border border-white/20 uppercase">
-                          Planos & Formal
-                        </span>
-                      </div>
-                      <div className="text-xs font-mono text-white/50 group-hover:text-white/80 transition-colors truncate">
-                        comercial@massagroup.co
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-white/80 group-hover:text-white shrink-0 pl-3">
-                    <span className="text-xs font-bold hidden sm:inline opacity-80 group-hover:opacity-100">
-                      Enviar Correo
-                    </span>
-                    <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </div>
-                </a>
-              </div>
+                </div>
+                <span className="inline-flex items-center justify-center sm:justify-end gap-1.5 py-2.5 px-3.5 sm:p-0 rounded-xl bg-white/[0.04] sm:bg-transparent border border-white/10 sm:border-0 text-xs font-mono font-bold uppercase tracking-wider text-[#9CD01A] shrink-0">
+                  <span>Redactar correo</span>
+                  <ArrowUpRight className="w-4 h-4 group-hover/mail:translate-x-0.5 group-hover/mail:-translate-y-0.5 transition-transform" />
+                </span>
+              </a>
             </div>
 
-            {/* COLUMNA 2: ECOSISTEMA MULTIMEDIA */}
-            <div>
-              <div className="flex items-center justify-between mb-2.5 px-1">
-                <span className="text-[11px] font-mono font-bold text-[#00F2FE] uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00F2FE]" />
-                  Multimedia & Recorridos 360°
-                </span>
-                <span className="text-[10px] font-mono text-white/40">Contenido Audiovisual</span>
-              </div>
+            {/* COLUMNA DERECHA (5 COLUMNAS): VITRINA DIGITAL INSTAGRAM & TIKTOK (SIN YOUTUBE) */}
+            <div className="lg:col-span-5 flex flex-col gap-4 sm:gap-6">
+              {/* TARJETA INSTAGRAM OFICIAL */}
+              <a
+                href="https://www.instagram.com/massa_arquitectos?utm_source=ig_web_button_share_sheet&rpxt=ZDNlZDc0MzIxNw=="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative flex-1 rounded-[24px] sm:rounded-[26px] overflow-hidden border border-white/10 hover:border-[#E1306C]/55 bg-[#0B0D11]/95 p-5 sm:p-7 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.75)]"
+              >
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-12 -top-12 w-48 h-48 rounded-full bg-gradient-to-tr from-[#F58529]/20 via-[#DD2A7B]/20 to-[#8134AF]/20 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"
+                />
 
-              <div className="divide-y divide-white/[0.06] border-y border-white/[0.08]">
-                {/* 4. INSTAGRAM */}
-                <a
-                  href="https://www.instagram.com/massagroup.co"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative flex items-center justify-between py-3.5 px-3 sm:px-4 hover:bg-[#E1306C]/[0.04] transition-all duration-200"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#F58529]/20 via-[#DD2A7B]/20 to-[#8134AF]/20 border border-[#E1306C]/30 flex items-center justify-center text-[#E1306C] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(225,48,108,0.15)] shrink-0">
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                <div className="relative z-10 flex items-start justify-between gap-2.5">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-[#F58529]/25 via-[#DD2A7B]/25 to-[#8134AF]/25 border border-[#E1306C]/40 flex items-center justify-center text-[#E1306C] group-hover:scale-110 transition-transform shadow-[0_0_25px_rgba(225,48,108,0.2)] shrink-0">
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white group-hover:text-[#E1306C] transition-colors truncate">
-                          Instagram Oficial
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#E1306C]/10 text-[#E1306C] border border-[#E1306C]/20 uppercase">
-                          Renders & Obra
-                        </span>
-                      </div>
-                      <div className="text-xs font-mono text-white/50 group-hover:text-white/80 transition-colors">
-                        @massagroup.co
-                      </div>
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#E1306C]/15 text-[#E1306C] border border-[#E1306C]/30 uppercase tracking-wider">
+                        Instagram Oficial
+                      </span>
+                      <h3 className="text-base sm:text-xl font-black text-white mt-1 tracking-tight truncate">
+                        @massa_arquitectos
+                      </h3>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-[#E1306C] shrink-0 pl-3">
-                    <span className="text-xs font-bold hidden sm:inline opacity-80 group-hover:opacity-100">
-                      Ver Portafolio
-                    </span>
-                    <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  <div className="w-9 h-9 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-white/70 group-hover:text-[#E1306C] group-hover:border-[#E1306C]/40 transition-colors shrink-0">
+                    <ArrowUpRight className="w-4 h-4" />
                   </div>
-                </a>
+                </div>
 
-                {/* 5. YOUTUBE */}
-                <a
-                  href="https://www.youtube.com/@massagroup"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative flex items-center justify-between py-3.5 px-3 sm:px-4 hover:bg-[#FF0000]/[0.04] transition-all duration-200"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#FF0000]/15 border border-[#FF0000]/30 flex items-center justify-center text-[#FF0000] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,0,0,0.15)] shrink-0">
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white group-hover:text-[#FF0000] transition-colors truncate">
-                          YouTube • Videos 4K
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#FF0000]/10 text-[#FF0000] border border-[#FF0000]/20 uppercase">
-                          Tours 360°
-                        </span>
-                      </div>
-                      <div className="text-xs font-mono text-white/50 group-hover:text-white/80 transition-colors">
-                        MASSA GROUP Oficial
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#FF0000] shrink-0 pl-3">
-                    <span className="text-xs font-bold hidden sm:inline opacity-80 group-hover:opacity-100">
-                      Ver Canal
-                    </span>
-                    <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </div>
-                </a>
-
-                {/* 6. TIKTOK */}
-                <a
-                  href="https://www.tiktok.com/@massagroup.co"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative flex items-center justify-between py-3.5 px-3 sm:px-4 hover:bg-[#00F2FE]/[0.04] transition-all duration-200"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#00F2FE]/15 border border-[#00F2FE]/30 flex items-center justify-center text-[#00F2FE] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,242,254,0.15)] shrink-0">
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.4a6.33 6.33 0 0 0-6.6 6.32 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.52a8.27 8.27 0 0 0 5.17 1.83V6.9a4.83 4.83 0 0 1-2-.21z"/></svg>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white group-hover:text-[#00F2FE] transition-colors truncate">
-                          TikTok Oficial
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#00F2FE]/10 text-[#00F2FE] border border-[#00F2FE]/20 uppercase">
-                          Avances en Obra
-                        </span>
-                      </div>
-                      <div className="text-xs font-mono text-white/50 group-hover:text-white/80 transition-colors">
-                        @massagroup.co
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#00F2FE] shrink-0 pl-3">
-                    <span className="text-xs font-bold hidden sm:inline opacity-80 group-hover:opacity-100">
-                      Explorar Videos
-                    </span>
-                    <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </div>
-                </a>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Barra Minimalista de Sede Central & Asesoría VIP (Sustituye tarjeta gigante anterior) */}
-          <div className="mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-white/[0.03] via-white/[0.015] to-transparent border border-white/[0.08] hover:border-[#9CD01A]/30 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-9 h-9 rounded-xl bg-[#9CD01A]/10 border border-[#9CD01A]/20 flex items-center justify-center text-[#9CD01A] shrink-0 shadow-[0_0_15px_rgba(156,208,26,0.15)]">
-                <MapPin className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs sm:text-sm font-bold text-white">Sede Central • Cúcuta, Colombia</span>
-                  <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-[#9CD01A]/10 text-[#9CD01A] border border-[#9CD01A]/20 uppercase">
-                    Visitas Privadas
+                <div className="relative z-10 mt-5 pt-4 border-t border-white/[0.07] flex items-center justify-between gap-2">
+                  <span className="text-xs text-white/60">
+                    Portafolio de renders 4K, diseño interior y dirección de obra.
+                  </span>
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#E1306C] shrink-0">
+                    Explorar ↗
                   </span>
                 </div>
-                <p className="text-xs text-white/50 mt-0.5 font-normal">
-                  ¿Tienes un lote o proyecto en mente? Evaluamos la topografía, ventilación y potencial de tu desarrollo.
-                </p>
-              </div>
-            </div>
+              </a>
 
-            <button
-              type="button"
-              onClick={() => setIsContactModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-[#9CD01A] hover:bg-white text-black font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 shrink-0 shadow-[0_0_20px_rgba(156,208,26,0.25)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              <span>Agendar Asesoría VIP</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+              {/* TARJETA TIKTOK OFICIAL */}
+              <a
+                href="https://www.tiktok.com/@massa.group?is_from_webapp=1&sender_device=pc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative flex-1 rounded-[24px] sm:rounded-[26px] overflow-hidden border border-white/10 hover:border-[#00F2FE]/55 bg-[#0B0D11]/95 p-5 sm:p-7 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-[0_20px_50px_rgba(0,0,0,0.75)]"
+              >
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-[#00F2FE]/15 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"
+                />
+
+                <div className="relative z-10 flex items-start justify-between gap-2.5">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#00F2FE]/15 border border-[#00F2FE]/35 flex items-center justify-center text-[#00F2FE] group-hover:scale-110 transition-transform shadow-[0_0_25px_rgba(0,242,254,0.2)] shrink-0">
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.4a6.33 6.33 0 0 0-6.6 6.32 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.52a8.27 8.27 0 0 0 5.17 1.83V6.9a4.83 4.83 0 0 1-2-.21z"/></svg>
+                    </div>
+                    <div className="min-w-0">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#00F2FE]/15 text-[#00F2FE] border border-[#00F2FE]/30 uppercase tracking-wider">
+                        TikTok Oficial
+                      </span>
+                      <h3 className="text-base sm:text-xl font-black text-white mt-1 tracking-tight truncate">
+                        @massa.group
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-white/70 group-hover:text-[#00F2FE] group-hover:border-[#00F2FE]/40 transition-colors shrink-0">
+                    <ArrowUpRight className="w-4 h-4" />
+                  </div>
+                </div>
+
+                <div className="relative z-10 mt-5 pt-4 border-t border-white/[0.07] flex items-center justify-between gap-2">
+                  <span className="text-xs text-white/60">
+                    Reels arquitectónicos, recorridos en obra y procesos constructivos.
+                  </span>
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#00F2FE] shrink-0">
+                    Ver videos ↗
+                  </span>
+                </div>
+              </a>
+            </div>
           </div>
 
-        </div>
+          {/* BLOQUE INFERIOR MONUMENTAL: OFICINA PRINCIPAL (GOOGLE MAPS) */}
+          <div className="mt-5 sm:mt-6 rounded-[24px] sm:rounded-[28px] overflow-hidden border border-[#9CD01A]/30 bg-gradient-to-r from-[#0C0F0B] via-[#0B0D11] to-[#0A0C10] p-5 sm:p-8 lg:px-10 lg:py-8 shadow-[0_20px_60px_rgba(0,0,0,0.85)] relative">
+            {/* Líneas de coordenadas tipo plano arquitectónico */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-[0.05]"
+              style={{
+                backgroundImage: 'radial-gradient(#9CD01A 1px, transparent 1px)',
+                backgroundSize: '20px 20px',
+              }}
+            />
 
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
+              <div className="flex items-start sm:items-center gap-3.5 sm:gap-4">
+                <a
+                  href="https://maps.app.goo.gl/TuKJeBdYcAjLwsYr7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Ver Oficina Principal en Google Maps"
+                  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#9CD01A]/15 border border-[#9CD01A]/40 flex items-center justify-center text-[#9CD01A] shrink-0 shadow-[0_0_25px_rgba(156,208,26,0.2)] hover:scale-105 transition-transform"
+                >
+                  <span className="absolute inset-0 rounded-2xl border border-[#9CD01A]/40 animate-ping opacity-30" />
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
+                </a>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="massa-metallic-text text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-[0.18em] sm:tracking-[0.22em]">
+                      Oficina Principal • Estudio & Atención Privada
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#9CD01A]/15 text-[#9CD01A] border border-[#9CD01A]/30 uppercase">
+                      Cúcuta, N. de S.
+                    </span>
+                  </div>
+                  <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight">
+                    Visítanos en Nuestra Sede Principal
+                  </h3>
+                  <p className="text-xs sm:text-sm text-white/60 mt-1 max-w-2xl leading-relaxed">
+                    ¿Tienes un lote o proyecto en mente? Evaluamos en estudio la topografía, bioclimática y potencial constructivo de tu desarrollo.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                <a
+                  href="https://maps.app.goo.gl/TuKJeBdYcAjLwsYr7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundImage: 'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)',
+                    boxShadow: '0 10px 28px rgba(156, 208, 26, 0.3)',
+                  }}
+                  className="min-h-[48px] px-6 py-3.5 rounded-xl text-[#060804] font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <MapPin className="w-4 h-4 shrink-0" />
+                  <span>Ver Ubicación en Google Maps</span>
+                  <ArrowUpRight className="w-4 h-4 shrink-0" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* FOOTER MINIMALISTA & MODERNO */}
-      <footer className="relative bg-[#050608] border-t border-white/[0.08] py-12 px-4 sm:px-8 lg:px-14 text-left">
+      <footer
+        className="relative bg-[#050608] border-t border-white/[0.08] py-10 sm:py-12 px-4 sm:px-8 lg:px-14 text-left"
+        style={{
+          paddingBottom: 'max(2.5rem, calc(2rem + env(safe-area-inset-bottom, 0px)))',
+        }}
+      >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <img
               src="/MASSA_USO.png"
               alt="MASSA HOME"
-              className="h-8 w-auto object-contain"
+              className="h-7 sm:h-8 w-auto object-contain"
             />
             <span className="text-xs text-white/40 border-l border-white/10 pl-3">
               Arquitectura de Autor • Gemelos Digitales 360°
             </span>
           </div>
 
-          <div className="flex items-center gap-6 text-xs text-white/60">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 text-xs text-white/60">
             <a href="#hero" className="hover:text-white transition">Home</a>
             <a href="#proyectos" className="hover:text-white transition">Proyectos</a>
+            <button
+              type="button"
+              onClick={() => setActiveInfoModal('quienes-somos')}
+              className="hover:text-white transition cursor-pointer"
+            >
+              Nosotros
+            </button>
             <a href="#contacto" className="hover:text-[#9CD01A] transition">Contacto</a>
             <button
               type="button"
@@ -1081,7 +1070,7 @@ export function VipCommercialLanding({
             </button>
           </div>
 
-          <div className="text-xs font-mono text-white/40">
+          <div className="text-xs font-mono text-white/40 text-center md:text-right">
             © 2026 MASSA HOME • Por MASSA GROUP
           </div>
         </div>
@@ -1089,86 +1078,253 @@ export function VipCommercialLanding({
 
 
       {/* MODALES FUNCIONALES */}
-      <VipContactModal
-        isOpen={isContactModalOpen}
-        onClose={() => setIsContactModalOpen(false)}
-        defaultResidenceName={selectedResidenceForContact}
-      />
-
       <CommercialLoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={onLoginSuccess}
       />
 
-      {/* MODAL INFORMATIVO: QUIENES SOMOS */}
-      {activeInfoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="relative w-full max-w-lg rounded-3xl bg-[#121215] border border-white/10 p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_40px_rgba(156,208,26,0.15)] text-left">
-            
-            <button
-              type="button"
-              onClick={() => setActiveInfoModal(null)}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/70 hover:text-white transition cursor-pointer"
-              title="Cerrar ventana"
+      {/* MODAL EDITORIAL MONUMENTAL: QUIÉNES SOMOS (NOSOTROS) */}
+      <AnimatePresence>
+        {activeInfoModal === 'quienes-somos' && (
+          <m.div
+            key="modal-quienes-somos"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => setActiveInfoModal(null)}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 lg:p-10 bg-black/85 backdrop-blur-xl overflow-y-auto overscroll-contain"
+          >
+            <m.div
+              initial={{ opacity: 0, scale: 0.96, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 24 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
+              }}
+              className="relative w-full max-w-6xl max-h-[94dvh] sm:max-h-[92dvh] overflow-y-auto overscroll-contain rounded-t-[28px] sm:rounded-[34px] bg-[#090B0F] border-t sm:border border-[#9CD01A]/35 shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_60px_rgba(156,208,26,0.12)] text-left sm:my-auto"
             >
-              <X className="w-4 h-4" />
-            </button>
+              {/* Retícula arquitectónica sutil y luz ambiental */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-[0.03]"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)',
+                  backgroundSize: '48px 48px',
+                }}
+              />
+              <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#9CD01A]/10 blur-[130px]" />
+              <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-[#9CD01A]/[0.07] blur-[130px]" />
 
-            {/* MODAL: QUIÉNES SOMOS */}
-            {activeInfoModal === 'quienes-somos' && (
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/30 mb-4">
-                  <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-[#9CD01A] uppercase">
+              {/* Barra Superior Sticky para Móvil y Escritorio (Siempre accesible al hacer scroll) */}
+              <div className="sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3.5 sm:px-8 sm:py-5 bg-[#090B0F]/90 backdrop-blur-xl border-b border-white/[0.08]">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/35 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse shrink-0" />
+                  <span className="massa-metallic-text text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase truncate">
                     MASSA GROUP • ESTUDIO DE AUTOR
                   </span>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-black text-white mb-3">
-                  Quiénes Somos
-                </h3>
-                <p className="text-sm text-white/80 leading-relaxed mb-4">
-                  Somos una firma boutique de arquitectura, ingeniería y construcción de residencias exclusivas en Colombia. Desarrollamos obras de autor que integran el diseño contemporáneo en Cúcuta y Norte de Santander con tecnología de punta (recorridos 3D y gemelos digitales).
-                </p>
-                <div className="space-y-2 mb-6 text-xs text-white/70">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#9CD01A]" />
-                    <span>Diseño arquitectónico bioclimático y de alta gama</span>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveInfoModal(null)}
+                  className="min-h-[38px] px-3.5 py-1.5 rounded-full bg-white/[0.07] hover:bg-[#9CD01A] border border-white/15 hover:border-[#9CD01A] text-white/85 hover:text-black text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-lg shrink-0"
+                  title="Cerrar ventana"
+                >
+                  <span>Cerrar</span>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="relative z-10 p-4 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 lg:gap-10 items-stretch">
+                {/* COLUMNA IZQUIERDA (7 COLUMNAS): FOTOGRAFÍA CORPORATIVA PANORÁMICA 16:9 + MÉTRICAS DEL ESTUDIO */}
+                <div className="lg:col-span-7 flex flex-col justify-between gap-3.5 sm:gap-4">
+                  {/* Marco Panorámico 16:9 sin recortar al equipo */}
+                  <div className="rounded-2xl sm:rounded-3xl overflow-hidden border border-[#9CD01A]/35 bg-[#0F1218] shadow-[0_20px_50px_rgba(0,0,0,0.85)] group">
+                    <div className="relative w-full aspect-[16/9] overflow-hidden">
+                      <img
+                        src="/images/massa-equipo-corporativo.jpg"
+                        alt="Equipo Corporativo MASSA Group"
+                        className="w-full h-full object-cover object-center transform group-hover:scale-[1.03] transition-transform duration-1000 filter contrast-[1.04] brightness-[0.98]"
+                      />
+                      {/* Viñeteado inferior sutil en tablet/desktop */}
+                      <div className="hidden sm:block pointer-events-none absolute inset-0 bg-gradient-to-t from-[#06070A] via-transparent to-black/25 opacity-90" />
+
+                      {/* Sello Superior Izquierdo sobre la fotografía (en pantallas sm+ para dejar 100% despejada la foto en móvil) */}
+                      <div className="hidden sm:flex absolute top-4 left-4 items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/15">
+                        <img
+                          src="/MASSA_USO.png"
+                          alt="MASSA"
+                          className="h-5 w-auto object-contain"
+                        />
+                        <span className="h-3 w-px bg-white/20" />
+                        <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-white/90 uppercase">
+                          FIRMA CORPORATIVA
+                        </span>
+                      </div>
+
+                      {/* Pie de fotografía superpuesto en tablet/desktop */}
+                      <div className="hidden sm:flex absolute bottom-4 inset-x-5 flex-wrap items-end justify-between gap-2">
+                        <div>
+                          <span className="massa-metallic-text text-[10px] font-mono font-bold uppercase tracking-[0.24em] block">
+                            DIRECCIÓN, ARQUITECTURA &amp; INGENIERÍA
+                          </span>
+                          <p className="text-sm font-bold text-white tracking-tight">
+                            Equipo Multidisciplinario MASSA Group • Sede Principal
+                          </p>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full bg-[#9CD01A]/20 backdrop-blur-md border border-[#9CD01A]/45 text-[9px] font-mono font-bold text-[#D9FF66] uppercase tracking-wider">
+                          Cúcuta, N. de S.
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Pie de fotografía dedicado en móvil (debajo de la foto para no cubrir al equipo) */}
+                    <div className="flex sm:hidden items-center justify-between gap-2 px-3.5 py-3 bg-[#0B0E14] border-t border-white/10">
+                      <div className="min-w-0">
+                        <span className="massa-metallic-text text-[8px] font-mono font-bold uppercase tracking-[0.18em] block truncate">
+                          DIRECCIÓN, ARQUITECTURA &amp; INGENIERÍA
+                        </span>
+                        <p className="text-xs font-bold text-white tracking-tight truncate">
+                          Equipo Corporativo MASSA Group
+                        </p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/40 text-[8px] font-mono font-bold text-[#D9FF66] uppercase tracking-wider shrink-0">
+                        Cúcuta, N. de S.
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#9CD01A]" />
-                    <span>Construcción integral de alta precisión sin sobrecostos</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#9CD01A]" />
-                    <span>Presencia consolidada en Cúcuta, Norte de Santander y Colombia</span>
+
+                  {/* Fila de 3 Tarjetas de Respaldo Corporativo (optimizada para móvil sin quiebres de línea) */}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                    <div className="rounded-xl sm:rounded-2xl bg-white/[0.03] border border-white/10 p-2.5 sm:p-4 min-w-0">
+                      <span className="massa-metallic-text text-sm sm:text-2xl font-black font-mono tracking-tight block whitespace-nowrap">
+                        100%
+                      </span>
+                      <span className="text-[10px] sm:text-xs font-bold text-white mt-0.5 block truncate">
+                        Diseño de Autor
+                      </span>
+                      <span className="text-[10px] text-white/45 hidden sm:block mt-0.5">
+                        Identidad única por lote
+                      </span>
+                    </div>
+
+                    <div className="rounded-xl sm:rounded-2xl bg-white/[0.03] border border-white/10 p-2.5 sm:p-4 min-w-0">
+                      <span className="massa-metallic-text text-sm sm:text-2xl font-black font-mono tracking-tight block whitespace-nowrap">
+                        BIM 360°
+                      </span>
+                      <span className="text-[10px] sm:text-xs font-bold text-white mt-0.5 block truncate">
+                        Gemelos Digitales
+                      </span>
+                      <span className="text-[10px] text-white/45 hidden sm:block mt-0.5">
+                        Inmersión pre-constructiva
+                      </span>
+                    </div>
+
+                    <div className="rounded-xl sm:rounded-2xl bg-white/[0.03] border border-white/10 p-2.5 sm:p-4 min-w-0">
+                      <span className="massa-metallic-text text-sm sm:text-2xl font-black font-mono tracking-tight block whitespace-nowrap">
+                        INTEGRAL
+                      </span>
+                      <span className="text-[10px] sm:text-xs font-bold text-white mt-0.5 block truncate">
+                        Rigor Técnico
+                      </span>
+                      <span className="text-[10px] text-white/45 hidden sm:block mt-0.5">
+                        Control de obra y costos
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <a
-                    href="#proyectos"
-                    onClick={() => setActiveInfoModal(null)}
-                    className="flex-1 py-3 px-4 rounded-xl bg-[#9CD01A] hover:bg-[#aef01e] text-black font-extrabold text-xs text-center uppercase tracking-wider transition"
-                  >
-                    Ver Catálogo de Obras
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveInfoModal(null);
-                      setIsContactModalOpen(true);
-                    }}
-                    className="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition cursor-pointer"
-                  >
-                    Contactar
-                  </button>
+
+                {/* COLUMNA DERECHA (5 COLUMNAS): MANIFIESTO EDITORIAL & PILARES ARQUITECTÓNICOS */}
+                <div className="lg:col-span-5 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[0.95] uppercase mb-3 sm:mb-4">
+                      Quiénes <span className="massa-metallic-text">Somos</span>
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-4 sm:mb-5">
+                      Somos una firma de arquitectura, ingeniería y construcción de residencias y desarrollos exclusivos en Colombia. Nuestro equipo multidisciplinario integra diseño bioclimático contemporáneo, precisión estructural y visualización inmersiva en Cúcuta y Norte de Santander.
+                    </p>
+
+                    {/* 3 Pilares en Tarjetas Arquitectónicas */}
+                    <div className="space-y-2.5 mb-5 sm:mb-6">
+                      <div className="p-3 sm:p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-[#9CD01A]/35 transition-colors flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-xl bg-[#9CD01A]/15 border border-[#9CD01A]/35 flex items-center justify-center text-[#9CD01A] shrink-0 mt-0.5">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-white">
+                            Arquitectura Bioclimática de Alta Gama
+                          </h4>
+                          <p className="text-[11px] sm:text-xs text-white/55 mt-0.5 leading-relaxed">
+                            Proyectos concebidos según asoleamiento, ventilación cruzada y topografía real de cada terreno.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-3 sm:p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-[#9CD01A]/35 transition-colors flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-xl bg-[#9CD01A]/15 border border-[#9CD01A]/35 flex items-center justify-center text-[#9CD01A] shrink-0 mt-0.5">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-white">
+                            Ingeniería &amp; Ejecución de Alta Precisión
+                          </h4>
+                          <p className="text-[11px] sm:text-xs text-white/55 mt-0.5 leading-relaxed">
+                            Dirección técnica rigurosa, planeación presupuestal transparente y acabados de primer nivel.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-3 sm:p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-[#9CD01A]/35 transition-colors flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-xl bg-[#9CD01A]/15 border border-[#9CD01A]/35 flex items-center justify-center text-[#9CD01A] shrink-0 mt-0.5">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-white">
+                            Tecnología BIM &amp; Recorridos 360°
+                          </h4>
+                          <p className="text-[11px] sm:text-xs text-white/55 mt-0.5 leading-relaxed">
+                            Gemelos digitales interactivos para explorar cada espacio antes y durante su construcción.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Acciones Directas */}
+                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-3 border-t border-white/[0.08]">
+                    <a
+                      href="#proyectos"
+                      onClick={() => setActiveInfoModal(null)}
+                      style={{
+                        backgroundImage:
+                          'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)',
+                        boxShadow: '0 10px 28px rgba(156, 208, 26, 0.28)',
+                      }}
+                      className="min-h-[48px] flex-1 py-3.5 px-5 rounded-xl text-[#060804] font-black text-xs text-center uppercase tracking-wider transition-transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                      <span>Ver Catálogo de Obras</span>
+                      <ArrowUpRight className="w-4 h-4 shrink-0" />
+                    </a>
+                    <a
+                      href="#contacto"
+                      onClick={() => setActiveInfoModal(null)}
+                      className="min-h-[48px] py-3.5 px-5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-[#9CD01A]/45 text-white font-bold text-xs text-center uppercase tracking-wider transition-all flex items-center justify-center"
+                    >
+                      Contacto Directo
+                    </a>
+                  </div>
                 </div>
               </div>
-            )}
-
-          </div>
-        </div>
-      )}
+            </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

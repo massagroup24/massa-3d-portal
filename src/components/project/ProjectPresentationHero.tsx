@@ -141,7 +141,8 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
 
   const isSplit = introStage === 'split';
   const isGold = color.toUpperCase() === '#DFC47B';
-  const topTitleWord = isHaciendaF22 ? 'Hacienda Club' : identity.titlePrefix;
+  const isIbizaA14 = identity.id === 'project_ibiza_a14';
+  const topTitleWord = isHaciendaF22 ? 'Hacienda Club' : isIbizaA14 ? 'ibiza' : identity.titlePrefix;
   const bottomTitleWord = identity.titleHighlight || identity.code;
 
   return (
@@ -286,12 +287,29 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
           {/* Parte 1: Del centro a la esquina superior izquierda */}
           <span
             key={`${identity.id}-top-${introRunId}`}
-            className={`project-f22-word-enter-1 absolute block whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`project-f22-word-enter-1 ${isIbizaA14 ? 'project-ibiza-wordmark' : ''} absolute block whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
               isSplit
-                ? 'left-3.5 top-14 sm:left-8 sm:top-16 lg:left-12 lg:top-20 translate-x-0 translate-y-0 scale-100 text-left'
+                ? 'left-3.5 top-12 sm:left-8 sm:top-14 lg:left-12 lg:top-16 translate-x-0 translate-y-0 scale-100 text-left'
                 : 'left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 scale-105 text-center'
             }`}
-          >{topTitleWord}</span>
+          >
+            {topTitleWord}
+            {isIbizaA14 && (
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 240 70"
+                fill="none"
+                className="pointer-events-none absolute left-0 -bottom-[0.12em] h-[0.58em] w-full overflow-visible"
+              >
+                {/* Trazo caligráfico extendido de la "z" bajo la "a", fiel al emblema de entrada de Condominio Ibiza */}
+                <path
+                  d="M 118 44 C 142 39, 182 37, 224 41 C 194 45, 152 47, 114 52 Z"
+                  fill="#F7F2E7"
+                  opacity="0.92"
+                />
+              </svg>
+            )}
+          </span>
 
           {/* Parte 2: Del centro a la esquina inferior derecha */}
           <span
@@ -308,7 +326,9 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
         <div
           aria-hidden="true"
           style={{
-            top: 'calc(clamp(3.5rem, 4.8vw, 5rem) + clamp(1.52rem, 5.3vw, 4.75rem) + 0.55rem)'
+            top: isIbizaA14
+              ? 'calc(clamp(3rem, 4.2vw, 4rem) + clamp(3.3rem, 9.8vw, 8.2rem) + 0.35rem)'
+              : 'calc(clamp(3.5rem, 4.8vw, 5rem) + clamp(1.52rem, 5.3vw, 4.75rem) + 0.55rem)'
           }}
           className={`pointer-events-none absolute left-3.5 sm:left-8 lg:left-12 z-30 flex items-center gap-2.5 transition-all duration-700 delay-300 ${
             isSplit ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'

@@ -963,48 +963,84 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
       )}
 
       {/* =========================================================================
-          BLOQUE 7: NAVEGACIÓN Y CONTACTO DIRECTO (310 477 1967 / 304 588 2770)
+          BLOQUE 7: NAVEGACIÓN Y CONTACTO DIRECTO
           ========================================================================= */}
       <section id="navegacion-contacto" className="w-full max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-16 border-t border-white/10">
         <div className="rounded-3xl border bg-[#0A0A0E]/95 p-6 sm:p-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6" style={{ borderColor: `${primaryColor}35` }}>
           <div>
-            <span className={`text-[10px] font-mono font-bold uppercase tracking-[0.22em] block mb-1.5 ${isHaciendaF22 ? 'gold-metallic-text' : ''}`} style={{ color: primaryColor }}>
+            <span className={`text-[10px] font-mono font-bold uppercase tracking-[0.22em] block mb-1.5 ${isHaciendaF22 ? 'gold-metallic-text' : 'massa-metallic-text'}`} style={{ color: primaryColor }}>
               Atención Comercial Directa
             </span>
             <h3 className="text-lg sm:text-2xl font-black text-white uppercase tracking-tight">
               {canonicalProject.nombre}
             </h3>
-            <p className="text-xs sm:text-sm font-mono text-white/65 mt-1.5">
-              Líneas oficiales: <span className={isHaciendaF22 ? 'gold-metallic-text font-bold' : 'text-white font-bold'}>310 477 1967</span> • <span className={isHaciendaF22 ? 'gold-metallic-text font-bold' : 'text-white font-bold'}>304 588 2770</span>
-            </p>
+            {isHaciendaF22 ? (
+              <p className="text-xs sm:text-sm font-mono text-white/65 mt-1.5">
+                Líneas oficiales: <span className="gold-metallic-text font-bold">310 477 1967</span> • <span className="gold-metallic-text font-bold">304 588 2770</span>
+              </p>
+            ) : (
+              <p className="text-xs sm:text-sm font-mono text-white/65 mt-1.5">
+                Línea oficial MASSA: <span className="massa-metallic-text font-bold">+57 313 305 1060</span> • <span className="text-white/80 font-bold">massagroup24@gmail.com</span>
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-            <a
-              href={`https://wa.me/573104771967?text=${encodeURIComponent(`Hola, deseo recibir información oficial sobre el proyecto ${canonicalProject.nombre}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                backgroundImage: metallicAccentGradient,
-                boxShadow: `0 8px 25px ${primaryColor}40`,
-                color: '#060608'
-              }}
-              className="px-5 py-3.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>WhatsApp 310 477 1967</span>
-            </a>
+            {isHaciendaF22 ? (
+              <>
+                <a
+                  href={`https://wa.me/573104771967?text=${encodeURIComponent(`Hola, deseo recibir información oficial sobre el proyecto ${canonicalProject.nombre}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundImage: metallicAccentGradient,
+                    boxShadow: `0 8px 25px ${primaryColor}40`,
+                    color: '#060608'
+                  }}
+                  className="px-5 py-3.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>WhatsApp 310 477 1967</span>
+                </a>
 
-            <a
-              href={`https://wa.me/573045882770?text=${encodeURIComponent(`Hola, deseo recibir información oficial sobre el proyecto ${canonicalProject.nombre}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ borderColor: `${primaryColor}55` }}
-              className="px-5 py-3.5 rounded-xl border bg-white/[0.04] hover:bg-white/[0.09] font-mono text-xs font-bold uppercase tracking-wider text-white flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <MessageSquare className="w-4 h-4" style={{ color: primaryColor }} />
-              <span className={isHaciendaF22 ? 'gold-metallic-text' : ''}>WhatsApp 304 588 2770</span>
-            </a>
+                <a
+                  href={`https://wa.me/573045882770?text=${encodeURIComponent(`Hola, deseo recibir información oficial sobre el proyecto ${canonicalProject.nombre}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ borderColor: `${primaryColor}55` }}
+                  className="px-5 py-3.5 rounded-xl border bg-white/[0.04] hover:bg-white/[0.09] font-mono text-xs font-bold uppercase tracking-wider text-white flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" style={{ color: primaryColor }} />
+                  <span className="gold-metallic-text">WhatsApp 304 588 2770</span>
+                </a>
+              </>
+            ) : (
+              <>
+                <a
+                  href={`https://wa.me/573133051060?text=${encodeURIComponent(`Hola MASSA Group, deseo recibir información oficial sobre el proyecto ${canonicalProject.nombre}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundImage: metallicAccentGradient,
+                    boxShadow: `0 8px 25px ${primaryColor}40`,
+                    color: '#060608'
+                  }}
+                  className="px-5 py-3.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>WhatsApp 313 305 1060</span>
+                </a>
+
+                <a
+                  href="tel:+573133051060"
+                  style={{ borderColor: `${primaryColor}55` }}
+                  className="px-5 py-3.5 rounded-xl border bg-white/[0.04] hover:bg-white/[0.09] font-mono text-xs font-bold uppercase tracking-wider text-white flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" style={{ color: primaryColor }} />
+                  <span className="massa-metallic-text">Llamar 313 305 1060</span>
+                </a>
+              </>
+            )}
           </div>
         </div>
       </section>

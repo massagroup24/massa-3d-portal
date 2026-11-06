@@ -1072,7 +1072,7 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       logoVerticalWhite: '/MASSA_USO.png',
       logoVerticalDark: '/MASSA_USO.png',
       logoIcon: '/massa-cube-transparent.png',
-      metallicGradient: 'linear-gradient(135deg, #729B0E 0%, #9CD01A 35%, #D4FF5E 52%, #8CBF14 76%, #5B7E08 100%)'
+      metallicGradient: 'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)'
     },
     specs: {
       areaBuilt: 'Por definir m²',
@@ -1280,21 +1280,25 @@ export function getProjectIdentity(idOrSlug?: string): ProjectIdentity {
 }
 
 /**
- * Abre el proyecto en una pestaña nueva con su URL dedicada.
+ * Abre el proyecto en una pestaña nueva con su URL dedicada,
+ * conservando intacta la pestaña actual del portafolio.
  */
 export function openProjectInNewTab(projectId: string) {
   const identity = getProjectIdentity(projectId);
   const targetSlug = identity.slug || identity.id || projectId;
   const url = `/proyecto/${encodeURIComponent(targetSlug)}`;
-  const isTouchMobile =
-    typeof window !== 'undefined' &&
-    (window.innerWidth < 768 || window.matchMedia?.('(pointer: coarse)').matches);
-  if (isTouchMobile) {
-    window.location.assign(url);
+  if (typeof document !== 'undefined') {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     return;
   }
-  const opened = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!opened) {
-    window.location.assign(url);
+  const newWin = window.open(url, '_blank');
+  if (newWin) {
+    newWin.opener = null;
   }
 }
