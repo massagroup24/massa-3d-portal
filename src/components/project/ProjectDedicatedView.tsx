@@ -18,6 +18,7 @@ import {
 import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, HACIENDA_F22_ROOMS_360, ProjectRender } from '../../config/projectIdentityConfig';
 import { F22_LEVELS } from '../../data/haciendaF22Specs';
 import { ProjectFichaTecnica } from './ProjectFichaTecnica';
+import { ProjectVisualFloorPlans } from './ProjectVisualFloorPlans';
 import { ProjectBrandSignature, ProjectPresentationHero } from './ProjectPresentationHero';
 import { ProjectShareButton } from './ProjectShareButton';
 import { TourContainer } from '../TourContainer';
@@ -403,13 +404,16 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
           <div className="flex items-center gap-3 min-w-0">
             {brand?.logoHorizontalWhite ? (
               <img
-                src={encodeURI(brand.logoHorizontalWhite)}
+                src={brand.logoHorizontalWhite.startsWith('data:') ? brand.logoHorizontalWhite : encodeURI(brand.logoHorizontalWhite)}
                 alt={brand.companyName}
                 className="h-8 sm:h-9 w-auto object-contain shrink-0"
               />
             ) : (
               <span className="font-mono font-bold text-xs uppercase tracking-wider text-white">
-                {canonicalProject.nombre}
+                <span className="text-white">{identity.titlePrefix} </span>
+                <span className={isHaciendaF22 ? 'gold-metallic-text' : 'massa-metallic-text'}>
+                  {identity.titleHighlight}
+                </span>
               </span>
             )}
             <div className="hidden h-6 w-px shrink-0 bg-white/10 sm:block" />
@@ -428,6 +432,13 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
               className="min-h-[38px] px-3 py-1.5 rounded-lg text-white/75 hover:text-white active:scale-95 transition-all cursor-pointer"
             >
               Galería
+            </button>
+            <button
+              type="button"
+              onClick={() => document.getElementById('planos-2d')?.scrollIntoView({ behavior: 'smooth' })}
+              className="min-h-[38px] px-3 py-1.5 rounded-lg text-white/75 hover:text-white active:scale-95 transition-all cursor-pointer"
+            >
+              Planos 2D
             </button>
             <button
               type="button"
@@ -539,6 +550,13 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
 
           </>
         )}
+
+        <ProjectVisualFloorPlans
+          projectId={canonicalProject.id}
+          projectName={canonicalProject.nombre}
+          levels={projectLevels}
+          accentColor={primaryColor}
+        />
 
         <section id="ficha-tecnica" className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-20 scroll-mt-24">
           <ProjectFichaTecnica
@@ -979,7 +997,10 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
               Atención Comercial Directa
             </span>
             <h3 className="text-lg sm:text-2xl font-black text-white uppercase tracking-tight">
-              {canonicalProject.nombre}
+              <span className="text-white">{identity.titlePrefix} </span>
+              <span className={isHaciendaF22 ? 'gold-metallic-text' : 'massa-metallic-text'}>
+                {identity.titleHighlight}
+              </span>
             </h3>
             {isHaciendaF22 ? (
               <p className="text-xs sm:text-sm font-mono text-white/65 mt-1.5">

@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ProjectBrandSignature, ProjectPresentationHero } from '../../src/components/project/ProjectPresentationHero';
 import { ProjectFichaTecnica } from '../../src/components/project/ProjectFichaTecnica';
+import { ProjectVisualFloorPlans } from '../../src/components/project/ProjectVisualFloorPlans';
+import { PROJECT_VISUAL_PLANS } from '../../src/config/projectVisualPlans';
 import { CANONICAL_PROJECTS, getCanonicalProjectBySlugOrId } from '../../src/data/canonicalProjects';
 import { getProjectIdentity, HACIENDA_F22_RENDERS } from '../../src/config/projectIdentityConfig';
 import { technicalRowGroups, HACIENDA_F22_TECHNICAL } from '../../src/data/haciendaF22Specs';
@@ -96,6 +98,21 @@ describe('Presentación independiente de cada proyecto', () => {
     expect(getCanonicalProjectBySlugOrId('HACIENDA F22')).toBe(f22);
     expect(getCanonicalProjectBySlugOrId(' Ibiza A14 ')).toBe(a14);
     expect(getCanonicalProjectBySlugOrId('no-existe')).toBeUndefined();
+  });
+
+  it('vincula los 3 planos ilustrados 2D de Hacienda Club F22 desde public/PLANOS 2D F22', () => {
+    const f22Plans = PROJECT_VISUAL_PLANS[f22.id];
+    expect(f22Plans).toHaveLength(3);
+    for (const plan of f22Plans) {
+      expect(existsSync(resolve('public', plan.imageUrl.slice(1)))).toBe(true);
+    }
+    const html = renderToStaticMarkup(
+      <ProjectVisualFloorPlans projectId={f22.id} projectName={f22.nombre} accentColor="#DFC47B" />
+    );
+    expect(html).toContain('src="/PLANOS%202D%20F22/PLANTA%201.png"');
+    expect(html).toContain('Primer piso');
+    expect(html).toContain('Segundo piso');
+    expect(html).toContain('Tercer piso');
   });
 });
 

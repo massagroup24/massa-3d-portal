@@ -589,7 +589,10 @@ export function VipCommercialLanding({
                       style={{ fontFamily: identity.theme.fontFamilyTitle }}
                       className="text-sm sm:text-lg lg:text-2xl font-black uppercase tracking-wider lg:[writing-mode:vertical-rl] lg:rotate-180 truncate select-none"
                     >
-                      <span className="text-white">{project.nombre}</span>
+                      <span className="text-white">{identity.titlePrefix} </span>
+                      <span className={isHacienda ? 'gold-metallic-text' : 'massa-metallic-text'}>
+                        {identity.titleHighlight}
+                      </span>
                     </h3>
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-colors ${
@@ -605,7 +608,7 @@ export function VipCommercialLanding({
 
                 {/* CONTENIDO CUANDO EL PROYECTO ESTÁ ACTIVO (Tarjeta estricta: imagen, nombre, tipo, ciudad, año, estado y área) */}
                 {isActive && (
-                  <div className="absolute inset-0 p-5 sm:p-10 flex flex-col justify-between z-10 text-left select-none">
+                  <div className="relative lg:absolute lg:inset-0 min-h-[450px] lg:min-h-0 p-4 sm:p-8 lg:p-10 flex flex-col justify-between gap-6 z-10 text-left select-none">
                     {/* Barra Superior */}
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -634,7 +637,7 @@ export function VipCommercialLanding({
                       <div className="flex items-center gap-2">
                         {project.hasTour360 && (
                           <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/65 backdrop-blur-md border text-[11px] font-mono font-bold ${
+                            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-black/65 backdrop-blur-md border text-[10px] sm:text-[11px] font-mono font-bold ${
                               isCustomBrand
                                 ? 'border-[#DFC47B]/45 text-[#F1E29B]'
                                 : 'border-[#9CD01A]/30 text-[#9CD01A]'
@@ -668,9 +671,9 @@ export function VipCommercialLanding({
                     </div>
 
                     {/* Información Principal */}
-                    <div className="max-w-2xl">
+                    <div className="w-full max-w-2xl min-w-0">
                       <span
-                        className={`text-xs sm:text-sm font-mono font-bold tracking-wider uppercase block mb-1 ${
+                        className={`text-[11px] sm:text-sm font-mono font-bold tracking-wider uppercase block mb-1.5 break-words ${
                           isCustomBrand ? 'text-[#F1E29B]' : 'text-[#9CD01A]'
                         }`}
                       >
@@ -679,30 +682,33 @@ export function VipCommercialLanding({
 
                       <h3
                         style={{ fontFamily: identity.theme.fontFamilyTitle }}
-                        className="text-3xl sm:text-5xl lg:text-6xl font-black mb-3 tracking-tight uppercase leading-none select-none text-white"
+                        className="text-3xl sm:text-5xl lg:text-6xl font-black mb-2.5 sm:mb-3 tracking-tight uppercase leading-none select-none text-white"
                       >
-                        {project.nombre}
+                        <span className="text-white">{identity.titlePrefix} </span>
+                        <span className={isHacienda ? 'gold-metallic-text' : 'massa-metallic-text'}>
+                          {identity.titleHighlight}
+                        </span>
                       </h3>
 
-                      <p className="text-xs sm:text-base text-white/85 leading-relaxed mb-6 font-medium line-clamp-2">
+                      <p className="text-xs sm:text-base text-white/85 leading-relaxed mb-4 sm:mb-6 font-medium line-clamp-2">
                         {project.descripcion_corta}
                       </p>
 
                       {/* Tarjeta de campos estrictos: tipo, ciudad, año, estado y área (solo si existe) */}
-                      <div className="flex flex-wrap items-center gap-2.5 mb-6 text-xs font-mono">
-                        <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 mb-5 sm:mb-6 text-[11px] sm:text-xs font-mono">
+                        <div className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
                           <span className="text-white/40 mr-1.5">Tipo:</span>
                           <span className="font-bold text-white capitalize">{project.tipo}</span>
                         </div>
-                        <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                        <div className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80 max-w-full truncate">
                           <span className="text-white/40 mr-1.5">Ciudad:</span>
                           <span className="font-bold text-white">{project.ciudad}</span>
                         </div>
-                        <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                        <div className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
                           <span className="text-white/40 mr-1.5">Año:</span>
                           <span className="font-bold text-white">{project.año}</span>
                         </div>
-                        <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                        <div className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
                           <span className="text-white/40 mr-1.5">Estado:</span>
                           <span
                             className="font-bold"
@@ -712,35 +718,45 @@ export function VipCommercialLanding({
                           </span>
                         </div>
                         {areaFormatted && (
-                          <div className="px-3 py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
+                          <div className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-black/65 backdrop-blur-sm border border-white/10 text-white/80">
                             <span className="text-white/40 mr-1.5">Área:</span>
                             <span className="font-bold text-white">{areaFormatted}</span>
                           </div>
                         )}
                       </div>
 
-                      {/* Botón Principal */}
+                      {/* Botón Principal perfectamente centrado y contenido en móvil */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelectProjectForPortal(project.id);
                         }}
-                        className={`w-full sm:w-auto justify-center px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-black text-[11px] sm:text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 cursor-pointer hover:scale-105 active:scale-95 ${
+                        className={`w-full sm:w-auto max-w-full justify-center px-4 sm:px-8 py-3.5 sm:py-4 rounded-full font-black text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-widest transition-all duration-300 flex items-center gap-2 cursor-pointer sm:hover:scale-105 active:scale-95 ${
                           isCustomBrand
                             ? 'text-[#060608] border border-[#F7E8A8]/55 shadow-[0_10px_30px_rgba(223,196,123,0.4)]'
                             : 'bg-[#9CD01A] hover:bg-white text-black shadow-2xl'
                         }`}
                         style={isCustomBrand ? { backgroundImage: metallicGradient } : undefined}
                       >
-                        <span>
-                          {project.hasTour360
-                            ? isCustomBrand
-                              ? `Explorar Proyecto ${brand?.shortName} & Gemelo 360°`
-                              : 'Explorar Ficha & Gemelo Digital 360°'
-                            : 'Explorar Proyecto'}
+                        <span className="truncate">
+                          {project.hasTour360 ? (
+                            isCustomBrand ? (
+                              <>
+                                <span className="sm:hidden">Explorar Proyecto {brand?.shortName} · 360°</span>
+                                <span className="hidden sm:inline">{`Explorar Proyecto ${brand?.shortName} & Gemelo 360°`}</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="sm:hidden">Explorar Proyecto · 360°</span>
+                                <span className="hidden sm:inline">Explorar Ficha &amp; Gemelo Digital 360°</span>
+                              </>
+                            )
+                          ) : (
+                            'Explorar Proyecto'
+                          )}
                         </span>
-                        <ArrowUpRight className="w-4 h-4 font-black" />
+                        <ArrowUpRight className="w-4 h-4 font-black shrink-0" />
                       </button>
                     </div>
                   </div>
