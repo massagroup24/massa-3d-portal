@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Image as ImageIcon, Layers, Maximize2, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { PROJECT_VISUAL_PLANS, type ProjectVisualPlan } from '../../config/projectVisualPlans';
+import { trackClarityEvent } from '../../utils/clarityAnalytics';
 
 interface ProjectVisualFloorPlansProps {
   projectId: string;
@@ -32,6 +33,7 @@ export function ProjectVisualFloorPlans({
 
   const openModal = () => {
     setModalZoom(1);
+    trackClarityEvent(`ampliar_plano_2d_${projectId}_${activePlan.id}`);
     dialog.current?.showModal();
   };
 
@@ -74,6 +76,7 @@ export function ProjectVisualFloorPlans({
                 onClick={() => {
                   setSelectedId(plan.id);
                   setFailedImage(null);
+                  trackClarityEvent(`seleccionar_plano_2d_${projectId}_${plan.id}`);
                 }}
                 className="flex min-h-10 sm:min-h-11 items-center justify-center sm:justify-start gap-1.5 sm:gap-2 rounded-xl px-2 py-2 sm:px-4 text-[11px] sm:text-xs font-semibold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 cursor-pointer active:scale-95 whitespace-nowrap"
                 style={activePlan.id === plan.id

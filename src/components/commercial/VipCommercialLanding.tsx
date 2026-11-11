@@ -15,6 +15,7 @@ import { CommercialLoginModal } from './CommercialLoginModal';
 import { Project } from '../../data/tourData';
 import { getProjectIdentity } from '../../config/projectIdentityConfig';
 import massaLogoInline from '../../assets/branding/massa-uso.png?inline';
+import { useClaritySectionTracker } from '../../utils/clarityAnalytics';
 
 interface VipCommercialLandingProps {
   onSelectProjectForPortal: (projectId: string) => void;
@@ -57,6 +58,15 @@ export function VipCommercialLanding({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [activeInfoModal, setActiveInfoModal] = useState<'quienes-somos' | null>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Rastreo automático de secciones vistas en el portal principal para Microsoft Clarity
+  useClaritySectionTracker('portal-principal', [
+    'inicio',
+    'proyectos',
+    'servicios',
+    'ubicacion',
+    'contacto'
+  ]);
 
   // Acordeón interactivo para Proyectos en desarrollo (por defecto índice 0 expandido)
   const [activeProjectIndex, setActiveProjectIndex] = useState<number>(0);

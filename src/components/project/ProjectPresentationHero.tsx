@@ -142,7 +142,7 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
   const isSplit = introStage === 'split';
   const isGold = color.toUpperCase() === '#DFC47B';
   const isIbizaA14 = identity.id === 'project_ibiza_a14';
-  const topTitleWord = isHaciendaF22 ? 'Hacienda Club' : isIbizaA14 ? 'ibiza' : identity.titlePrefix;
+  const topTitleWord = isHaciendaF22 ? 'Hacienda Club' : isIbizaA14 ? 'IBIZA' : identity.titlePrefix;
   const bottomTitleWord = identity.titleHighlight || identity.code;
 
   return (
@@ -306,21 +306,6 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
             }`}
           >
             {topTitleWord}
-            {isIbizaA14 && (
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 240 70"
-                fill="none"
-                className="pointer-events-none absolute left-0 -bottom-[0.12em] h-[0.58em] w-full overflow-visible"
-              >
-                {/* Trazo caligráfico extendido de la "z" bajo la "a", fiel al emblema de entrada de Condominio Ibiza */}
-                <path
-                  d="M 118 44 C 142 39, 182 37, 224 41 C 194 45, 152 47, 114 52 Z"
-                  fill="#F7F2E7"
-                  opacity="0.92"
-                />
-              </svg>
-            )}
           </span>
 
           {/* Parte 2: Del centro a la esquina inferior derecha */}
@@ -339,7 +324,7 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
           aria-hidden="true"
           style={{
             top: isIbizaA14
-              ? 'calc(clamp(3rem, 4.2vw, 4rem) + clamp(3.3rem, 9.8vw, 8.2rem) + 0.35rem)'
+              ? 'calc(clamp(3rem, 4.2vw, 4rem) + clamp(2.35rem, 6.6vw, 5.6rem) + 0.55rem)'
               : 'calc(clamp(3.5rem, 4.8vw, 5rem) + clamp(1.52rem, 5.3vw, 4.75rem) + 0.55rem)'
           }}
           className={`pointer-events-none absolute left-3.5 sm:left-8 lg:left-12 z-30 flex items-center gap-2.5 transition-all duration-700 delay-300 ${

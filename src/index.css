@@ -163,21 +163,21 @@
   animation: f22-central-wave-in 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
 }
 
-/* Tipografía caligráfica orgánica inspirada en el pórtico de entrada del Condominio Ibiza */
+/* Tipografía monumental gruesa y elegante para el emblema principal de IBIZA A14 */
 .project-ibiza-wordmark {
-  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-  font-style: italic;
-  font-weight: 700;
-  text-transform: lowercase;
-  font-size: clamp(3.3rem, 9.8vw, 8.2rem);
-  line-height: 0.86;
-  letter-spacing: 0.045em;
-  color: #F7F2E7;
-  padding-right: 0.18em;
-  padding-bottom: 0.14em;
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(2.35rem, 6.6vw, 5.6rem);
+  line-height: 0.94;
+  letter-spacing: 0.08em;
+  color: #FFFDF8;
+  -webkit-text-stroke: 0.45px rgba(255, 253, 248, 0.35);
   filter:
-    drop-shadow(0 4px 14px rgba(0, 0, 0, 0.92))
-    drop-shadow(0 10px 26px rgba(0, 0, 0, 0.82));
+    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 10px 28px rgba(0, 0, 0, 0.85))
+    drop-shadow(0 0 22px rgba(156, 208, 26, 0.18));
 }
 
 .no-scrollbar {

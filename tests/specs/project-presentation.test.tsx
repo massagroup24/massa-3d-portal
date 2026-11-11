@@ -49,7 +49,7 @@ describe('Presentación independiente de cada proyecto', () => {
     expect(html).toContain('project-f22-title');
     expect(html).toContain('project-ibiza-wordmark');
     expect(html).toContain('aria-label="IBIZA A14"');
-    expect(html).toContain('>ibiza<svg');
+    expect(html).toContain('>IBIZA</span>');
     expect(html).toContain('><span style="color:#9CD01A">A14</span>');
     expect(html).toContain('<video');
     expect(html).toContain('src="/A14.mp4"');

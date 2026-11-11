@@ -30,6 +30,7 @@ import {
   getCanonicalProjectBySlugOrId,
   CanonicalProject
 } from '../../data/canonicalProjects';
+import { useClaritySectionTracker, trackClarityEvent } from '../../utils/clarityAnalytics';
 
 // Niveles arquitectónicos verificados para Hacienda Club F22
 interface LevelInfo {
@@ -109,6 +110,18 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
 
   // Resolver identidad visual y tema
   const identity: ProjectIdentity = useMemo(() => getProjectIdentity(canonicalProject.id), [canonicalProject.id]);
+
+  // Rastreo automático de secciones vistas en Microsoft Clarity para analizar uso post-lanzamiento
+  useClaritySectionTracker(canonicalProject.slug, [
+    'encabezado',
+    'galeria',
+    'muro-parallax-renders',
+    'planos-2d',
+    'ficha-tecnica',
+    'distribucion-seccion',
+    'sello-constructora-amho',
+    'navegacion-contacto'
+  ]);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -453,7 +466,10 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
             {canonicalProject.hasTour360 && (
               <button
                 type="button"
-                onClick={() => setIs360Active(true)}
+                onClick={() => {
+                  trackClarityEvent(`abrir_tour_360_${canonicalProject.slug}`);
+                  setIs360Active(true);
+                }}
                 style={{
                   backgroundColor: `${primaryColor}20`,
                   borderColor: `${primaryColor}55`,
