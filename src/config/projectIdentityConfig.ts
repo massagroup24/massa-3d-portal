@@ -78,6 +78,17 @@ export interface ProjectRoom360 {
   hotspots: ProjectHotspot360[];
 }
 
+export interface ProjectModel3DConfig {
+  modelUrl: string;
+  modelFileName: string;
+  compression: string;
+  fileSize: string;
+  animationsCount: number;
+  animationsLabel: string;
+  features: string[];
+  description: string;
+}
+
 export interface ProjectIdentity {
   id: string;
   slug: string;
@@ -112,6 +123,8 @@ export interface ProjectIdentity {
   };
   technicalSpecs?: ProjectTechnicalSpecs;
   tourEmbedUrl?: string;    // URL para incrustar el Gemelo Digital 360°
+  model3dUrl?: string;      // URL del archivo .glb/.gltf del modelo 3D interactivo
+  model3dConfig?: ProjectModel3DConfig;
   renders: ProjectRender[];
   levels?: ProjectLevelInfo[];
   rooms360?: ProjectRoom360[];
@@ -1035,7 +1048,24 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
     technicalSpecs: HACIENDA_F22_TECHNICAL,
     renders: HACIENDA_F22_RENDERS,
     levels: HACIENDA_F22_LEVELS,
-    rooms360: HACIENDA_F22_ROOMS_360
+    rooms360: HACIENDA_F22_ROOMS_360,
+    model3dUrl: '/models/proyecto2_constructivo_360.glb',
+    model3dConfig: {
+      modelUrl: '/models/proyecto2_constructivo_360.glb',
+      modelFileName: 'proyecto2_constructivo_360.glb',
+      compression: 'Draco 1.5.7 + Texturas WebP',
+      fileSize: '10.4 MB',
+      animationsCount: 13,
+      animationsLabel: 'Giro 360° + Proceso Constructivo por Etapas',
+      features: [
+        'Rotador_General_Obra (360°)',
+        'Etapa 2: Estructura y Muros',
+        'Etapa 3 y 4: Cubierta y Acabados',
+        'Modo Horizontal Obligatorio en Móvil',
+      ],
+      description:
+        'Gemelo constructivo 3D animado de Hacienda Club F22 con giro orbital de 360° y secuencia evolutiva por etapas de obra: cimentación, estructura, cubierta y acabados.',
+    }
   },
 
   // PROYECTO 2: IBIZA A14 (Obra 02 - Condominio Ibiza • Lote A14)
@@ -1095,7 +1125,24 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
     },
     renders: IBIZA_A14_RENDERS,
     levels: IBIZA_A14_LEVELS,
-    rooms360: IBIZA_A14_ROOMS_360
+    rooms360: IBIZA_A14_ROOMS_360,
+    model3dUrl: '/models/modelo_animado_web_360.glb',
+    model3dConfig: {
+      modelUrl: '/models/modelo_animado_web_360.glb',
+      modelFileName: 'modelo_animado_web_360.glb',
+      compression: 'Draco 1.5.7 + Texturas WebP',
+      fileSize: '4.2 MB',
+      animationsCount: 3,
+      animationsLabel: 'Giro 360° + Elevación Nivel 2 y Cubierta',
+      features: [
+        'Rotador_General_Obra (360°)',
+        'Elevación Nivel 2 (+4.5m)',
+        'Elevación Nivel 3 Cubierta (+9.0m)',
+        'Modo Horizontal Obligatorio en Móvil',
+      ],
+      description:
+        'Gemelo arquitectónico 3D interactivo exportado desde Blender 4.5 con giro orbital de 360° sincronizado y vista explosiva por niveles para inspeccionar el interior.',
+    }
   },
 
   // PROYECTO 3: SEDE MARQUIMODA (Obra 03)
@@ -1259,4 +1306,95 @@ export function openProjectInNewTab(projectId: string) {
   if (newWin) {
     newWin.opener = null;
   }
+}
+
+export interface ActiveProject3DModelItem {
+  id: string;
+  slug: string;
+  name: string;
+  titlePrefix: string;
+  titleHighlight: string;
+  location: string;
+  previewImg: string;
+  accentColor: string;
+  isCustomBrand: boolean;
+  modelUrl: string;
+  modelFileName: string;
+  viewerTabUrl: string;
+  projectUrl: string;
+  compression: string;
+  fileSize: string;
+  animationsCount: number;
+  animationsLabel: string;
+  features: string[];
+  description: string;
+}
+
+/**
+ * Resuelve si un proyecto cuenta actualmente con un modelo 3D (.glb/.gltf) activo.
+ * Retorna `null` si la obra aún no tiene modelo 3D subido.
+ * En cuanto se agregue `model3dUrl` o `model3dConfig` a cualquier obra (por código,
+ * base de datos o panel de administración), retorna automáticamente su ficha 3D completa.
+ */
+export function resolveActiveProject3DModel(
+  idOrSlug: string,
+  remoteData?: {
+    model3dUrl?: string | null;
+    name?: string;
+    location?: string;
+    heroImage?: string;
+    thumbnail?: string;
+    description?: string;
+  }
+): ActiveProject3DModelItem | null {
+  const identity = getProjectIdentity(idOrSlug);
+  const effectiveModelUrl = (
+    remoteData?.model3dUrl?.trim() ||
+    identity.model3dConfig?.modelUrl?.trim() ||
+    identity.model3dUrl?.trim() ||
+    ''
+  );
+
+  if (!effectiveModelUrl) {
+    return null;
+  }
+
+  const cfg = identity.model3dConfig;
+  const fileNameFromUrl = effectiveModelUrl.split('/').pop()?.split('?')[0] || 'modelo_3d.glb';
+  const isHacienda = identity.id === 'project_hacienda_f22';
+  const previewImg =
+    remoteData?.heroImage ||
+    remoteData?.thumbnail ||
+    identity.heroVideoPoster ||
+    identity.renders[0]?.url ||
+    (isHacienda ? '/HACIENDA F22/FACHADA 3.png' : '/IBIZA A14/01-F004.jpg');
+
+  return {
+    id: identity.id,
+    slug: identity.slug,
+    name: remoteData?.name || identity.name,
+    titlePrefix: identity.titlePrefix,
+    titleHighlight: identity.titleHighlight,
+    location: remoteData?.location || identity.location,
+    previewImg,
+    accentColor: identity.theme.primaryColor || (isHacienda ? '#DFC47B' : '#9CD01A'),
+    isCustomBrand: Boolean(identity.clientBrand && isHacienda),
+    modelUrl: effectiveModelUrl,
+    modelFileName: cfg?.modelFileName || fileNameFromUrl,
+    viewerTabUrl: `/proyecto/${encodeURIComponent(identity.slug)}/3d`,
+    projectUrl: `/proyecto/${encodeURIComponent(identity.slug)}`,
+    compression: cfg?.compression || 'Draco 1.5.7 + Texturas WebP',
+    fileSize: cfg?.fileSize || 'Optimizado WebGL',
+    animationsCount: cfg?.animationsCount ?? 1,
+    animationsLabel: cfg?.animationsLabel || 'Volumetría 3D Interactiva 360°',
+    features: cfg?.features || [
+      'Giro Orbital 360° Interactivo',
+      'Inspección Volumétrica en Tiempo Real',
+      'Modo Horizontal Obligatorio en Móvil',
+    ],
+    description:
+      cfg?.description ||
+      remoteData?.description ||
+      identity.tagline,
+  };
 }

@@ -19,7 +19,7 @@ import {
   Smartphone,
   Layers
 } from 'lucide-react';
-import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, HACIENDA_F22_ROOMS_360, ProjectRender } from '../../config/projectIdentityConfig';
+import { getProjectIdentity, resolveActiveProject3DModel, ProjectIdentity, HACIENDA_F22_RENDERS, HACIENDA_F22_ROOMS_360, ProjectRender } from '../../config/projectIdentityConfig';
 import { F22_LEVELS } from '../../data/haciendaF22Specs';
 import { ProjectFichaTecnica } from './ProjectFichaTecnica';
 import { ProjectVisualFloorPlans } from './ProjectVisualFloorPlans';
@@ -111,7 +111,17 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
   }, [id, remoteProject]);
 
   const isHaciendaF22 = canonicalProject.id === 'project_hacienda_f22';
-  const isIbizaA14 = canonicalProject.id === 'project_ibiza_a14';
+  const activeModel3D = useMemo(
+    () =>
+      resolveActiveProject3DModel(canonicalProject.id, {
+        model3dUrl: remoteProject.model3dUrl,
+        name: canonicalProject.nombre,
+        location: canonicalProject.ciudad,
+        heroImage: canonicalProject.imagen_principal,
+        description: canonicalProject.descripcion_corta,
+      }),
+    [canonicalProject, remoteProject.model3dUrl]
+  );
 
   // Resolver identidad visual y tema
   const identity: ProjectIdentity = useMemo(() => getProjectIdentity(canonicalProject.id), [canonicalProject.id]);
@@ -452,20 +462,24 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
             >
               Galería
             </button>
-            {isIbizaA14 && (
+            {activeModel3D && (
               <a
-                href="/proyecto/ibiza-a14/3d"
+                href={activeModel3D.viewerTabUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => {
-                  trackClarityEvent('abrir_pestana_3d_ibiza_a14_nav');
+                  trackClarityEvent(`abrir_pestana_3d_${canonicalProject.slug}_nav`);
                 }}
-                className="apple-aqua-bubble-studio min-h-[38px] px-3.5 py-1.5 rounded-full font-bold text-[#D9FF66] flex items-center gap-1.5 cursor-pointer"
+                style={{
+                  borderColor: `${primaryColor}55`,
+                  color: primaryHover,
+                }}
+                className="apple-aqua-bubble-studio min-h-[38px] px-3.5 py-1.5 rounded-full font-bold flex items-center gap-1.5 cursor-pointer"
                 title="Abrir Visor 3D Interactivo en una pestaña dedicada"
               >
-                <Box className="w-3.5 h-3.5 text-[#9CD01A]" />
+                <Box className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                 <span>Modelo 3D</span>
-                <ExternalLink className="w-3 h-3 text-[#9CD01A]/80" />
+                <ExternalLink className="w-3 h-3 opacity-80" style={{ color: primaryColor }} />
               </a>
             )}
             <button
@@ -589,37 +603,54 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
           </>
         )}
 
-        {/* LANZADOR A PESTAÑA EXCLUSIVA DEL VISOR 3D INTERACTIVO (EXCLUSIVO PARA IBIZA A14) */}
-        {isIbizaA14 && (
+        {/* LANZADOR A PESTAÑA EXCLUSIVA DEL VISOR 3D INTERACTIVO (ACTIVO PARA CUALQUIER PROYECTO CON MODELO 3D) */}
+        {activeModel3D && (
           <section
             id="modelo-3d"
             className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-16 border-t border-white/10 scroll-mt-24"
           >
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-[#9CD01A]/40 bg-[#07090C] shadow-[0_30px_100px_rgba(0,0,0,0.85),0_0_45px_rgba(156,208,26,0.14)]">
+            <div
+              style={{
+                borderColor: `${primaryColor}66`,
+                boxShadow: `0 30px 100px rgba(0,0,0,0.85), 0 0 45px ${primaryColor}22`,
+              }}
+              className="relative overflow-hidden rounded-2xl sm:rounded-3xl border bg-[#07090C]"
+            >
               {/* Imagen de fondo arquitectónica ligera con gradiente cinematográfico */}
               <div className="absolute inset-0 pointer-events-none">
                 <img
-                  src="/IBIZA A14/01-F004.jpg"
-                  alt="Vista previa Modelo 3D Casa Ibiza A14"
+                  src={encodeURI(activeModel3D.previewImg)}
+                  alt={`Vista previa Modelo 3D ${canonicalProject.nombre}`}
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover object-center opacity-35 scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/90 to-[#05070A]/65" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(156,208,26,0.18),transparent_60%)]" />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `radial-gradient(circle at 80% 30%, ${primaryColor}2E, transparent 60%)`,
+                  }}
+                />
               </div>
 
               <div className="relative z-10 p-6 sm:p-10 lg:p-14 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
                 <div className="max-w-2xl">
-                  <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/45 mb-4">
-                    <Box className="w-3.5 h-3.5 text-[#9CD01A]" />
-                    <span className="massa-metallic-text text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.22em] uppercase">
+                  <div
+                    style={{
+                      backgroundColor: `${primaryColor}24`,
+                      borderColor: `${primaryColor}70`,
+                    }}
+                    className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-full border mb-4"
+                  >
+                    <Box className="w-3.5 h-3.5" style={{ color: primaryColor }} />
+                    <span className={`${isHaciendaF22 ? 'gold-metallic-text' : 'massa-metallic-text'} text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.22em] uppercase`}>
                       PESTAÑA DEDICADA DE ALTO RENDIMIENTO • GEMELO DIGITAL 3D
                     </span>
                   </div>
 
                   <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight leading-[1.05]">
-                    EXPLORA EL MODELO 3D <span className="massa-metallic-text">INTERACTIVO 360°</span>
+                    EXPLORA EL MODELO 3D <span className={isHaciendaF22 ? 'gold-metallic-text' : 'massa-metallic-text'}>INTERACTIVO 360°</span>
                   </h2>
 
                   <p className="text-xs sm:text-base text-white/75 mt-3.5 leading-relaxed">
@@ -629,15 +660,22 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
                   {/* Badges de funciones del visor dedicado */}
                   <div className="mt-5 flex flex-wrap items-center gap-2.5">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/15 text-[10px] sm:text-xs font-mono text-white/85">
-                      <Layers className="w-3.5 h-3.5 text-[#9CD01A]" />
-                      Vista Explosiva (Nivel 1, Nivel 2 y Cubierta)
+                      <Layers className="w-3.5 h-3.5" style={{ color: primaryColor }} />
+                      {activeModel3D.animationsLabel}
                     </span>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/15 text-[10px] sm:text-xs font-mono text-white/85">
-                      <RotateCw className="w-3.5 h-3.5 text-[#9CD01A]" />
+                      <RotateCw className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       Giro 360° + Control Manual de Tiempo
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9CD01A]/12 border border-[#9CD01A]/40 text-[10px] sm:text-xs font-mono text-[#D9FF66]">
-                      <Smartphone className="w-3.5 h-3.5 text-[#9CD01A]" />
+                    <span
+                      style={{
+                        backgroundColor: `${primaryColor}1E`,
+                        borderColor: `${primaryColor}66`,
+                        color: primaryHover,
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] sm:text-xs font-mono"
+                    >
+                      <Smartphone className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       Móvil: Modo Horizontal Obligatorio
                     </span>
                   </div>
@@ -646,13 +684,16 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
                 {/* Bloque CTA hacia nueva pestaña */}
                 <div className="w-full lg:w-auto shrink-0 flex flex-col items-stretch sm:items-center lg:items-end gap-3">
                   <a
-                    href="/proyecto/ibiza-a14/3d"
+                    href={activeModel3D.viewerTabUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => {
-                      trackClarityEvent('abrir_pestana_dedicada_3d_ibiza_a14');
+                      trackClarityEvent(`abrir_pestana_dedicada_3d_${canonicalProject.slug}`);
                     }}
-                    className="apple-aqua-bubble-lime group inline-flex items-center justify-center gap-3 px-7 py-4 sm:px-9 sm:py-5 rounded-full text-xs sm:text-sm font-mono font-black uppercase tracking-[0.16em] text-black shadow-[0_0_40px_rgba(156,208,26,0.45)] hover:scale-[1.03] active:scale-95 transition-all cursor-pointer text-center"
+                    style={{
+                      boxShadow: `0 0 40px ${primaryColor}70`,
+                    }}
+                    className={`${isHaciendaF22 ? 'apple-aqua-bubble-gold text-[#060608]' : 'apple-aqua-bubble-lime text-black'} group inline-flex items-center justify-center gap-3 px-7 py-4 sm:px-9 sm:py-5 rounded-full text-xs sm:text-sm font-mono font-black uppercase tracking-[0.16em] hover:scale-[1.03] active:scale-95 transition-all cursor-pointer text-center`}
                   >
                     <Box className="w-5 h-5 text-black transition-transform duration-300 group-hover:rotate-12" />
                     <span>ABRIR VISOR 3D EN NUEVA PESTAÑA</span>

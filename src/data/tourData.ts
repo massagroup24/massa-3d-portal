@@ -65,6 +65,7 @@ export interface Project {
   renders?: ProjectRenderItem[];
   tourType?: '360_spheres' | 'matterport_iframe' | 'external_url';
   tourEmbedUrl?: string;
+  model3dUrl?: string;
   floorPlans?: Record<string, string>; // Planos organizados por nivel/piso (ej: 'Piso 1', 'Piso 2', 'Piso 3')
 }
 

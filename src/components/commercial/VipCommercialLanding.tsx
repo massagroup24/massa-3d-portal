@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, 
@@ -8,13 +8,19 @@ import {
   Mail, 
   ArrowUpRight, 
   CheckCircle2,
-  ChevronDown
+  ChevronDown,
+  Box,
+  Smartphone,
+  ExternalLink
 } from 'lucide-react';
 import { CANONICAL_PROJECTS, type CanonicalProject, formatAreaMetric } from '../../data/canonicalProjects';
 import { CommercialLoginModal } from './CommercialLoginModal';
 import { Project, projectsData } from '../../data/tourData';
-import { getProjectIdentity } from '../../config/projectIdentityConfig';
+import { getProjectIdentity, resolveActiveProject3DModel, type ActiveProject3DModelItem } from '../../config/projectIdentityConfig';
+import { supabase } from '../../supabase';
 import massaLogoInline from '../../assets/branding/massa-uso.png?inline';
+
+const Model3DMiniPreview = lazy(() => import('../project/Model3DMiniPreview'));
 import massaCubeInline from '../../assets/branding/massa-cube-transparent.png?inline';
 import { useClaritySectionTracker, trackClarityEvent } from '../../utils/clarityAnalytics';
 
@@ -59,8 +65,78 @@ export function VipCommercialLanding({
   }, [filterTipo, filterEstado, filterAño]);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [activeInfoModal, setActiveInfoModal] = useState<'quienes-somos' | 'recorridos-360' | null>(null);
+  const [activeInfoModal, setActiveInfoModal] = useState<'quienes-somos' | 'recorridos-360' | 'modelos-3d' | null>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Detección en tiempo real de modelos 3D subidos en Supabase (tabla project_media type='model_3d')
+  const [remoteMedia3DByProject, setRemoteMedia3DByProject] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let active = true;
+    const fetchUploaded3DModels = async () => {
+      try {
+        const { data } = await supabase
+          .from('project_media')
+          .select('project_id, storage_path, published')
+          .eq('type', 'model_3d');
+        if (!active || !Array.isArray(data)) return;
+        const map: Record<string, string> = {};
+        for (const row of data) {
+          if (row.project_id && row.storage_path && row.published !== false) {
+            map[row.project_id] = row.storage_path;
+          }
+        }
+        setRemoteMedia3DByProject(map);
+      } catch {
+        // Silencioso si la tabla no está disponible offline
+      }
+    };
+    void fetchUploaded3DModels();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Catálogo dinámico de obras que ACTUALMENTE tienen un modelo 3D subido.
+  // Si en el futuro se agrega un modelo 3D a cualquier proyecto (por código, Supabase o Admin), aparece de inmediato.
+  const active3DProjects: ActiveProject3DModelItem[] = useMemo(() => {
+    const candidateIds = Array.from(
+      new Set([
+        'project_ibiza_a14',
+        'project_hacienda_f22',
+        'project_1782912175010',
+        ...CANONICAL_PROJECTS.map((p) => p.id),
+        ...Object.keys(projectsData),
+        ...Object.keys(projects),
+        ...Object.keys(remoteMedia3DByProject),
+      ])
+    );
+
+    const resolvedList: ActiveProject3DModelItem[] = [];
+    const seenIds = new Set<string>();
+
+    for (const id of candidateIds) {
+      const remoteProj = projects[id] || projectsData[id];
+      const mediaUrl = remoteMedia3DByProject[id];
+      const item = resolveActiveProject3DModel(id, {
+        model3dUrl: remoteProj?.model3dUrl || mediaUrl || null,
+        name: remoteProj?.name,
+        location: remoteProj?.location,
+        heroImage: remoteProj?.heroImage,
+        thumbnail: remoteProj?.thumbnail,
+        description: remoteProj?.description,
+      });
+
+      if (item && !seenIds.has(item.id)) {
+        seenIds.add(item.id);
+        resolvedList.push(item);
+      }
+    }
+
+    return resolvedList;
+  }, [projects, remoteMedia3DByProject]);
+
+  const active3DModelsCount = active3DProjects.length;
 
   // Proyectos en la biblioteca de Recorridos 360° (Hacienda F22, Sede Marquimoda e Ibiza A14 en construcción)
   const hosted360Projects: Project[] = useMemo(() => {
@@ -332,6 +408,17 @@ export function VipCommercialLanding({
               >
                 <Compass className="w-4 h-4" />
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  trackClarityEvent('hero_nav_modelos_3d_hub');
+                  setActiveInfoModal('modelos-3d');
+                }}
+                className="apple-aqua-bubble-studio p-2.5 rounded-full text-[#9CD01A] cursor-pointer"
+                title="Modelos 3D por Proyecto"
+              >
+                <Box className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Columna Vertical de Cápsulas (Apple Liquid Glass / Aqua Bubble) */}
@@ -399,6 +486,26 @@ export function VipCommercialLanding({
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-[#9CD01A] tracking-wider drop-shadow-[0_0_6px_rgba(156,208,26,0.45)]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A] animate-pulse" />
                   {hosted360Projects.length} OBRAS
+                </span>
+              </button>
+
+              {/* 6. Hub / Biblioteca de Modelos 3D subidos por Proyecto */}
+              <button
+                type="button"
+                onClick={() => {
+                  trackClarityEvent('hero_nav_modelos_3d_hub');
+                  setActiveInfoModal('modelos-3d');
+                  setIsMobileNavOpen(false);
+                }}
+                className="apple-aqua-bubble-studio w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 rounded-[22px] text-xs sm:text-sm font-semibold text-white/95 hover:text-white flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Box className="w-3.5 h-3.5 text-[#9CD01A] drop-shadow-[0_0_6px_rgba(156,208,26,0.65)]" />
+                  <span>Modelos 3D</span>
+                </div>
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-[#9CD01A] tracking-wider drop-shadow-[0_0_6px_rgba(156,208,26,0.45)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A] animate-pulse" />
+                  {active3DModelsCount} {active3DModelsCount === 1 ? 'MODELO' : 'MODELOS'}
                 </span>
               </button>
             </nav>
@@ -773,6 +880,31 @@ export function VipCommercialLanding({
                       </div>
 
                       <div className="flex items-center gap-2">
+                        {(() => {
+                          const active3D = active3DProjects.find((m) => m.id === project.id);
+                          if (!active3D) return null;
+                          return (
+                            <a
+                              href={active3D.viewerTabUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                trackClarityEvent(`card_open_3d_${project.id}`);
+                              }}
+                              style={{
+                                borderColor: `${active3D.accentColor}66`,
+                                color: isCustomBrand ? '#F1E29B' : '#D9FF66',
+                              }}
+                              className="apple-aqua-bubble-studio inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold hover:scale-105 transition-transform"
+                              title="Abrir Modelo 3D Interactivo en nueva pestaña"
+                            >
+                              <Box className="w-3 h-3" style={{ color: active3D.accentColor }} />
+                              <span>MODELO 3D</span>
+                              <ExternalLink className="w-2.5 h-2.5" style={{ color: active3D.accentColor }} />
+                            </a>
+                          );
+                        })()}
                         {project.hasTour360 && (
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-black/65 backdrop-blur-md border text-[10px] sm:text-[11px] font-mono font-bold ${
@@ -863,38 +995,65 @@ export function VipCommercialLanding({
                         )}
                       </div>
 
-                      {/* Botón Principal perfectamente centrado y contenido en móvil con efecto Burbuja Aqua */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectProjectForPortal(project.id);
-                        }}
-                        className={`w-full sm:w-auto max-w-full justify-center px-5 sm:px-8 py-3.5 sm:py-4 rounded-full font-black text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-widest flex items-center gap-2 cursor-pointer text-[#060804] ${
-                          isCustomBrand
-                            ? 'apple-aqua-bubble-gold'
-                            : 'apple-aqua-bubble-lime'
-                        }`}
-                      >
-                        <span className="truncate">
-                          {project.hasTour360 ? (
-                            isCustomBrand ? (
-                              <>
-                                <span className="sm:hidden">Explorar Proyecto {brand?.shortName} · 360°</span>
-                                <span className="hidden sm:inline">{`Explorar Proyecto ${brand?.shortName} & Gemelo 360°`}</span>
-                              </>
+                      {/* Botones Principales con Efecto Burbuja Aqua */}
+                      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectProjectForPortal(project.id);
+                          }}
+                          className={`w-full sm:w-auto max-w-full justify-center px-5 sm:px-8 py-3.5 sm:py-4 rounded-full font-black text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-widest flex items-center gap-2 cursor-pointer text-[#060804] ${
+                            isCustomBrand
+                              ? 'apple-aqua-bubble-gold'
+                              : 'apple-aqua-bubble-lime'
+                          }`}
+                        >
+                          <span className="truncate">
+                            {project.hasTour360 ? (
+                              isCustomBrand ? (
+                                <>
+                                  <span className="sm:hidden">Explorar Proyecto {brand?.shortName} · 360°</span>
+                                  <span className="hidden sm:inline">{`Explorar Proyecto ${brand?.shortName} & Gemelo 360°`}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="sm:hidden">Explorar Proyecto · 360°</span>
+                                  <span className="hidden sm:inline">Explorar Ficha &amp; Gemelo Digital 360°</span>
+                                </>
+                              )
                             ) : (
-                              <>
-                                <span className="sm:hidden">Explorar Proyecto · 360°</span>
-                                <span className="hidden sm:inline">Explorar Ficha &amp; Gemelo Digital 360°</span>
-                              </>
-                            )
-                          ) : (
-                            'Explorar Proyecto'
-                          )}
-                        </span>
-                        <ArrowUpRight className="w-4 h-4 font-black shrink-0" />
-                      </button>
+                              'Explorar Proyecto'
+                            )}
+                          </span>
+                          <ArrowUpRight className="w-4 h-4 font-black shrink-0" />
+                        </button>
+
+                        {(() => {
+                          const active3D = active3DProjects.find((m) => m.id === project.id);
+                          if (!active3D) return null;
+                          return (
+                            <a
+                              href={active3D.viewerTabUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                trackClarityEvent(`acordeon_open_3d_${project.id}`);
+                              }}
+                              style={{
+                                borderColor: `${active3D.accentColor}66`,
+                                color: isCustomBrand ? '#F1E29B' : '#D9FF66',
+                              }}
+                              className="apple-aqua-bubble-studio w-full sm:w-auto justify-center px-5 sm:px-6 py-3.5 sm:py-4 rounded-full font-black text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-widest flex items-center gap-2 cursor-pointer"
+                            >
+                              <Box className="w-4 h-4 shrink-0" style={{ color: active3D.accentColor }} />
+                              <span>Abrir Visor 3D (Nueva Pestaña)</span>
+                              <ExternalLink className="w-3.5 h-3.5 shrink-0" style={{ color: active3D.accentColor }} />
+                            </a>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1784,6 +1943,229 @@ export function VipCommercialLanding({
                           </button>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </m.div>
+          </m.div>
+        )}
+
+        {/* MODAL HUB / BIBLIOTECA DE MODELOS 3D SUBIDOS POR PROYECTO */}
+        {activeInfoModal === 'modelos-3d' && (
+          <m.div
+            key="modal-modelos-3d-hub"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => setActiveInfoModal(null)}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 lg:p-10 bg-black/85 backdrop-blur-xl overflow-y-auto overscroll-contain"
+          >
+            <m.div
+              initial={{ opacity: 0, scale: 0.96, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 24 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
+              }}
+              className="relative w-full max-w-6xl max-h-[94dvh] sm:max-h-[92dvh] overflow-y-auto overscroll-contain rounded-t-[28px] sm:rounded-[34px] bg-[#090B0F] border-t sm:border border-[#9CD01A]/40 shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_60px_rgba(156,208,26,0.15)] text-left sm:my-auto"
+            >
+              {/* Retícula arquitectónica sutil y luz ambiental */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-[0.03]"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)',
+                  backgroundSize: '48px 48px',
+                }}
+              />
+              <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#9CD01A]/12 blur-[130px]" />
+
+              {/* Barra Superior Sticky */}
+              <div className="sticky top-0 z-30 flex items-center justify-between gap-2.5 px-4 py-3.5 sm:px-8 sm:py-5 bg-[#090B0F]/92 backdrop-blur-xl border-b border-white/[0.08] flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/12 border border-[#9CD01A]/40 min-w-0">
+                  <Box className="w-3.5 h-3.5 text-[#9CD01A] shrink-0" />
+                  <span className="massa-metallic-text text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase truncate">
+                    BIBLIOTECA DE MODELOS 3D • VOLUMETRÍA INTERACTIVA POR PROYECTO
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveInfoModal(null)}
+                    className="apple-aqua-bubble min-h-[38px] px-4 py-1.5 rounded-full text-white text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                    title="Cerrar ventana"
+                  >
+                    <span>Cerrar</span>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative z-10 p-4 sm:p-8 lg:p-10">
+                {/* Encabezado de la Biblioteca de Modelos 3D */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6 sm:mb-8 pb-5 border-b border-white/[0.08]">
+                  <div>
+                    <h3 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[0.95] uppercase">
+                      Modelos 3D <span className="massa-metallic-text">Por Proyecto</span>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-white/70 mt-2 max-w-2xl leading-relaxed">
+                      Explora los modelos tridimensionales (`.glb`) cargados en cada obra. Para garantizar el máximo rendimiento gráfico sin recargar la página, cada modelo se abre en una <strong>pestaña independiente dedicada 100% al visor 3D</strong> (con giro horizontal obligatorio en celulares).
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono shrink-0">
+                    <span className="px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white/85">
+                      Modelos 3D Activos: <strong className="massa-metallic-text">{active3DModelsCount}</strong>
+                    </span>
+                    <span className="px-3.5 py-2 rounded-xl bg-[#9CD01A]/10 border border-[#9CD01A]/35 text-[#D9FF66] flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 text-[#9CD01A]" />
+                      <span>Móvil: Modo Horizontal</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Cuadrícula de Tarjetas Compactas con Vista Previa 3D en Movimiento Miniatura */}
+                <div className="flex flex-wrap items-stretch justify-center gap-4 sm:gap-5">
+                  {active3DProjects.map((item, idx) => {
+                    const isGold = item.isCustomBrand;
+                    const primaryHex = item.accentColor || (isGold ? '#DFC47B' : '#9CD01A');
+                    const lightHex = isGold ? '#F1E29B' : '#D9FF66';
+
+                    return (
+                    <div
+                      key={item.id}
+                      style={{
+                        borderColor: `${primaryHex}88`,
+                        boxShadow: `0 18px 45px rgba(0,0,0,0.9), 0 0 30px ${primaryHex}26`,
+                      }}
+                      className="group relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 border bg-[#0B0F15]"
+                    >
+                      <div>
+                        {/* Ventana Miniatura con el Modelo 3D de la Casa en Movimiento */}
+                        <div className="relative h-44 sm:h-48 w-full overflow-hidden bg-[#06080C] border-b border-white/[0.08]">
+                          <Suspense
+                            fallback={
+                              <img
+                                src={encodeURI(item.previewImg)}
+                                alt={item.name}
+                                className="w-full h-full object-cover object-center opacity-70"
+                              />
+                            }
+                          >
+                            <Model3DMiniPreview
+                              modelUrl={item.modelUrl}
+                              posterUrl={item.previewImg}
+                              projectName={item.name}
+                              accentColor={primaryHex}
+                            />
+                          </Suspense>
+
+                          {/* Gradiente inferior sutil para legibilidad del título */}
+                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#0B0F15] via-[#0B0F15]/70 to-transparent" />
+
+                          {/* Badges Superiores Compactos */}
+                          <div className="pointer-events-none absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5 z-10">
+                            <span className="px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase tracking-wider bg-black/75 backdrop-blur-md border border-white/20 text-white/90">
+                              #0{idx + 1} • 3D EN VIVO
+                            </span>
+
+                            <span
+                              style={{
+                                backgroundColor: `${primaryHex}2E`,
+                                borderColor: `${primaryHex}99`,
+                                color: lightHex,
+                              }}
+                              className="px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase tracking-wider backdrop-blur-md border flex items-center gap-1"
+                            >
+                              <span
+                                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                                style={{ backgroundColor: primaryHex }}
+                              />
+                              GIRO 360°
+                            </span>
+                          </div>
+
+                          {/* Nombre del proyecto superpuesto abajo en la miniatura */}
+                          <div className="pointer-events-none absolute bottom-2.5 left-3.5 right-3.5 z-10 flex items-end justify-between gap-2">
+                            <div className="min-w-0">
+                              <div
+                                className="flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider mb-0.5"
+                                style={{ color: primaryHex }}
+                              >
+                                <MapPin className="w-2.5 h-2.5 shrink-0" />
+                                <span className="truncate">{item.location}</span>
+                              </div>
+                              <h4 className="text-lg sm:text-xl font-black uppercase tracking-tight leading-none text-white">
+                                <span>{item.titlePrefix} </span>
+                                <span className={isGold ? 'gold-metallic-text' : 'massa-metallic-text'}>
+                                  {item.titleHighlight}
+                                </span>
+                              </h4>
+                            </div>
+
+                            <span className="px-2 py-0.5 rounded-md bg-black/70 border border-white/15 text-[8px] font-mono text-white/75 shrink-0">
+                              {item.fileSize}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Cuerpo Compacto de la Tarjeta */}
+                        <div className="p-3.5 sm:p-4">
+                          <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl bg-black/45 border border-white/[0.08] mb-3 font-mono text-[9px]">
+                            <span className="text-white/50 uppercase shrink-0">Animación:</span>
+                            <span className="font-bold truncate" style={{ color: lightHex }}>
+                              {item.animationsLabel}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-1 mb-1">
+                            {item.features.slice(0, 3).map((feat) => (
+                              <span
+                                key={feat}
+                                className="px-2 py-0.5 rounded-md text-[9px] font-mono bg-white/[0.04] border border-white/10 text-white/70 truncate max-w-full"
+                              >
+                                {feat}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Botones Compactos con Efecto Burbuja Aqua */}
+                      <div className="p-3.5 sm:p-4 pt-0 flex flex-col gap-1.5">
+                        <a
+                          href={item.viewerTabUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => {
+                            trackClarityEvent(`hub_3d_open_tab_${item.id}`);
+                            setActiveInfoModal(null);
+                          }}
+                          className={`${isGold ? 'apple-aqua-bubble-gold text-[#060608]' : 'apple-aqua-bubble-lime text-[#060804]'} w-full py-2.5 px-3.5 rounded-full font-black text-[10px] sm:text-[11px] uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer`}
+                        >
+                          <Box className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>Abrir Visor 3D (Nueva Pestaña)</span>
+                          <ExternalLink className="w-3 h-3 stroke-[2.5]" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveInfoModal(null);
+                            onSelectProjectForPortal(item.id);
+                          }}
+                          className="apple-aqua-bubble w-full py-2 px-3 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 text-white/85 hover:text-white cursor-pointer"
+                        >
+                          <span>Ver Presentación del Proyecto</span>
+                          <ArrowUpRight className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
                     );
                   })}
                 </div>
