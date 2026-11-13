@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -14,7 +14,10 @@ import {
   ZoomOut,
   Building2,
   MessageSquare,
-  Box
+  Box,
+  ExternalLink,
+  Smartphone,
+  Layers
 } from 'lucide-react';
 import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, HACIENDA_F22_ROOMS_360, ProjectRender } from '../../config/projectIdentityConfig';
 import { F22_LEVELS } from '../../data/haciendaF22Specs';
@@ -27,8 +30,6 @@ import { Project, projectsData, resolveCanonicalProjectId } from '../../data/tou
 import { getProjectsFromSupabase } from '../../supabase';
 import { SkiperArchitecturalCarousel } from './SkiperArchitecturalCarousel';
 import { SkiperParallaxGallery } from './SkiperParallaxGallery';
-
-const IbizaAnimatedModel3DViewer = lazy(() => import('./IbizaAnimatedModel3DViewer'));
 import {
   getCanonicalProjectBySlugOrId,
   CanonicalProject
@@ -452,17 +453,20 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
               Galería
             </button>
             {isIbizaA14 && (
-              <button
-                type="button"
+              <a
+                href="/proyecto/ibiza-a14/3d"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => {
-                  trackClarityEvent('abrir_modelo_3d_ibiza_a14');
-                  document.getElementById('modelo-3d')?.scrollIntoView({ behavior: 'smooth' });
+                  trackClarityEvent('abrir_pestana_3d_ibiza_a14_nav');
                 }}
                 className="apple-aqua-bubble-studio min-h-[38px] px-3.5 py-1.5 rounded-full font-bold text-[#D9FF66] flex items-center gap-1.5 cursor-pointer"
+                title="Abrir Visor 3D Interactivo en una pestaña dedicada"
               >
                 <Box className="w-3.5 h-3.5 text-[#9CD01A]" />
                 <span>Modelo 3D</span>
-              </button>
+                <ExternalLink className="w-3 h-3 text-[#9CD01A]/80" />
+              </a>
             )}
             <button
               type="button"
@@ -585,50 +589,82 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
           </>
         )}
 
-        {/* VISOR 3D INTERACTIVO ANIMADO (EXCLUSIVO PARA IBIZA A14) */}
+        {/* LANZADOR A PESTAÑA EXCLUSIVA DEL VISOR 3D INTERACTIVO (EXCLUSIVO PARA IBIZA A14) */}
         {isIbizaA14 && (
           <section
             id="modelo-3d"
             className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-16 border-t border-white/10 scroll-mt-24"
           >
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-8">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/40 mb-2.5">
-                  <Box className="w-3.5 h-3.5 text-[#9CD01A]" />
-                  <span className="massa-metallic-text text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.22em] uppercase">
-                    GEMELO ARQUITECTÓNICO 3D • VISTA EXPLOSIVA INTERACTIVA
-                  </span>
-                </div>
-                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight leading-none">
-                  MODELO 3D <span className="massa-metallic-text">INTERACTIVO</span>
-                </h2>
-                <p className="text-xs sm:text-sm text-white/65 mt-2 max-w-2xl leading-relaxed">
-                  Explora en 360° la volumetría real de <strong>{canonicalProject.nombre}</strong>. Pausa la animación cuando los niveles 2 y cubierta estén elevados o usa la barra de progreso para inspeccionar la distribución interior a voluntad.
-                </p>
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-[#9CD01A]/40 bg-[#07090C] shadow-[0_30px_100px_rgba(0,0,0,0.85),0_0_45px_rgba(156,208,26,0.14)]">
+              {/* Imagen de fondo arquitectónica ligera con gradiente cinematográfico */}
+              <div className="absolute inset-0 pointer-events-none">
+                <img
+                  src="/IBIZA A14/01-F004.jpg"
+                  alt="Vista previa Modelo 3D Casa Ibiza A14"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover object-center opacity-35 scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/90 to-[#05070A]/65" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(156,208,26,0.18),transparent_60%)]" />
               </div>
 
-              <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-white/60 shrink-0">
-                <span className="px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10">
-                  Arrastra para orbitar • Rueda para zoom
-                </span>
+              <div className="relative z-10 p-6 sm:p-10 lg:p-14 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+                <div className="max-w-2xl">
+                  <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/45 mb-4">
+                    <Box className="w-3.5 h-3.5 text-[#9CD01A]" />
+                    <span className="massa-metallic-text text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.22em] uppercase">
+                      PESTAÑA DEDICADA DE ALTO RENDIMIENTO • GEMELO DIGITAL 3D
+                    </span>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight leading-[1.05]">
+                    EXPLORA EL MODELO 3D <span className="massa-metallic-text">INTERACTIVO 360°</span>
+                  </h2>
+
+                  <p className="text-xs sm:text-base text-white/75 mt-3.5 leading-relaxed">
+                    Para garantizarte <strong>máxima fluidez (60 FPS)</strong> y cero sobrecarga de memoria junto a los videos y galerías, el gemelo arquitectónico 3D de <strong>{canonicalProject.nombre}</strong> se abre en una <strong>pestaña exclusiva dedicada 100% al visor 3D</strong>.
+                  </p>
+
+                  {/* Badges de funciones del visor dedicado */}
+                  <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/15 text-[10px] sm:text-xs font-mono text-white/85">
+                      <Layers className="w-3.5 h-3.5 text-[#9CD01A]" />
+                      Vista Explosiva (Nivel 1, Nivel 2 y Cubierta)
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/15 text-[10px] sm:text-xs font-mono text-white/85">
+                      <RotateCw className="w-3.5 h-3.5 text-[#9CD01A]" />
+                      Giro 360° + Control Manual de Tiempo
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9CD01A]/12 border border-[#9CD01A]/40 text-[10px] sm:text-xs font-mono text-[#D9FF66]">
+                      <Smartphone className="w-3.5 h-3.5 text-[#9CD01A]" />
+                      Móvil: Modo Horizontal Obligatorio
+                    </span>
+                  </div>
+                </div>
+
+                {/* Bloque CTA hacia nueva pestaña */}
+                <div className="w-full lg:w-auto shrink-0 flex flex-col items-stretch sm:items-center lg:items-end gap-3">
+                  <a
+                    href="/proyecto/ibiza-a14/3d"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      trackClarityEvent('abrir_pestana_dedicada_3d_ibiza_a14');
+                    }}
+                    className="apple-aqua-bubble-lime group inline-flex items-center justify-center gap-3 px-7 py-4 sm:px-9 sm:py-5 rounded-full text-xs sm:text-sm font-mono font-black uppercase tracking-[0.16em] text-black shadow-[0_0_40px_rgba(156,208,26,0.45)] hover:scale-[1.03] active:scale-95 transition-all cursor-pointer text-center"
+                  >
+                    <Box className="w-5 h-5 text-black transition-transform duration-300 group-hover:rotate-12" />
+                    <span>ABRIR VISOR 3D EN NUEVA PESTAÑA</span>
+                    <ExternalLink className="w-4 h-4 text-black/80 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </a>
+
+                  <span className="text-[10px] sm:text-[11px] font-mono text-white/55 text-center lg:text-right">
+                    Se abre en una pestaña aislada • Carga exclusiva WebGL 3D
+                  </span>
+                </div>
               </div>
             </div>
-
-            <Suspense
-              fallback={
-                <div className="w-full h-[500px] sm:h-[640px] lg:h-[720px] rounded-2xl sm:rounded-3xl bg-[#07090C] border border-[#9CD01A]/35 flex items-center justify-center">
-                  <span className="text-xs font-mono text-[#9CD01A] uppercase tracking-widest animate-pulse">
-                    Inicializando Visor 3D Interactivo...
-                  </span>
-                </div>
-              }
-            >
-              <IbizaAnimatedModel3DViewer
-                projectName={canonicalProject.nombre}
-                accentColor={primaryColor}
-                modelUrl="/models/modelo_animado_web_360.glb"
-              />
-            </Suspense>
           </section>
         )}
 

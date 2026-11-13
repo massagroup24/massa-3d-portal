@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { LazyMotion, domAnimation } from 'framer-motion';
 import { TourContainer } from './components/TourContainer';
@@ -27,6 +27,12 @@ import { ProjectsManagementPortal } from './components/ProjectsManagementPortal'
 import { authService } from './lib/authService';
 import { ProjectDedicatedView } from './components/project/ProjectDedicatedView';
 import { openProjectInNewTab } from './config/projectIdentityConfig';
+
+const IbizaStandalone3DPage = lazy(() =>
+  import('./components/project/IbizaAnimatedModel3DViewer').then(mod => ({
+    default: mod.IbizaStandalone3DPage
+  }))
+);
 
 function MainPortal() {
   const navigate = useNavigate();
@@ -488,6 +494,38 @@ export default function App() {
         <Route path="/admin/proyectos" element={<MainPortal />} />
         <Route path="/admin/usuarios" element={<MainPortal />} />
         <Route path="/tour/:id" element={<ClientViewer />} />
+        <Route
+          path="/proyecto/:id/3d"
+          element={
+            <Suspense
+              fallback={
+                <div className="fixed inset-0 bg-[#05070A] flex items-center justify-center">
+                  <span className="text-xs font-mono text-[#9CD01A] uppercase tracking-[0.22em] animate-pulse">
+                    Cargando Visor 3D Exclusivo • Casa Ibiza A14...
+                  </span>
+                </div>
+              }
+            >
+              <IbizaStandalone3DPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/visor-3d/ibiza-a14"
+          element={
+            <Suspense
+              fallback={
+                <div className="fixed inset-0 bg-[#05070A] flex items-center justify-center">
+                  <span className="text-xs font-mono text-[#9CD01A] uppercase tracking-[0.22em] animate-pulse">
+                    Cargando Visor 3D Exclusivo • Casa Ibiza A14...
+                  </span>
+                </div>
+              }
+            >
+              <IbizaStandalone3DPage />
+            </Suspense>
+          }
+        />
         <Route path="/proyecto/:id" element={<ProjectDedicatedView />} />
         <Route path="/project/:id" element={<ProjectDedicatedView />} />
         <Route path="/obra/:id" element={<ProjectDedicatedView />} />

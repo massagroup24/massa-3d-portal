@@ -28,6 +28,8 @@ import {
   Eye,
   Compass,
   Hand,
+  Smartphone,
+  ArrowLeft,
 } from 'lucide-react';
 
 export const DRACO_DECODER_URL = 'https://www.gstatic.com/draco/versioned/decoders/1.5.7/';
@@ -83,7 +85,6 @@ function CameraRigController({
   const desiredTargetRef = useRef<THREE.Vector3 | null>(null);
   const isTransitioningRef = useRef<boolean>(false);
 
-  // Si el usuario toca o arrastra el lienzo, cancelar de inmediato cualquier transición automática de cámara
   useEffect(() => {
     const controls = controlsRef.current;
     if (!controls) return;
@@ -96,7 +97,6 @@ function CameraRigController({
     };
   }, [controlsRef]);
 
-  // Activar interpolación suave hacia un ángulo de cámara preconfigurado
   useEffect(() => {
     if (!cameraPreset) return;
     desiredPosRef.current = new THREE.Vector3(...cameraPreset.position);
@@ -105,7 +105,6 @@ function CameraRigController({
     invalidate();
   }, [cameraPreset, invalidate]);
 
-  // Botones táctiles de Zoom In / Zoom Out suaves
   useEffect(() => {
     if (!zoomStepRequest || !controlsRef.current) return;
     const controls = controlsRef.current;
@@ -174,19 +173,16 @@ function AnimatedIbizaBuilding({
   const { invalidate } = useThree();
   const durationRef = useRef<number>(15);
 
-  // Optimización de mallas y texturas para máximo FPS en Android y Desktop
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
-        // En móvil desactivamos shadow-casting por sub-malla porque usamos ContactShadows horneado en el piso
         mesh.castShadow = !isMobileDevice;
         mesh.receiveShadow = !isMobileDevice;
         mesh.frustumCulled = true;
 
         const mat = mesh.material as THREE.MeshStandardMaterial;
         if (mat && isMobileDevice) {
-          // Reducir anisotropía en GPUs móviles para evitar cuellos de botella de ancho de banda de memoria
           const maps = [mat.map, mat.normalMap, mat.roughnessMap, mat.metalnessMap, mat.aoMap];
           maps.forEach((tex) => {
             if (tex) {
@@ -198,7 +194,6 @@ function AnimatedIbizaBuilding({
     });
   }, [scene, isMobileDevice]);
 
-  // Extraer e iniciar automáticamente todas las animaciones en bucle (THREE.LoopRepeat)
   useEffect(() => {
     const actionList = Object.values(actions).filter(
       (action): action is THREE.AnimationAction => Boolean(action)
@@ -225,13 +220,11 @@ function AnimatedIbizaBuilding({
     }
   }, [actions, onDurationReady]);
 
-  // Pausar / Reanudar y ajustar velocidad sin perder capacidad de scrubbing
   useEffect(() => {
     mixer.timeScale = isPlaying ? playbackSpeed : 0;
     invalidate();
   }, [isPlaying, playbackSpeed, mixer, invalidate]);
 
-  // Scrubbing instantáneo de todas las pistas sincronizadas
   useEffect(() => {
     if (!seekRequest) return;
     const actionList = Object.values(actions).filter(
@@ -254,7 +247,6 @@ function AnimatedIbizaBuilding({
     invalidate();
   }, [seekRequest, actions, mixer, onSyncTimeDom, invalidate]);
 
-  // Actualizar controles DOM directamente mediante refs (0 re-renders de React por frame)
   useFrame(() => {
     if (!isPlaying) return;
     const firstAction = Object.values(actions).find(
@@ -311,7 +303,7 @@ function ElegantModelLoader({ accentColor = '#9CD01A' }: { accentColor?: string 
           />
         </div>
         <span className="block text-[10px] font-mono text-white/45 mt-2">
-          Optimizado para Móvil &amp; Desktop • Draco 1.5.7
+          Pestaña Dedicada de Alto Rendimiento • Draco 1.5.7
         </span>
       </div>
     </Html>
@@ -323,6 +315,8 @@ export interface IbizaAnimatedModel3DViewerProps {
   accentColor?: string;
   modelUrl?: string;
   className?: string;
+  fullViewport?: boolean;
+  onBackToProject?: () => void;
 }
 
 export function IbizaAnimatedModel3DViewer({
@@ -330,6 +324,8 @@ export function IbizaAnimatedModel3DViewer({
   accentColor = '#9CD01A',
   modelUrl = IBIZA_MODEL_URL,
   className = '',
+  fullViewport = false,
+  onBackToProject,
 }: IbizaAnimatedModel3DViewerProps) {
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
@@ -341,81 +337,40 @@ export function IbizaAnimatedModel3DViewer({
   const [zoomStepRequest, setZoomStepRequest] = useState<{ delta: number; seq: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isMobileDevice, setIsMobileDevice] = useState<boolean>(false);
-  const [hasEnteredViewport, setHasEnteredViewport] = useState<boolean>(false);
-  const [isInViewport, setIsInViewport] = useState<boolean>(false);
+  const [isPortraitMobile, setIsPortraitMobile] = useState<boolean>(false);
   const [showTouchHint, setShowTouchHint] = useState<boolean>(true);
 
   const controlsRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentTimeRef = useRef<number>(0);
 
-  // Refs directos a elementos DOM para actualizar la barra de tiempo a 60 FPS sin re-renderizar React
   const sliderInputRef = useRef<HTMLInputElement>(null);
   const sliderProgressFillRef = useRef<HTMLDivElement>(null);
   const timeReadoutRef = useRef<HTMLSpanElement>(null);
   const explosionPercentRef = useRef<HTMLElement>(null);
 
-  // Detectar dispositivo móvil / Android para aplicar perfil gráfico de alto rendimiento
+  // Detectar móvil y orientación (vertical vs horizontal) en tiempo real
   useEffect(() => {
-    const checkDevice = () => {
-      const mobile =
-        window.innerWidth < 768 ||
+    const checkDeviceAndOrientation = () => {
+      const isTouchMobile =
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
-        );
-      setIsMobileDevice(mobile);
+        ) ||
+        (navigator.maxTouchPoints > 1 && Math.min(window.innerWidth, window.innerHeight) < 920);
+
+      setIsMobileDevice(isTouchMobile);
+      const isPortrait = isTouchMobile && window.innerHeight > window.innerWidth;
+      setIsPortraitMobile(isPortrait);
     };
-    checkDevice();
-    window.addEventListener('resize', checkDevice, { passive: true });
-    return () => window.removeEventListener('resize', checkDevice);
-  }, []);
 
-  // IntersectionObserver: solo monta el WebGL cuando el usuario se acerca a la sección
-  // y pausa el renderizado (frameloop="demand") cuando el visor sale de la pantalla
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const preloadObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setHasEnteredViewport(true);
-          }
-        });
-      },
-      { rootMargin: '420px 0px' }
-    );
-
-    const activeObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          setIsInViewport(entry.isIntersecting);
-        });
-      },
-      { threshold: 0.04 }
-    );
-
-    preloadObserver.observe(el);
-    activeObserver.observe(el);
-
+    checkDeviceAndOrientation();
+    window.addEventListener('resize', checkDeviceAndOrientation, { passive: true });
+    window.addEventListener('orientationchange', checkDeviceAndOrientation, { passive: true });
     return () => {
-      preloadObserver.disconnect();
-      activeObserver.disconnect();
+      window.removeEventListener('resize', checkDeviceAndOrientation);
+      window.removeEventListener('orientationchange', checkDeviceAndOrientation);
     };
   }, []);
-
-  // Pausar animaciones decorativas de fondo solo mientras el visor 3D está visible en pantalla
-  useEffect(() => {
-    if (isInViewport) {
-      document.body.setAttribute('data-webgl-active', 'true');
-    } else {
-      document.body.removeAttribute('data-webgl-active');
-    }
-    return () => {
-      document.body.removeAttribute('data-webgl-active');
-    };
-  }, [isInViewport]);
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -425,7 +380,7 @@ export function IbizaAnimatedModel3DViewer({
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
 
-  // Sincronización ultra-rápida con el DOM sin causar re-renders de React
+  // Sincronización directa al DOM sin causar re-renders de React
   const handleSyncTimeDom = useCallback((time: number, dur: number) => {
     currentTimeRef.current = time;
     if (sliderInputRef.current) {
@@ -472,7 +427,6 @@ export function IbizaAnimatedModel3DViewer({
     triggerSeek(nextTime, false, 'auto');
   };
 
-  // Presets de cámara arquitectónica con transición cinemática suave
   const applyCameraPreset = useCallback(
     (presetName: string, position: [number, number, number], target: [number, number, number]) => {
       setActiveCamPresetName(presetName);
@@ -493,14 +447,33 @@ export function IbizaAnimatedModel3DViewer({
     setZoomStepRequest((prev) => ({ delta, seq: (prev?.seq || 0) + 1 }));
   };
 
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(() => {
-        setIsFullscreen(true);
-      });
-    } else {
-      document.exitFullscreen().catch(() => {});
+  const toggleFullscreen = async () => {
+    const targetEl = containerRef.current || document.documentElement;
+    try {
+      if (!document.fullscreenElement) {
+        await targetEl.requestFullscreen();
+        if (screen.orientation && typeof (screen.orientation as any).lock === 'function') {
+          await (screen.orientation as any).lock('landscape').catch(() => {});
+        }
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      setIsFullscreen((prev) => !prev);
+    }
+  };
+
+  const handleForceLandscapeFullscreen = async () => {
+    const targetEl = containerRef.current || document.documentElement;
+    try {
+      if (!document.fullscreenElement) {
+        await targetEl.requestFullscreen();
+      }
+      if (screen.orientation && typeof (screen.orientation as any).lock === 'function') {
+        await (screen.orientation as any).lock('landscape');
+      }
+    } catch {
+      // Si el navegador requiere giro físico manual del dispositivo, el overlay permanece activo hasta que gire
     }
   };
 
@@ -511,37 +484,117 @@ export function IbizaAnimatedModel3DViewer({
   return (
     <div
       ref={containerRef}
-      style={{
-        borderColor: `${accentColor}45`,
-        boxShadow: isMobileDevice
-          ? '0 16px 40px rgba(0,0,0,0.85)'
-          : `0 25px 80px rgba(0,0,0,0.92), 0 0 45px ${accentColor}18`,
-      }}
-      className={`relative w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-b from-[#0A0D12] via-[#07090C] to-[#050608] border select-none ${
-        isFullscreen
-          ? 'fixed inset-0 z-50 rounded-none h-screen w-screen'
-          : 'h-[500px] sm:h-[640px] lg:h-[720px]'
+      style={
+        fullViewport
+          ? undefined
+          : {
+              borderColor: `${accentColor}45`,
+              boxShadow: isMobileDevice
+                ? '0 16px 40px rgba(0,0,0,0.85)'
+                : `0 25px 80px rgba(0,0,0,0.92), 0 0 45px ${accentColor}18`,
+            }
+      }
+      className={`relative w-full overflow-hidden bg-gradient-to-b from-[#0A0D12] via-[#07090C] to-[#050608] select-none ${
+        fullViewport || isFullscreen
+          ? 'fixed inset-0 z-50 h-[100dvh] w-screen rounded-none border-0'
+          : 'rounded-2xl sm:rounded-3xl border h-[520px] sm:h-[640px] lg:h-[720px]'
       } ${className}`}
     >
+      {/* =========================================================================
+          BLOQUEO OBLIGATORIO DE ORIENTACIÓN HORIZONTAL EN DISPOSITIVOS MÓVILES
+          ========================================================================= */}
+      {isPortraitMobile && (
+        <div className="fixed inset-0 z-[100] bg-[#06080B]/98 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage:
+                'linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+            }}
+          />
+
+          <div className="relative z-10 max-w-sm w-full p-7 rounded-[28px] bg-[#0B0E14] border border-[#9CD01A]/40 shadow-[0_25px_80px_rgba(0,0,0,0.95),0_0_50px_rgba(156,208,26,0.18)] flex flex-col items-center">
+            <img
+              src="/massa-cube-transparent.png"
+              alt="MASSA"
+              className="w-12 h-12 object-contain mb-4"
+            />
+
+            {/* Ícono animado indicando rotación a horizontal */}
+            <div className="relative w-20 h-20 rounded-3xl bg-[#9CD01A]/15 border border-[#9CD01A]/45 flex items-center justify-center mb-5 shadow-[0_0_30px_rgba(156,208,26,0.25)]">
+              <Smartphone className="w-10 h-10 text-[#9CD01A] animate-[spin_2.6s_ease-in-out_infinite] -rotate-90" />
+            </div>
+
+            <span className="massa-metallic-text text-[10px] font-mono font-bold uppercase tracking-[0.24em] mb-2">
+              MODO HORIZONTAL REQUERIDO • 3D STUDIO
+            </span>
+
+            <h2 className="text-xl font-black text-white uppercase tracking-tight leading-snug mb-2.5">
+              Gira tu Dispositivo Horizontalmente
+            </h2>
+
+            <p className="text-xs text-white/70 leading-relaxed mb-6">
+              Para interactuar con la volumetría 3D y la vista explosiva por niveles de{' '}
+              <strong className="text-white">{projectName}</strong> con máxima fluidez y espacio en
+              pantalla, coloca tu teléfono en posición horizontal.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleForceLandscapeFullscreen}
+              className="apple-aqua-bubble-lime w-full py-3.5 px-5 rounded-full text-[#060804] font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer mb-3"
+            >
+              <Maximize2 className="w-4 h-4" />
+              <span>Rotar a Horizontal Automáticamente</span>
+            </button>
+
+            {onBackToProject && (
+              <button
+                type="button"
+                onClick={onBackToProject}
+                className="apple-aqua-bubble w-full py-2.5 px-4 rounded-full text-white/80 text-[11px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Volver a la Ficha del Proyecto</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* =========================================================================
           1. BARRA SUPERIOR FLOTANTE: ESTADO DE PISOS Y MODOS DE APERTURA (1 TOQUE)
           ========================================================================= */}
       <div
         onPointerDown={(e) => e.stopPropagation()}
-        className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none"
+        className="absolute top-2.5 left-3 right-3 sm:top-4 sm:left-5 sm:right-5 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none"
       >
         <div className="flex items-center gap-2 pointer-events-auto">
+          {onBackToProject && (
+            <button
+              type="button"
+              onClick={onBackToProject}
+              className="apple-aqua-bubble px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-white/90 hover:text-white cursor-pointer"
+              title="Volver a la ficha de Ibiza A14"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-[#9CD01A]" />
+              <span className="hidden sm:inline">Ficha Proyecto</span>
+            </button>
+          )}
+
           <div className="apple-aqua-bubble-studio px-3 sm:px-3.5 py-1.5 rounded-full flex items-center gap-2 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-white">
             <span
               className="w-2 h-2 rounded-full animate-pulse shrink-0"
               style={{ backgroundColor: accentColor }}
             />
-            <span className="truncate">{projectName} • 3D INTERACTIVO</span>
+            <span className="truncate">{projectName} • VISOR 3D DEDICADO</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border border-white/15 text-[10px] font-mono text-white/80">
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border border-white/15 text-[10px] font-mono text-white/80">
             <Layers className="w-3.5 h-3.5" style={{ color: accentColor }} />
-            <span>Elevación Niveles:</span>
+            <span>Apertura Niveles:</span>
             <strong ref={explosionPercentRef} className="text-white tabular-nums">
               0%
             </strong>
@@ -586,7 +639,7 @@ export function IbizaAnimatedModel3DViewer({
               setActiveFloorMode('auto');
               setIsPlaying(true);
             }}
-            className={`hidden sm:flex px-3 py-1.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 ${
               isPlaying
                 ? 'apple-aqua-bubble-lime text-[#060804] font-black'
                 : 'apple-aqua-bubble text-white/85 hover:text-white'
@@ -613,13 +666,13 @@ export function IbizaAnimatedModel3DViewer({
           ========================================================================= */}
       <div
         onPointerDown={(e) => e.stopPropagation()}
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end gap-1.5 pointer-events-none"
+        className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end gap-1.5 pointer-events-none"
       >
-        <div className="pointer-events-auto flex flex-col gap-1.5 p-1.5 rounded-2xl bg-black/65 backdrop-blur-xl border border-white/15 shadow-xl">
+        <div className="pointer-events-auto flex flex-col gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-black/70 backdrop-blur-xl border border-white/15 shadow-xl">
           <button
             type="button"
             onClick={() => applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0])}
-            className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeCamPresetName === 'general'
                 ? 'bg-[#9CD01A] text-[#060804]'
                 : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -631,7 +684,7 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={() => applyCameraPreset('fachada', [0, 7.5, 25], [0, 3, 0])}
-            className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeCamPresetName === 'fachada'
                 ? 'bg-[#9CD01A] text-[#060804]'
                 : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -643,7 +696,7 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={() => applyCameraPreset('interior', [14, 22, 14], [0, 3.5, 0])}
-            className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeCamPresetName === 'interior'
                 ? 'bg-[#9CD01A] text-[#060804]'
                 : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -655,7 +708,7 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={() => applyCameraPreset('piscina', [-19, 9.5, -19], [0, 2.5, 0])}
-            className={`px-2.5 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeCamPresetName === 'piscina'
                 ? 'bg-[#9CD01A] text-[#060804]'
                 : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -671,7 +724,7 @@ export function IbizaAnimatedModel3DViewer({
             <button
               type="button"
               onClick={() => handleZoomStep(-4.5)}
-              className="flex-1 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white flex items-center justify-center cursor-pointer"
+              className="flex-1 py-1 sm:py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white flex items-center justify-center cursor-pointer"
               title="Acercar cámara (Zoom +)"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -679,7 +732,7 @@ export function IbizaAnimatedModel3DViewer({
             <button
               type="button"
               onClick={() => handleZoomStep(4.5)}
-              className="flex-1 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white flex items-center justify-center cursor-pointer"
+              className="flex-1 py-1 sm:py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white flex items-center justify-center cursor-pointer"
               title="Alejar cámara (Zoom -)"
             >
               <ZoomOut className="w-3.5 h-3.5" />
@@ -689,17 +742,17 @@ export function IbizaAnimatedModel3DViewer({
       </div>
 
       {/* Guía táctil discreta al primer contacto */}
-      {showTouchHint && (
-        <div className="pointer-events-none absolute top-16 left-1/2 -translate-x-1/2 z-10">
+      {showTouchHint && !isPortraitMobile && (
+        <div className="pointer-events-none absolute top-14 sm:top-16 left-1/2 -translate-x-1/2 z-10">
           <div className="px-3.5 py-1 rounded-full bg-black/65 backdrop-blur-md border border-white/15 text-[10px] font-mono text-white/80 flex items-center gap-1.5 shadow-lg">
             <Hand className="w-3 h-3 text-[#9CD01A]" />
-            <span>1 dedo: Girar • 2 dedos: Zoom y Mover</span>
+            <span>Arrastra para orbitar 360° • Pellizca o usa la rueda para Zoom</span>
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          3. ESCENA 3D WEBGL OPTIMIZADA PARA MÓVIL (ANDROID) Y DESKTOP
+          3. ESCENA 3D WEBGL (PAUSADA SI EL MÓVIL ESTÁ EN VERTICAL)
           ========================================================================= */}
       <div
         onPointerDown={() => {
@@ -707,11 +760,10 @@ export function IbizaAnimatedModel3DViewer({
         }}
         className="w-full h-full cursor-grab active:cursor-grabbing"
       >
-        {hasEnteredViewport ? (
+        {!isPortraitMobile && (
           <Canvas
             shadows={!isMobileDevice}
-            dpr={isMobileDevice ? [1, 1.35] : [1, 1.75]}
-            frameloop={isInViewport ? 'always' : 'demand'}
+            dpr={isMobileDevice ? [1, 1.35] : [1, 1.85]}
             camera={{ position: [20, 14, 20], fov: 45 }}
             gl={{
               antialias: !isMobileDevice,
@@ -721,7 +773,6 @@ export function IbizaAnimatedModel3DViewer({
           >
             <color attach="background" args={['#07090C']} />
 
-            {/* Escalado adaptativo de píxeles durante gestos rápidos en móvil */}
             <AdaptiveDpr pixelated />
             <AdaptiveEvents />
 
@@ -743,7 +794,7 @@ export function IbizaAnimatedModel3DViewer({
             <Suspense fallback={<ElegantModelLoader accentColor={accentColor} />}>
               <AnimatedIbizaBuilding
                 modelUrl={modelUrl}
-                isPlaying={isPlaying && isInViewport}
+                isPlaying={isPlaying}
                 playbackSpeed={playbackSpeed}
                 isMobileDevice={isMobileDevice}
                 seekRequest={seekRequest}
@@ -752,7 +803,7 @@ export function IbizaAnimatedModel3DViewer({
               />
             </Suspense>
 
-            {/* ContactShadows horneado (frames={1}) en y={-0.01}: ahorra ~65% de GPU en Android */}
+            {/* ContactShadows horneado (frames={1}) en y={-0.01} */}
             <ContactShadows
               position={[0, -0.01, 0]}
               frames={1}
@@ -763,21 +814,19 @@ export function IbizaAnimatedModel3DViewer({
               far={20}
             />
 
-            {/* Controlador cinemático de cámara */}
             <CameraRigController
               controlsRef={controlsRef}
               cameraPreset={cameraPreset}
               zoomStepRequest={zoomStepRequest}
             />
 
-            {/* OrbitControls calibrado con amortiguación suave y límites de suelo (Regla 4) */}
             <OrbitControls
               ref={controlsRef}
               makeDefault
               target={[0, 2.5, 0]}
               enableDamping
               dampingFactor={0.07}
-              rotateSpeed={isMobileDevice ? 0.78 : 0.85}
+              rotateSpeed={isMobileDevice ? 0.8 : 0.85}
               zoomSpeed={0.95}
               panSpeed={0.8}
               minDistance={6}
@@ -789,10 +838,6 @@ export function IbizaAnimatedModel3DViewer({
               }}
             />
           </Canvas>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-[#07090C]">
-            <span className="text-xs font-mono text-white/50">Preparando visor 3D...</span>
-          </div>
         )}
       </div>
 
@@ -802,9 +847,9 @@ export function IbizaAnimatedModel3DViewer({
       <div
         onPointerDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
-        className="absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pointer-events-none"
+        className="absolute bottom-2.5 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pointer-events-none"
       >
-        <div className="pointer-events-auto flex-1 max-w-4xl mx-auto w-full px-3.5 py-2.5 sm:px-5 sm:py-3 rounded-full bg-black/80 backdrop-blur-2xl border border-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.9)] flex items-center gap-2 sm:gap-3">
+        <div className="pointer-events-auto flex-1 max-w-4xl mx-auto w-full px-3 py-2 sm:px-5 sm:py-3 rounded-full bg-black/80 backdrop-blur-2xl border border-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.9)] flex items-center gap-2 sm:gap-3">
           {/* Botón Pausar / Reanudar */}
           <button
             type="button"
@@ -812,7 +857,7 @@ export function IbizaAnimatedModel3DViewer({
               setIsPlaying((prev) => !prev);
               setActiveFloorMode('auto');
             }}
-            className="apple-aqua-bubble-lime px-3.5 sm:px-4 py-2 rounded-full text-[#060804] font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="apple-aqua-bubble-lime px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[#060804] font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
             title={isPlaying ? 'Pausar animación para inspeccionar interior' : 'Reanudar animación 360°'}
           >
             {isPlaying ? (
@@ -838,9 +883,9 @@ export function IbizaAnimatedModel3DViewer({
             <Rewind className="w-3.5 h-3.5" />
           </button>
 
-          {/* Slider interactivo táctil (action.time) sincronizado por Ref sin lag */}
+          {/* Slider interactivo táctil (action.time) sincronizado por Ref */}
           <div className="flex-1 flex flex-col justify-center min-w-[95px]">
-            <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-mono text-white/70 mb-1">
+            <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-mono text-white/70 mb-0.5 sm:mb-1">
               <span className="truncate">Control de Niveles &amp; Giro 360°</span>
               <span
                 ref={timeReadoutRef}
@@ -850,8 +895,7 @@ export function IbizaAnimatedModel3DViewer({
               </span>
             </div>
 
-            <div className="relative w-full h-5 flex items-center">
-              {/* Riel de fondo con barra de progreso animada por GPU/DOM ref */}
+            <div className="relative w-full h-4 sm:h-5 flex items-center">
               <div className="pointer-events-none absolute inset-x-0 h-2 rounded-full bg-white/15 overflow-hidden">
                 <div
                   ref={sliderProgressFillRef}
@@ -888,7 +932,7 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={togglePlaybackSpeed}
-            className="hidden sm:flex apple-aqua-bubble px-2.5 py-2 rounded-full text-[10px] font-mono font-bold text-[#D9FF66] cursor-pointer shrink-0"
+            className="apple-aqua-bubble px-2.5 py-1.5 sm:py-2 rounded-full text-[10px] font-mono font-bold text-[#D9FF66] cursor-pointer shrink-0"
             title="Cambiar velocidad de la animación"
           >
             {playbackSpeed}x
@@ -898,7 +942,7 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={handleResetCamera}
-            className="apple-aqua-bubble px-3 sm:px-3.5 py-2 rounded-full text-white/90 hover:text-white font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="apple-aqua-bubble px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-white/90 hover:text-white font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
             title="Resetear cámara a la vista original"
           >
             <RotateCcw className="w-3.5 h-3.5" style={{ color: accentColor }} />
@@ -907,6 +951,42 @@ export function IbizaAnimatedModel3DViewer({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Página dedicada en pestaña independiente (/proyecto/ibiza-a14/3d):
+ * Carga exclusivamente el visor 3D sin videos, carruseles ni otros recursos pesados en memoria.
+ */
+export function IbizaStandalone3DPage() {
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'IBIZA A14 • Visor 3D Interactivo | MASSA HOME';
+    return () => {
+      document.title = prevTitle;
+    };
+  }, []);
+
+  const handleBack = () => {
+    if (window.opener || window.history.length <= 1) {
+      window.close();
+      // Si el navegador no permite cerrar la pestaña por seguridad, redirigir a la ficha del proyecto
+      window.location.href = '/proyecto/ibiza-a14';
+    } else {
+      window.location.href = '/proyecto/ibiza-a14';
+    }
+  };
+
+  return (
+    <main className="w-screen h-[100dvh] bg-[#050608] overflow-hidden select-none">
+      <IbizaAnimatedModel3DViewer
+        projectName="IBIZA A14"
+        accentColor="#9CD01A"
+        modelUrl={IBIZA_MODEL_URL}
+        fullViewport={true}
+        onBackToProject={handleBack}
+      />
+    </main>
   );
 }
 
