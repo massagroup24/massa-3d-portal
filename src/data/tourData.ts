@@ -1,4 +1,5 @@
 import { applyF22VerifiedSpecs, F22_AREA_BUILT, F22_LOT_AREA, F22_SUMMARY, F22_HIGHLIGHTS, HACIENDA_F22_TECHNICAL, type ProjectTechnicalSpecs } from './haciendaF22Specs';
+import { A14_AREA_BUILT, A14_LOT_AREA, IBIZA_A14_TECHNICAL } from './ibizaA14Specs';
 
 export interface Hotspot {
   id: string;
@@ -230,8 +231,9 @@ export const projectsData: Record<string, Project> = {
     categoryLabel: 'Villa Campestre de Autor',
     location: 'Cúcuta / Norte de Santander',
     zone: 'Condominio Ibiza • Lote A14',
-    areaBuilt: 'Por definir m²',
-    areaLot: 'Lote A14',
+    areaBuilt: A14_AREA_BUILT,
+    areaLot: A14_LOT_AREA,
+    technicalSpecs: IBIZA_A14_TECHNICAL,
     bedrooms: 4,
     bathrooms: 5,
     parkingSpaces: 3,
@@ -266,6 +268,21 @@ export const projectsData: Record<string, Project> = {
       '/IBIZA A14/07-S1.jpg',
       '/IBIZA A14/08-C01.jpg',
       '/IBIZA A14/09-C02.jpg',
+      '/IBIZA A14/10-HP1.jpg',
+      '/IBIZA A14/11-HP2.jpg',
+      '/IBIZA A14/12-VP1.jpg',
+      '/IBIZA A14/13-VP2.jpg',
+      '/IBIZA A14/14-HA1.jpg',
+      '/IBIZA A14/15-HA-2.jpg',
+      '/IBIZA A14/16-HAB-1.jpg',
+      '/IBIZA A14/17-HAB-2.jpg',
+      '/IBIZA A14/18-HB-1.jpg',
+      '/IBIZA A14/19-HB-2.jpg',
+      '/IBIZA A14/20-HC-1.jpg',
+      '/IBIZA A14/21-HC-4.jpg',
+      '/IBIZA A14/22-HC-2.jpg',
+      '/IBIZA A14/23-HC-3.jpg',
+      '/IBIZA A14/24-L1-1.jpg',
     ],
     renders: [
       {
@@ -299,6 +316,38 @@ export const projectsData: Record<string, Project> = {
         category: 'Interiores',
         description: 'Cocina gourmet de alta gama con isla monolítica y barra social.',
         order_index: 4
+      },
+      {
+        id: 'r_ibiza_5',
+        title: 'Master Suite Principal',
+        storage_path: '/IBIZA A14/10-HP1.jpg',
+        category: 'Interiores',
+        description: 'Suite principal con panelado en madera cálida e iluminación indirecta.',
+        order_index: 5
+      },
+      {
+        id: 'r_ibiza_6',
+        title: 'Vestier Principal con Isla',
+        storage_path: '/IBIZA A14/12-VP1.jpg',
+        category: 'Interiores',
+        description: 'Walk-in closet de lujo con vitrinas iluminadas e isla organizadora.',
+        order_index: 6
+      },
+      {
+        id: 'r_ibiza_7',
+        title: 'Suites & Habitaciones Auxiliares',
+        storage_path: '/IBIZA A14/14-HA1.jpg',
+        category: 'Interiores',
+        description: 'Habitaciones secundarias con salida directa a terraza y ventilación cruzada.',
+        order_index: 7
+      },
+      {
+        id: 'r_ibiza_8',
+        title: 'Escalera Principal & Circulación',
+        storage_path: '/IBIZA A14/24-L1-1.jpg',
+        category: 'Interiores',
+        description: 'Circulación vertical en madera natural y baranda minimalista.',
+        order_index: 8
       }
     ],
     rooms: {

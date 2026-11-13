@@ -16,6 +16,6 @@ export function ProjectTechnicalSheet({ specs, accentColor = '#DFC47B' }: { spec
         </dl>
       </div>)}
     </div>
-    <p className="text-xs leading-relaxed text-white/55">Valores transcritos del cuadro de áreas y del cuadro de ocupaciones y cargas del proyecto. El total del primer piso incluye primer piso, kiosco y zona piscina. La construcción total corresponde a los tres pisos y al kiosco; la zona piscina se presenta por separado.</p>
+    <p className="text-xs leading-relaxed text-white/55">{specs.areas.kiosk !== undefined ? 'Valores transcritos del cuadro de áreas y del cuadro de ocupaciones y cargas del proyecto. El total del primer piso incluye primer piso, kiosco y zona piscina. La construcción total corresponde a los tres pisos y al kiosco; la zona piscina se presenta por separado.' : 'Valores transcritos de la documentación técnica y el cuadro de áreas oficial del proyecto.'}</p>
   </section>;
 }

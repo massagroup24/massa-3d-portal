@@ -1,0 +1,43 @@
+{
+  "revision": "a14-cuadro-areas-2026-11-13",
+  "source": "Cuadro de áreas, línea de evacuación, clasificación, desempeño no estructural y coordenadas MAGNA-SIRGAS de Ibiza Country House Lote A14",
+  "typology": "Vivienda unifamiliar de 2 niveles",
+  "dimensions": "20,00 x 35,00 m",
+  "areas": {
+    "lot": 700.00,
+    "firstFloor": 236.89,
+    "secondFloor": 168.00,
+    "roof": 264.10,
+    "openArea": 463.11,
+    "pool": 59.32,
+    "totalFreeAreas": 522.43,
+    "totalConstruction": 404.89
+  },
+  "indices": {
+    "occupation": 0.34,
+    "construction": 0.58
+  },
+  "evacuationLine": {
+    "firstFloor": 65.53,
+    "secondFloor": 43.41,
+    "total": 108.94
+  },
+  "occupancy": {
+    "group": "Residencial",
+    "subgroup": "R-3",
+    "exits": 1,
+    "riskCategory": "Bajo",
+    "occupantLoad": 22
+  },
+  "nonStructuralPerformance": {
+    "useGroup": "1",
+    "performance": "Superior"
+  },
+  "coordinates": [
+    { "vertex": 1, "north": "7.8670139", "east": "-72.4601095" },
+    { "vertex": 2, "north": "7.8667037", "east": "-72.4600646" },
+    { "vertex": 3, "north": "7.8666784", "east": "-72.4602392" },
+    { "vertex": 4, "north": "7.8669982", "east": "-72.4602794" }
+  ]
+}
+

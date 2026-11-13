@@ -1,8 +1,52 @@
 import technical from './haciendaF22Technical.json';
 import type { Project, Room } from './tourData';
 
-export type ProjectTechnicalSpecs = typeof technical;
-export const HACIENDA_F22_TECHNICAL = technical;
+export interface ProjectTechnicalSpecs {
+  revision: string;
+  source: string;
+  typology: string;
+  dimensions?: string;
+  areas: {
+    lot: number;
+    firstFloor: number;
+    kiosk?: number;
+    poolZone?: number;
+    firstFloorTotal?: number;
+    secondFloor: number;
+    thirdFloor?: number;
+    roof?: number;
+    openArea: number;
+    pool?: number;
+    totalFreeAreas?: number;
+    totalConstruction: number;
+  };
+  indices: {
+    occupation: number;
+    construction: number;
+  };
+  evacuationLine?: {
+    firstFloor: number;
+    secondFloor: number;
+    total: number;
+  };
+  occupancy: {
+    group: string;
+    subgroup: string;
+    exits: number;
+    riskCategory: string;
+    occupantLoad: number;
+  };
+  nonStructuralPerformance?: {
+    useGroup: string;
+    performance: string;
+  };
+  coordinates?: Array<{
+    vertex: number;
+    north: string;
+    east: string;
+  }>;
+}
+export const HACIENDA_F22_TECHNICAL: ProjectTechnicalSpecs = technical;
 export const formatTechnicalNumber = (value: number) => value.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const formatArea = (value: number) => `${formatTechnicalNumber(value)} m²`;
 export const F22_AREA_BUILT = formatArea(technical.areas.totalConstruction);
@@ -79,19 +123,76 @@ export function applyF22VerifiedSpecs(project: Project): Project {
 
 export function technicalRowGroups(specs: ProjectTechnicalSpecs) {
   const a = specs.areas;
+  const formatMeters = (value: number) => `${formatTechnicalNumber(value)} m`;
   return [
-    { title: 'Cuadro de áreas', rows: [
-      ['Área total del lote', formatArea(a.lot)], ['Primer piso', formatArea(a.firstFloor)],
-      ['Kiosco', formatArea(a.kiosk)], ['Zona piscina', formatArea(a.poolZone)],
-      ['Total área primer piso', formatArea(a.firstFloorTotal)], ['Segundo piso', formatArea(a.secondFloor)],
-      ['Tercer piso', formatArea(a.thirdFloor)], ['Área libre', formatArea(a.openArea)],
-      ['Construcción total', formatArea(a.totalConstruction)],
-    ] },
-    { title: 'Índices', rows: [['Índice de ocupación', formatTechnicalNumber(specs.indices.occupation)], ['Índice de construcción', formatTechnicalNumber(specs.indices.construction)]] },
-    { title: 'Ocupaciones y cargas', rows: [
-      ['Grupo de ocupación', specs.occupancy.group], ['Subgrupo de ocupación', specs.occupancy.subgroup],
-      ['Número de salidas', String(specs.occupancy.exits)], ['Categoría de riesgo', specs.occupancy.riskCategory],
-      ['Carga ocupacional', String(specs.occupancy.occupantLoad)],
-    ] },
+    {
+      title: 'Cuadro de áreas',
+      rows: [
+        ['Área total del lote', formatArea(a.lot)],
+        ...(specs.dimensions ? [['Dimensiones del lote', specs.dimensions]] : []),
+        ['Primer piso', formatArea(a.firstFloor)],
+        ...(a.kiosk !== undefined ? [['Kiosco', formatArea(a.kiosk)]] : []),
+        ...(a.poolZone !== undefined ? [['Zona piscina', formatArea(a.poolZone)]] : []),
+        ...(a.firstFloorTotal !== undefined ? [['Total área primer piso', formatArea(a.firstFloorTotal)]] : []),
+        ['Segundo piso', formatArea(a.secondFloor)],
+        ...(a.thirdFloor !== undefined ? [['Tercer piso', formatArea(a.thirdFloor)]] : []),
+        ...(a.roof !== undefined ? [['Cubierta', formatArea(a.roof)]] : []),
+        ['Área libre', formatArea(a.openArea)],
+        ...(a.pool !== undefined ? [['Piscina', formatArea(a.pool)]] : []),
+        ...(a.totalFreeAreas !== undefined ? [['Total áreas libres', formatArea(a.totalFreeAreas)]] : []),
+        ['Construcción total', formatArea(a.totalConstruction)],
+      ],
+    },
+    {
+      title: 'Índices',
+      rows: [
+        ['Índice de ocupación', formatTechnicalNumber(specs.indices.occupation)],
+        ['Índice de construcción', formatTechnicalNumber(specs.indices.construction)],
+      ],
+    },
+    {
+      title: 'Ocupaciones y cargas',
+      rows: [
+        ['Grupo de ocupación', specs.occupancy.group],
+        ['Subgrupo de ocupación', specs.occupancy.subgroup],
+        ['Número de salidas', String(specs.occupancy.exits)],
+        ['Categoría de riesgo', specs.occupancy.riskCategory],
+        ['Número de ocupantes', String(specs.occupancy.occupantLoad)],
+      ],
+    },
+    ...(specs.evacuationLine
+      ? [
+          {
+            title: 'Línea de evacuación',
+            rows: [
+              ['Primer piso', formatMeters(specs.evacuationLine.firstFloor)],
+              ['Segundo piso', formatMeters(specs.evacuationLine.secondFloor)],
+              ['Total línea de evacuación', formatMeters(specs.evacuationLine.total)],
+            ],
+          },
+        ]
+      : []),
+    ...(specs.nonStructuralPerformance
+      ? [
+          {
+            title: 'Desempeño de elementos no estructurales',
+            rows: [
+              ['Grupo de uso', specs.nonStructuralPerformance.useGroup],
+              ['Desempeño', specs.nonStructuralPerformance.performance],
+            ],
+          },
+        ]
+      : []),
+    ...(specs.coordinates?.length
+      ? [
+          {
+            title: 'Coordenadas MAGNA-SIRGAS',
+            rows: specs.coordinates.map((c) => [
+              `Vértice ${c.vertex}`,
+              `N ${c.north} · E ${c.east}`,
+            ]),
+          },
+        ]
+      : []),
   ];
 }

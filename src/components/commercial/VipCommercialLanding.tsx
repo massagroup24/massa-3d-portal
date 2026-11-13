@@ -14,7 +14,9 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { CANONICAL_PROJECTS, type CanonicalProject, formatAreaMetric } from '../../data/canonicalProjects';
+import { TRUSTED_PARTNERS_ROW1, TRUSTED_PARTNERS_ROW2 } from '../../data/commercialData';
 import { CommercialLoginModal } from './CommercialLoginModal';
+import { ArchitecturalVideoScanOverlay } from './ArchitecturalVideoScanOverlay';
 import { Project, projectsData } from '../../data/tourData';
 import { getProjectIdentity, resolveActiveProject3DModel, type ActiveProject3DModelItem } from '../../config/projectIdentityConfig';
 import { supabase } from '../../supabase';
@@ -292,6 +294,13 @@ export function VipCommercialLanding({
             <source src="/VIDEO H4.mp4" type="video/mp4" />
           </video>
 
+          {/* Escáner BIM en tiempo real: resalta las líneas estructurales del video al paso de un haz luminoso */}
+          <ArchitecturalVideoScanOverlay
+            videoRef={heroVideoRef}
+            active={!showHeroOutro && isAtTop}
+            accentHex="#9CD01A"
+          />
+
           {/* Cierre animado en alta resolución con los elementos oficiales de marca MASSA */}
           <AnimatePresence>
             {showHeroOutro && (
@@ -524,11 +533,27 @@ export function VipCommercialLanding({
               scale: introPhase === 'settled' ? 1 : 0.95,
             }}
             transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-            className="text-left"
+            className="relative text-left"
           >
-            <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-[0.88] uppercase select-none filter drop-shadow-[0_15px_45px_rgba(0,0,0,0.95)]">
-              MASSA<br />
-              <span className="massa-metallic-text">HOME</span>
+            {/* Halo ambiental respirando suavemente detrás del título para separarlo del video */}
+            <m.div
+              aria-hidden="true"
+              animate={{
+                opacity: [0.35, 0.65, 0.35],
+                scale: [0.96, 1.06, 0.96],
+              }}
+              transition={{
+                duration: 4.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className="pointer-events-none absolute -inset-6 sm:-inset-10 rounded-full bg-[#9CD01A]/15 blur-[55px] sm:blur-[75px]"
+            />
+
+            <h1 className="relative text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.88] uppercase select-none">
+              <span className="hero-massa-sheen">MASSA</span>
+              <br />
+              <span className="hero-home-alive">HOME</span>
             </h1>
           </m.div>
 
@@ -1062,6 +1087,71 @@ export function VipCommercialLanding({
           })}
         </div>
 
+      </section>
+
+      {/* 4.5 SECCIÓN: EMPRESAS Y ALIADOS QUE CONFÍAN EN MASSA GROUP */}
+      <section className="relative py-16 sm:py-20 bg-white border-t border-gray-100 overflow-hidden text-left">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-14 mb-10 sm:mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <p className="text-[#6F990E] text-xs font-mono uppercase tracking-[0.26em] font-semibold mb-2">
+                Confianza Corporativa
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-bold text-[#0D0E12] tracking-tight">
+                Empresas que confían en <span className="text-[#6F990E]">MASSA GROUP</span>
+              </h2>
+            </div>
+            <p className="text-gray-500 text-xs sm:text-sm max-w-md font-light">
+              Marcas, empresas e instituciones que han respaldado nuestros desarrollos e infraestructura.
+            </p>
+          </div>
+        </div>
+
+        <div className="relative space-y-5">
+          {/* Difuminado lateral izquierdo y derecho */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-white to-transparent z-10" />
+
+          {/* Fila 1: hacia la izquierda */}
+          <div className="flex overflow-hidden">
+            <div className="flex shrink-0 gap-4 sm:gap-6 animate-marquee-left">
+              {[...TRUSTED_PARTNERS_ROW1, ...TRUSTED_PARTNERS_ROW1].map((partner, idx) => (
+                <div
+                  key={`row1-${partner.name}-${idx}`}
+                  className="flex items-center justify-center w-40 sm:w-48 h-20 sm:h-24 px-5 bg-white rounded-2xl border border-gray-100 hover:border-[#9CD01A] shadow-sm transition-colors duration-300 shrink-0"
+                  title={partner.name}
+                >
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    loading="lazy"
+                    className="max-h-12 sm:max-h-14 w-auto object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Fila 2: hacia la derecha */}
+          <div className="flex overflow-hidden">
+            <div className="flex shrink-0 gap-4 sm:gap-6 animate-marquee-right">
+              {[...TRUSTED_PARTNERS_ROW2, ...TRUSTED_PARTNERS_ROW2].map((partner, idx) => (
+                <div
+                  key={`row2-${partner.name}-${idx}`}
+                  className="flex items-center justify-center w-40 sm:w-48 h-20 sm:h-24 px-5 bg-white rounded-2xl border border-gray-100 hover:border-[#9CD01A] shadow-sm transition-colors duration-300 shrink-0"
+                  title={partner.name}
+                >
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    loading="lazy"
+                    className="max-h-12 sm:max-h-14 w-auto object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* 5. SECCIÓN: ESTUDIO, CONCIERGE & ECOSISTEMA DIGITAL (EXPERIENCIA ARQUITECTÓNICA BENTO) */}

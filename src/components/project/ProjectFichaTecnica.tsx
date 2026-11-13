@@ -115,7 +115,7 @@ export function ProjectFichaTecnica({ project, technicalSpecs, accentColor = '#D
         </div>
       </details>}
     </div>
-    {technicalSpecs && <p className="mt-5 max-w-3xl text-[11px] leading-relaxed text-white/40">Áreas, índices y ocupaciones reproducidos de la documentación técnica del proyecto. El total del primer piso incluye el piso, el kiosco y la zona piscina.</p>}
+    {technicalSpecs && <p className="mt-5 max-w-3xl text-[11px] leading-relaxed text-white/40">{technicalSpecs.areas.kiosk !== undefined ? 'Áreas, índices y ocupaciones reproducidos de la documentación técnica del proyecto. El total del primer piso incluye el piso, el kiosco y la zona piscina.' : 'Áreas, índices y parámetros técnicos reproducidos de la documentación técnica oficial del proyecto.'}</p>}
     {!generalRows.length && !technicalSpecs && !highlights.length && <p className="py-6 text-sm text-white/60">La información técnica de este proyecto estará disponible próximamente.</p>}
   </section>;
 }

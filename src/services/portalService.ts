@@ -2,7 +2,8 @@ import { supabase, supabaseUrl } from '../supabase';
 import { resolveStorageReferences } from '../lib/storageReferences';
 import { Project } from '../data/tourData';
 import { F22_AREA_BUILT, F22_LOT_AREA, F22_SUMMARY, F22_LEVELS, F22_HIGHLIGHTS, HACIENDA_F22_TECHNICAL, f22RenderTitle, type ProjectTechnicalSpecs } from '../data/haciendaF22Specs';
-import { HACIENDA_F22_RENDERS as F22_RENDER_IDENTITIES } from '../config/projectIdentityConfig';
+import { A14_AREA_BUILT, A14_LOT_AREA, A14_SUMMARY, A14_HIGHLIGHTS, IBIZA_A14_TECHNICAL } from '../data/ibizaA14Specs';
+import { HACIENDA_F22_RENDERS as F22_RENDER_IDENTITIES, IBIZA_A14_RENDERS as IBIZA_A14_RENDER_IDENTITIES } from '../config/projectIdentityConfig';
 
 export interface ProjectMediaItem {
   id: string;
@@ -170,48 +171,11 @@ export const HACIENDA_F22_BLUEPRINTS: ProjectMediaItem[] = F22_LEVELS.map((level
   metadata: { level: level.name, area: level.area, description: level.spaces.join(' • ') }
 }));
 
-export const IBIZA_A14_RENDERS: ProjectMediaItem[] = [
-  {
-    id: 'render-ibiza-1',
-    project_id: 'project_ibiza_a14',
-    type: 'render',
-    title: 'Fachada Principal Bioclimática',
-    storage_path: '',
-    category: 'Fachada',
-    order_index: 1,
-    metadata: { resolution: '4K UHD', description: 'Espacio listo para render exterior en alta definición de fachada principal y accesos.' }
-  },
-  {
-    id: 'render-ibiza-2',
-    project_id: 'project_ibiza_a14',
-    type: 'render',
-    title: 'Gran Salón Social & Doble Altura',
-    storage_path: '',
-    category: 'Interiores',
-    order_index: 2,
-    metadata: { resolution: '4K UHD', description: 'Espacio listo para render interior de sala, comedor y ventanales.' }
-  },
-  {
-    id: 'render-ibiza-3',
-    project_id: 'project_ibiza_a14',
-    type: 'render',
-    title: 'Terraza Lounge, Deck & Piscina',
-    storage_path: '',
-    category: 'Zonas Comunes',
-    order_index: 3,
-    metadata: { resolution: '4K UHD', description: 'Espacio listo para render de área social exterior, piscina y asador.' }
-  },
-  {
-    id: 'render-ibiza-4',
-    project_id: 'project_ibiza_a14',
-    type: 'render',
-    title: 'Master Suite & Vestidor',
-    storage_path: '',
-    category: 'Interiores',
-    order_index: 4,
-    metadata: { resolution: '4K UHD', description: 'Espacio listo para render de habitación principal y baño spa.' }
-  }
-];
+export const IBIZA_A14_RENDERS: ProjectMediaItem[] = IBIZA_A14_RENDER_IDENTITIES.map((render, index) => ({
+  id: render.id, project_id: 'project_ibiza_a14', type: 'render', title: render.title,
+  storage_path: render.url, category: render.category, order_index: index + 1,
+  metadata: { resolution: '4K UHD', description: render.description }
+}));
 
 export const HACIENDA_F22_RENDERS: ProjectMediaItem[] = F22_RENDER_IDENTITIES.map((render, index) => ({
   id: render.id, project_id: 'project_hacienda_f22', type: 'render', title: render.title,
@@ -432,22 +396,23 @@ export function getProjectPublicSpecs(projectName: string): ProjectPublicSpecs {
   
   if (isIbiza) {
     return {
-      areaBuilt: '',
-      lotArea: 'Lote A14',
+      areaBuilt: A14_AREA_BUILT,
+      lotArea: A14_LOT_AREA,
       levels: '2 niveles',
-      typology: 'Vivienda',
+      typology: IBIZA_A14_TECHNICAL.typology,
       location: 'Cúcuta, Norte de Santander',
       year: '2026',
-      architecturalStyle: 'Vivienda unifamiliar',
-      designConcept: 'Vivienda unifamiliar en Condominio Ibiza, Lote A14.',
-      keyFeatures: [],
+      architecturalStyle: 'Vivienda unifamiliar de 2 niveles',
+      designConcept: A14_SUMMARY,
+      keyFeatures: A14_HIGHLIGHTS,
       materials: [],
+      technicalSpecs: IBIZA_A14_TECHNICAL,
       spatialProgram: [],
       locationDetails: {
         city: 'Cúcuta, Norte de Santander',
         neighborhood: 'Condominio Ibiza',
         lotNumber: 'Lote A14',
-        environment: ''
+        environment: '20,00 x 35,00 m'
       }
     };
   }

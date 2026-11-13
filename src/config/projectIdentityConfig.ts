@@ -5,6 +5,7 @@
  */
 
 import { F22_AREA_BUILT, F22_LOT_AREA, F22_SUMMARY, F22_LEVELS, HACIENDA_F22_TECHNICAL, type ProjectTechnicalSpecs } from '../data/haciendaF22Specs';
+import { A14_AREA_BUILT, A14_LOT_AREA, IBIZA_A14_TECHNICAL } from '../data/ibizaA14Specs';
 import amhoHorizontalWhiteInline from '../assets/branding/amho-horizontal-white.png?inline';
 import amhoHorizontalDarkInline from '../assets/branding/amho-horizontal-dark.png?inline';
 import amhoVerticalWhiteInline from '../assets/branding/amho-vertical-white.png?inline';
@@ -800,7 +801,7 @@ export const HACIENDA_F22_ROOMS_360: ProjectRoom360[] = [
   }
 ];
 
-// Colección completa de los 9 renders arquitectónicos oficiales de IBIZA A14 en resolución 4K/5K Widescreen
+// Colección completa de los 24 renders arquitectónicos oficiales de IBIZA A14 en alta resolución
 export const IBIZA_A14_RENDERS: ProjectRender[] = [
   // 1. FACHADAS & EXTERIORES (5)
   {
@@ -896,6 +897,162 @@ export const IBIZA_A14_RENDERS: ProjectRender[] = [
     width: 5376,
     height: 3040,
     aspectRatio: 1.77
+  },
+
+  // 4. MASTER SUITE & VESTIER (4)
+  {
+    id: 'a14-hp-1',
+    title: 'Master Suite Principal • Vista General',
+    url: '/IBIZA A14/10-HP1.jpg',
+    category: 'Master Suite & Vestier',
+    description: 'Suite principal con panelado en madera cálida, iluminación indirecta en cielo raso y amplitud visual.',
+    width: 2688,
+    height: 1500,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hp-2',
+    title: 'Master Suite Principal • Cabecero & Iluminación',
+    url: '/IBIZA A14/11-HP2.jpg',
+    category: 'Master Suite & Vestier',
+    description: 'Detalle interior de la Master Suite con texturas neutras, mobiliario a medida e iluminación cálida.',
+    width: 1678,
+    height: 937,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-vp-1',
+    title: 'Vestier Principal • Carpintería e Isla',
+    url: '/IBIZA A14/12-VP1.jpg',
+    category: 'Master Suite & Vestier',
+    description: 'Walk-in closet de lujo con vitrinas iluminadas, isla central y acabados en madera natural.',
+    width: 2752,
+    height: 1536,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-vp-2',
+    title: 'Vestier Principal • Detalle de Acabados',
+    url: '/IBIZA A14/13-VP2.jpg',
+    category: 'Master Suite & Vestier',
+    description: 'Perspectiva del vestier principal con módulo organizador central, iluminación LED integrada y espejo de cuerpo entero.',
+    width: 2400,
+    height: 1792,
+    aspectRatio: 1.34
+  },
+
+  // 5. SUITES & HABITACIONES (10)
+  {
+    id: 'a14-ha-1',
+    title: 'Habitación Auxiliar A • Vista Principal',
+    url: '/IBIZA A14/14-HA1.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Suite secundaria con ventanales hacia terraza exterior, carpintería minimalista y ventilación cruzada.',
+    width: 3358,
+    height: 1874,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-ha-2',
+    title: 'Habitación Auxiliar A • Apertura a Terraza',
+    url: '/IBIZA A14/15-HA-2.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Habitación luminosa con salida directa a balcón y diseño interior contemporáneo de tonos serenos.',
+    width: 4096,
+    height: 2286,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hab-1',
+    title: 'Suite Auxiliar • Mobiliario & Estudio',
+    url: '/IBIZA A14/16-HAB-1.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Zona de descanso con clóset integrado, mueble de entretenimiento y escritorio funcional.',
+    width: 3356,
+    height: 1874,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hab-2',
+    title: 'Baño Suite Auxiliar • Ducha & Acabados',
+    url: '/IBIZA A14/17-HAB-2.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Baño privado con enchapes de gran formato, grifería contemporánea, espejo retroiluminado y cabina en vidrio templado.',
+    width: 3356,
+    height: 1874,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hb-1',
+    title: 'Habitación B • Vista Panorámica',
+    url: '/IBIZA A14/18-HB-1.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Habitación secundaria con acentos cálidos, cabecero tapizado y ventanal amplio hacia el entorno exterior.',
+    width: 3356,
+    height: 1874,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hb-2',
+    title: 'Habitación B • Cabecero & Vestidor',
+    url: '/IBIZA A14/19-HB-2.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Perspectiva interior de la Habitación B con iluminación ambiental y mobiliario de autor.',
+    width: 3333,
+    height: 1861,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hc-1',
+    title: 'Habitación C • Perspectiva Interior',
+    url: '/IBIZA A14/20-HC-1.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Suite con listonería en madera vertical, iluminación indirecta y conexión visual al paisaje.',
+    width: 3358,
+    height: 1874,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hc-4',
+    title: 'Habitación C • Balcón & Visual Exterior',
+    url: '/IBIZA A14/21-HC-4.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Vista hacia el balcón privado y jardines del Condominio Ibiza desde la Habitación C.',
+    width: 3356,
+    height: 1874,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hc-2',
+    title: 'Habitación C • Vista hacia Ventanales',
+    url: '/IBIZA A14/22-HC-2.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Encuadre interior hacia ventanales de piso a techo con protección solar de aleros.',
+    width: 3358,
+    height: 1874,
+    aspectRatio: 1.79
+  },
+  {
+    id: 'a14-hc-3',
+    title: 'Habitación C • Conexión Exterior & Jardín',
+    url: '/IBIZA A14/23-HC-3.jpg',
+    category: 'Suites & Habitaciones',
+    description: 'Integración espacial entre dormitorio, área de descanso y terraza privada.',
+    width: 3358,
+    height: 1874,
+    aspectRatio: 1.79
+  },
+
+  // 6. CIRCULACIÓN & ESCALERAS (1)
+  {
+    id: 'a14-l1-1',
+    title: 'Escalera Principal & Hall de Distribución',
+    url: '/IBIZA A14/24-L1-1.jpg',
+    category: 'Circulación & Escaleras',
+    description: 'Circulación vertical en madera natural y baranda minimalista que articula el nivel social con las suites.',
+    width: 3356,
+    height: 1874,
+    aspectRatio: 1.79
   }
 ];
 
@@ -903,22 +1060,22 @@ export const IBIZA_A14_LEVELS: ProjectLevelInfo[] = [
   {
     id: 'a14-nivel-1',
     label: 'Planta Nivel 1 • Social & Bioclimática',
-    area: 'Por definir m² • Nivel Social',
+    area: '236,89 m² • Nivel Social',
     height: 'Doble altura en salón principal y pórtico',
-    summary: 'Planta social concebida para el clima cálido de Cúcuta en el Condominio Ibiza (Lote A14), privilegiando la ventilación cruzada, aleros profundos de control solar e integración directa con terraza y piscina.',
+    summary: 'Planta social concebida para el clima cálido de Cúcuta en el Condominio Ibiza (Lote A14), privilegiando la ventilación cruzada, aleros profundos de control solar e integración directa con terraza y piscina (59,32 m²).',
     spaces: [
       'Pórtico de ingreso monumental con jardines tropicales y espejo de agua',
       'Gran Salón-Comedor con apertura total hacia la terraza cubierta',
       'Cocina de autor con isla central y conexión funcional hacia zona BBQ',
       'Estudio / Suite de huéspedes en primer nivel con baño completo',
-      'Piscina con playa húmeda, solárium y lounge bioclimático exterior',
+      'Piscina (59,32 m²) con playa húmeda, solárium y área libre de 463,11 m²',
       'Parqueadero cubierto para vehículos + zona de ropas y servicios'
     ]
   },
   {
     id: 'a14-nivel-2',
     label: 'Planta Nivel 2 • Suites & Descanso',
-    area: 'Por definir m² • Nivel Privado',
+    area: '168,00 m² • Nivel Privado',
     height: 'Altura libre 3.10 m con protección solar',
     summary: 'Nivel íntimo residencial con circulación ventilada naturalmente, sala de estar familiar y suites con balcones profundos orientados hacia las visuales del Condominio Ibiza.',
     spaces: [
@@ -931,7 +1088,7 @@ export const IBIZA_A14_LEVELS: ProjectLevelInfo[] = [
   {
     id: 'a14-nivel-3',
     label: 'Cubierta & Terrazas • Ingeniería Bioclimática',
-    area: 'Cubierta Termoacústica & Aleros',
+    area: '264,10 m² • Cubierta & Aleros',
     height: 'Protección solar pasiva',
     summary: 'Sistema de cubierta proyectada con grandes voladizos perimetrales para mitigar la radiación solar directa y optimizar el confort térmico interior todo el año.',
     spaces: [
@@ -985,7 +1142,7 @@ export const IBIZA_A14_ROOMS_360: ProjectRoom360[] = [
     level: 'Planta Nivel 2 • Privado',
     area: 'Suite Principal',
     materials: 'Maderas cálidas, iluminación indirecta y ventanales con quiebrasoles',
-    previewUrl: '/IBIZA A14/06-S2.jpg',
+    previewUrl: '/IBIZA A14/10-HP1.jpg',
     hotspots: [
       { id: 'a14-hs-7', label: 'Balcón & Visuales Ibiza', detail: 'Vista abierta hacia el entorno campestre del Condominio Ibiza.', x: 65, y: 48 },
       { id: 'a14-hs-8', label: 'Regresar al Nivel 1', detail: 'Bajar al Gran Salón →', x: 22, y: 60, targetRoomId: 'a14-room-social' }
@@ -1081,7 +1238,7 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
     lot: 'LOTE A14',
     location: 'CÚCUTA / NORTE DE SANTANDER',
     locationFull: 'CÚCUTA / NORTE DE SANTANDER • CONDOMINIO IBIZA • LOTE A14',
-    statusBadge: 'MASSA HOME • 9 RENDERS 4K & VIDEO',
+    statusBadge: 'MASSA HOME • 24 RENDERS 4K & VIDEO',
     statusLabel: 'En Preventa & Diseño • Portafolio Activo',
     brandName: 'MASSA HOME',
     tagline: 'Villa campestre de autor concebida para la luz y el clima de Cúcuta en el Condominio Ibiza • Lote A14. Volumetría horizontal con grandes aleros de protección solar, ventilación bioclimática pasiva e integración interior-exterior.',
@@ -1112,17 +1269,18 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       metallicGradient: 'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)'
     },
     specs: {
-      areaBuilt: 'Por definir m²',
-      lotArea: 'Condominio Ibiza • Lote A14',
-      lotMetricValue: 'Lote A14',
+      areaBuilt: A14_AREA_BUILT,
+      lotArea: A14_LOT_AREA,
+      lotMetricValue: A14_LOT_AREA,
       suitesLabel: '4 Suites',
-      wellnessLabel: 'Piscina & BBQ',
+      wellnessLabel: 'Piscina 59,32 m²',
       bedrooms: 4,
       bathrooms: 5,
       parkingSpaces: 3,
-      modality: 'En Preventa & Diseño • Personalizable',
-      levels: '2 Plantas + Terrazas'
+      modality: 'Vivienda unifamiliar de 2 niveles',
+      levels: '2 Plantas + Cubierta'
     },
+    technicalSpecs: IBIZA_A14_TECHNICAL,
     renders: IBIZA_A14_RENDERS,
     levels: IBIZA_A14_LEVELS,
     rooms360: IBIZA_A14_ROOMS_360,
