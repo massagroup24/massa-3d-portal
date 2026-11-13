@@ -307,8 +307,8 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
     const isHacienda = lowerId.includes('hacienda') || (rawData.name && rawData.name.toLowerCase().includes('hacienda')) || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('hacienda'));
     const isMq = lowerId.includes('marquimoda') || projectId === 'project_1782912175010' || (rawData.name && rawData.name.toLowerCase().includes('marquimoda'));
 
-    const projectName = isHacienda ? 'HACIENDA CLUB F22' : rawData.name || fallbackProject?.name || (isIbiza ? 'IBIZA A14' : isMq ? 'SEDE MARQUIMODA' : 'RESIDENCIA JEJÉN');
-    const clientName = isMq ? 'Marquimoda S.A.S.' : isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda Club F22' : ((rawData as any).clientName || 'Edinson Jején');
+    const projectName = isHacienda ? 'HACIENDA CLUB F22' : rawData.name || fallbackProject?.name || (isIbiza ? 'IBIZA A14' : isMq ? 'SEDE MARQUIMODA' : 'IBIZA A14');
+    const clientName = isMq ? 'Marquimoda S.A.S.' : isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda Club F22' : ((rawData as any).clientName || 'Cliente MASSA');
 
     // Renders
     let renders = (mediaRows || []).filter(m => m.type === 'render' && !m.storage_path.includes('unsplash.com'));
@@ -399,11 +399,11 @@ export async function getProjectPortalData(projectId: string, fallbackProject?: 
     const isIbiza = lowerId.includes('ibiza') || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('ibiza'));
     const isHacienda = lowerId.includes('hacienda') || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('hacienda'));
     const isMqFallback = lowerId.includes('marquimoda') || projectId === 'project_1782912175010' || (fallbackProject?.name && fallbackProject.name.toLowerCase().includes('marquimoda'));
-    const fallbackName = isIbiza ? 'IBIZA A14' : isHacienda ? 'HACIENDA CLUB F22' : isMqFallback ? 'SEDE MARQUIMODA' : (fallbackProject?.name || 'RESIDENCIA JEJÉN');
+    const fallbackName = isIbiza ? 'IBIZA A14' : isHacienda ? 'HACIENDA CLUB F22' : isMqFallback ? 'SEDE MARQUIMODA' : (fallbackProject?.name || 'IBIZA A14');
     return {
       id: projectId,
       name: fallbackName,
-      clientName: isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda Club F22' : isMqFallback ? 'Marquimoda S.A.S.' : 'Edinson Jején',
+      clientName: isIbiza ? 'Inversionista Ibiza A14' : isHacienda ? 'Inversionista Hacienda Club F22' : isMqFallback ? 'Marquimoda S.A.S.' : 'Cliente MASSA',
       currentPhase: isIbiza || isHacienda ? 'FASE 1: PREVENTA & ESTUDIOS TÉCNICOS' : isMqFallback ? 'FASE 4: HABILITACIÓN ARQUITECTÓNICA' : 'FASE 3: ACABADOS DE LUJO',
       currentProgress: isIbiza || isHacienda ? 15 : isMqFallback ? 82 : 68,
       isPublic: available.published_for_client === true,

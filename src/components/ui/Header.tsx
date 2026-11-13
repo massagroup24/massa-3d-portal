@@ -14,7 +14,7 @@ interface HeaderProps {
 }
 
 export function Header({
-  projectName = 'RESIDENCIA JEJÉN',
+  projectName = 'IBIZA A14',
   userRole = 'client',
   onLogout,
   publicProjects = [],

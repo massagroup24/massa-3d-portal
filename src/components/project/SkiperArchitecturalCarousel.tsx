@@ -163,27 +163,19 @@ export function SkiperArchitecturalCarousel({
                 key={cat.name}
                 type="button"
                 onClick={() => handleCategoryChange(cat.name)}
-                style={
-                  isActive
-                    ? {
-                        background: isGoldTheme ? 'linear-gradient(135deg, #9C772C 0%, #DFC47B 35%, #FFF4BE 52%, #C9A654 75%, #8C6924 100%)' : primaryColor,
-                        color: '#060608',
-                        borderColor: primaryColor,
-                        boxShadow: `0 4px 20px ${primaryColor}55`,
-                      }
-                    : undefined
-                }
                 className={cn(
-                  "px-3.5 py-2 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono tracking-wider uppercase transition-all duration-300 cursor-pointer flex items-center gap-1.5 border shrink-0",
+                  "px-3.5 py-2 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono tracking-wider uppercase cursor-pointer flex items-center gap-1.5 shrink-0",
                   isActive
-                    ? "font-black sm:scale-105"
-                    : "bg-white/[0.04] text-white/65 border-white/10 hover:text-white"
+                    ? isGoldTheme
+                      ? "apple-aqua-bubble-gold text-[#060608] font-black sm:scale-105"
+                      : "apple-aqua-bubble-lime text-[#060804] font-black sm:scale-105"
+                    : "apple-aqua-bubble text-white/80 hover:text-white"
                 )}
               >
                 <span>{cat.name.split(' ')[0]}</span>
                 <span className={cn(
                   "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
-                  isActive ? "bg-black/20 text-[#060608]" : "bg-white/10 text-white/50"
+                  isActive ? "bg-black/20 text-[#060608]" : "bg-white/10 text-white/70"
                 )}>
                   {cat.count}
                 </span>
@@ -195,7 +187,7 @@ export function SkiperArchitecturalCarousel({
           <button
             type="button"
             onClick={toggleAutoplay}
-            className="p-2 rounded-full bg-white/[0.04] border border-white/10 text-white/65 hover:text-white transition-all cursor-pointer ml-1 shrink-0"
+            className="apple-aqua-bubble p-2 rounded-full text-white/80 hover:text-white cursor-pointer ml-1 shrink-0"
             title={isAutoplayRunning ? "Pausar carrusel continuo" : "Reproducir carrusel continuo"}
           >
             {isAutoplayRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
@@ -381,7 +373,7 @@ export function SkiperArchitecturalCarousel({
                           onOpenLightbox(render, index);
                         }}
                         className={cn(
-                          "absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/75 text-white border border-white/20 flex items-center justify-center transition-all duration-300 backdrop-blur-md shadow-xl",
+                          "apple-aqua-bubble absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full text-white flex items-center justify-center",
                           isSelected ? "opacity-95 hover:opacity-100 hover:scale-110" : "opacity-0 group-hover:opacity-100"
                         )}
                         title="Ver en pantalla completa"
@@ -399,13 +391,13 @@ export function SkiperArchitecturalCarousel({
           })}
         </CarouselContent>
 
-        {/* 3. Botones Flotantes de Navegación Lateral (Visibles en tablet y desktop) */}
+        {/* 3. Botones Flotantes de Navegación Lateral con Efecto Burbuja Aqua (Visibles en tablet y desktop) */}
         <div className="hidden sm:flex pointer-events-none absolute inset-y-0 left-0 right-0 items-center justify-between px-3 sm:px-6 z-30">
           <button
             type="button"
             aria-label="Render anterior"
             onClick={() => api?.scrollPrev()}
-            className="pointer-events-auto w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-black/70 text-white border border-white/15 flex items-center justify-center transition-all duration-300 cursor-pointer backdrop-blur-xl shadow-2xl hover:scale-110 active:scale-95"
+            className="apple-aqua-bubble pointer-events-auto w-11 h-11 sm:w-13 sm:h-13 rounded-full text-white flex items-center justify-center cursor-pointer"
           >
             <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
@@ -414,7 +406,7 @@ export function SkiperArchitecturalCarousel({
             type="button"
             aria-label="Siguiente render"
             onClick={() => api?.scrollNext()}
-            className="pointer-events-auto w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-black/70 text-white border border-white/15 flex items-center justify-center transition-all duration-300 cursor-pointer backdrop-blur-xl shadow-2xl hover:scale-110 active:scale-95"
+            className="apple-aqua-bubble pointer-events-auto w-11 h-11 sm:w-13 sm:h-13 rounded-full text-white flex items-center justify-center cursor-pointer"
           >
             <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
@@ -452,12 +444,12 @@ export function SkiperArchitecturalCarousel({
           )}
         </AnimatePresence>
 
-        {/* Barra de control táctil ergonómica para móvil */}
+        {/* Barra de control táctil ergonómica para móvil con Efecto Burbuja Aqua */}
         <div className="flex sm:hidden items-center justify-center gap-3 mt-3">
           <button
             type="button"
             onClick={() => api?.scrollPrev()}
-            className="min-h-[40px] px-4 py-2 rounded-full bg-white/[0.06] text-white border border-white/15 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform"
+            className="apple-aqua-bubble min-h-[40px] px-4 py-2 rounded-full text-white text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5"
           >
             <ChevronLeft className="w-3.5 h-3.5" style={{ color: primaryColor }} />
             <span>Anterior</span>
@@ -467,12 +459,10 @@ export function SkiperArchitecturalCarousel({
             <button
               type="button"
               onClick={() => onOpenLightbox(activeRender, current)}
-              style={{
-                backgroundColor: `${primaryColor}22`,
-                borderColor: `${primaryColor}65`,
-                color: primaryHover,
-              }}
-              className="min-h-[40px] px-4 py-2 rounded-full border text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform"
+              className={cn(
+                "min-h-[40px] px-4 py-2 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 text-[#060804]",
+                primaryColor.toUpperCase() === '#DFC47B' ? "apple-aqua-bubble-gold" : "apple-aqua-bubble-lime"
+              )}
             >
               <Maximize2 className="w-3 h-3" />
               <span>Ver 4K</span>
@@ -482,7 +472,7 @@ export function SkiperArchitecturalCarousel({
           <button
             type="button"
             onClick={() => api?.scrollNext()}
-            className="min-h-[40px] px-4 py-2 rounded-full bg-white/[0.06] text-white border border-white/15 text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform"
+            className="apple-aqua-bubble min-h-[40px] px-4 py-2 rounded-full text-white text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5"
           >
             <span>Siguiente</span>
             <ChevronRight className="w-3.5 h-3.5" style={{ color: primaryColor }} />

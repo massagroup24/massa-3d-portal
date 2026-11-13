@@ -69,98 +69,6 @@ export interface Project {
 }
 
 export const projectsData: Record<string, Project> = {
-  'project_1781963945215': {
-    id: 'project_1781963945215',
-    name: 'RESIDENCIA JEJÉN',
-    tagline: 'Casa contemporánea de triple altura con spa turco y terraza rooftop',
-    category: 'urbana',
-    categoryLabel: 'Residencia Urbana de Autor',
-    location: 'Cali / Valle del Cauca',
-    zone: 'Cali Exclusivo',
-    areaBuilt: '420 m²',
-    areaLot: '550 m²',
-    bedrooms: 4,
-    bathrooms: 5,
-    parkingSpaces: 3,
-    priceCOP: 'Obra Privada',
-    priceUSD: 'Proyecto Personalizado',
-    status: 'en_obra',
-    statusLabel: 'En Ejecución • 92% Avance',
-    progress: 92,
-    hasTour360: true,
-    featured: true,
-    heroImage: '/images/projects/edinson_jejen_terraza.jpg',
-    thumbnail: '/images/projects/edinson_jejen_terraza.jpg',
-    minimapImage: 'https://nsiglkllgsgilwmdxkuu.supabase.co/storage/v1/object/public/tour-images/projects/project_1781963945215/minimap-PLANO.jpg',
-    initialRoomId: 'room_1',
-    tourType: '360_spheres',
-    highlights: [
-      'Recorrido 360° en 5 ambientes con navegación interactiva',
-      'Baño turco arquitectónico con revestimiento en piedra natural',
-      'Sala social a triple altura con ventanales motorizados',
-      'Gimnasio privado y terraza con jacuzzi en nivel superior'
-    ],
-    description: 'Ejemplo insignia de precisión constructiva MASSA. Cada detalle de iluminación, mármol y carpintería metálica fue diseñado de manera artesanal y digital.',
-    galleryImages: [],
-    renders: [],
-    rooms: {
-      room_1: {
-        id: 'room_1',
-        name: 'BAÑO V3',
-        description: 'Punto de partida',
-        imageUrl: 'https://nsiglkllgsgilwmdxkuu.supabase.co/storage/v1/object/public/tour-images/projects/project_1781963945215/room_1-Bano_V3.png',
-        minimapPosition: { x: 72, y: 59 },
-        hotspots: [
-          {
-            id: 'h_dwdkjzz',
-            position: [-238.95, 58.88, -434.3],
-            targetRoom: '____832',
-            label: '3ER PISO SALA'
-          }
-        ]
-      },
-      ____832: {
-        id: '____832',
-        name: '3ER PISO 360',
-        description: 'Nivel social superior con ventanales',
-        imageUrl: 'https://nsiglkllgsgilwmdxkuu.supabase.co/storage/v1/object/public/tour-images/projects/project_1781963945215/____832-3ER_PISO_360.png',
-        minimapPosition: { x: 70, y: 23 },
-        hotspots: [
-          {
-            id: 'h_a1unmq3',
-            position: [115.2, 1.37, -486.0],
-            targetRoom: 'room_1',
-            label: 'BAÑO V3'
-          }
-        ]
-      },
-      ____242: {
-        id: '____242',
-        name: 'BAÑO TURCO',
-        description: 'Spa térmico revestido en piedra',
-        imageUrl: 'https://nsiglkllgsgilwmdxkuu.supabase.co/storage/v1/object/public/tour-images/projects/project_1781963945215/____242-Bano_turco_360_2.png',
-        minimapPosition: { x: 8, y: 47 },
-        hotspots: []
-      },
-      ____98: {
-        id: '____98',
-        name: 'BAÑO TURCO 2',
-        description: 'Zona de ducha y vapor',
-        imageUrl: 'https://nsiglkllgsgilwmdxkuu.supabase.co/storage/v1/object/public/tour-images/projects/project_1781963945215/____98-Bano_turco_360_2.png',
-        minimapPosition: { x: 53, y: 53 },
-        hotspots: []
-      },
-      ____793: {
-        id: '____793',
-        name: 'Tercer Piso WC',
-        description: 'Servicios sanitarios de lujo',
-        imageUrl: 'https://nsiglkllgsgilwmdxkuu.supabase.co/storage/v1/object/public/tour-images/projects/project_1781963945215/____793-Tercer_piso_WC_360.png',
-        minimapPosition: { x: 75, y: 45 },
-        hotspots: []
-      }
-    }
-  },
-
   'project_1782912175010': {
     id: 'project_1782912175010',
     name: 'SEDE MARQUIMODA',
@@ -495,8 +403,8 @@ export const projectsData: Record<string, Project> = {
     progress: 25,
     hasTour360: true,
     featured: true,
-    heroImage: '/HACIENDA F22/FACHADA.png',
-    thumbnail: '/HACIENDA F22/FACHADA.png',
+    heroImage: '/HACIENDA F22/FACHADA 3.png',
+    thumbnail: '/HACIENDA F22/FACHADA 3.png',
     minimapImage: '/HACIENDA F22/360/PLANOS/P1-1.png',
     floorPlans: {
       'Piso 1': '/HACIENDA F22/360/PLANOS/P1-1.png',
@@ -508,7 +416,8 @@ export const projectsData: Record<string, Project> = {
     highlights: F22_HIGHLIGHTS,
     description: F22_SUMMARY,
     galleryImages: [
-      '/HACIENDA F22/FACHADA.png',
+      '/HACIENDA F22/FACHADA 3.png',
+      '/HACIENDA F22/FACHADA 2.png',
       '/HACIENDA F22/FACHADA DRON.png',
       '/HACIENDA F22/FACHADA NOCHE.png',
       '/HACIENDA F22/SALA.jpg',
@@ -1092,7 +1001,6 @@ export const projectsData: Record<string, Project> = {
 export const CANONICAL_PROJECT_ORDER = [
   'project_hacienda_f22',
   'project_ibiza_a14',
-  'project_1781963945215',
   'project_1782912175010',
 ];
 
@@ -1103,7 +1011,6 @@ export function resolveCanonicalProjectId(id?: string): string {
   if (!id) return 'project_hacienda_f22';
   if (id === 'hacienda-f22' || id === 'project_hacienda_f22') return 'project_hacienda_f22';
   if (id === 'ibiza-a14' || id === 'project_ibiza_a14') return 'project_ibiza_a14';
-  if (id === 'edinson-jejen' || id === 'project_1781963945215') return 'project_1781963945215';
   if (id === 'marquimoda' || id === 'project_1782912175010') return 'project_1782912175010';
   return id;
 }
@@ -1269,10 +1176,10 @@ export function normalizeProject(raw: any): Project {
     priceUSD: raw.priceUSD || '~$450.000 USD',
     hasTour360: raw.hasTour360 ?? (Object.keys(rooms).length > 0),
     featured: raw.featured ?? false,
-    heroImage: raw.heroImage || raw.thumbnail || (id === 'project_1781963945215' ? '/images/projects/edinson_jejen_terraza.jpg' : id === 'project_1782912175010' ? '/images/projects/marquimoda_isometria.webp' : ''),
+    heroImage: raw.heroImage || raw.thumbnail || (id === 'project_1782912175010' ? '/images/projects/marquimoda_isometria.webp' : ''),
     galleryImages: Array.isArray(raw.galleryImages) && raw.galleryImages.length > 0 
       ? raw.galleryImages 
-      : (id === 'project_1781963945215' ? ['/images/projects/edinson_jejen_terraza.jpg'] : id === 'project_1782912175010' ? ['/images/projects/marquimoda_isometria.webp'] : []),
+      : (id === 'project_1782912175010' ? ['/images/projects/marquimoda_isometria.webp'] : []),
     highlights: Array.isArray(raw.highlights) ? raw.highlights : [
       'Diseño bioclimático pasivo de alto confort térmico',
       'Piscina infinity con borde desbordante',

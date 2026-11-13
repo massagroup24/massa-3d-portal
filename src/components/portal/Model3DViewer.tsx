@@ -11,6 +11,7 @@ import {
   Eye
 } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
+import { IbizaAnimatedModel3DViewer } from '../project/IbizaAnimatedModel3DViewer';
 
 interface Model3DViewerProps {
   projectName: string;
@@ -150,6 +151,39 @@ export function Model3DViewer({ projectName }: Model3DViewerProps) {
       controlsRef.current.reset();
     }
   };
+
+  const isIbiza =
+    projectName.toUpperCase().includes('IBIZA') ||
+    projectName.toUpperCase().includes('A14');
+
+  if (isIbiza) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A]" />
+              <span className="text-xs uppercase tracking-widest font-semibold text-[#9CD01A]">
+                Volumetría &amp; Vista Explosiva 3D • Draco 1.5.7
+              </span>
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight text-[#F5F5F5]">
+              Modelo 3D Interactivo • {projectName}
+            </h2>
+            <p className="text-sm text-[#A3A3A3]">
+              Giro sincronizado de 360° con elevación interactiva de <span className="text-[#F5F5F5] font-medium">Nivel 2</span> y <span className="text-[#F5F5F5] font-medium">Nivel 3 Cubierta</span>.
+            </p>
+          </div>
+        </div>
+
+        <IbizaAnimatedModel3DViewer
+          projectName={projectName}
+          accentColor="#9CD01A"
+          modelUrl="/models/modelo_animado_web_360.glb"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

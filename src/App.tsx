@@ -20,7 +20,7 @@ import { VipCommercialLanding } from './components/commercial/VipCommercialLandi
 import { ProjectSpecs } from './components/portal/ProjectSpecs';
 import { getProjectPortalData, getProjectPublicSpecs, ProjectPortalData } from './services/portalService';
 import { NavTab } from './components/ui/Dock';
-import { Project, normalizeProject, resolveCanonicalProjectId, CANONICAL_PROJECT_ORDER } from './data/tourData';
+import { Project, projectsData, normalizeProject, resolveCanonicalProjectId, CANONICAL_PROJECT_ORDER } from './data/tourData';
 import { getProjectsFromSupabase, saveProjectToSupabase } from './supabase';
 import { Lock } from 'lucide-react';
 import { ProjectsManagementPortal } from './components/ProjectsManagementPortal';
@@ -134,7 +134,7 @@ function MainPortal() {
 
   const handleStart360Tour = (customProjId?: string) => {
     const projId = customProjId || activeProjectId || Object.keys(projects)[0];
-    const proj = projects[projId];
+    const proj = projects[projId] || (projId ? projectsData[projId] : undefined);
     if (proj) {
       const firstRoomId = proj.rooms ? Object.keys(proj.rooms)[0] : null;
       const validRoomId = (proj.rooms && proj.rooms[proj.initialRoomId]) ? proj.initialRoomId : firstRoomId;
@@ -251,8 +251,8 @@ function MainPortal() {
   }
 
   // 3. Recorrido 360° en pantalla completa (Reutilizando motor Three.js existente)
-  const currentProject = (activeProjectId && (projects[activeProjectId]))
-    ? (projects[activeProjectId])
+  const currentProject = (activeProjectId && (projects[activeProjectId] || projectsData[activeProjectId]))
+    ? (projects[activeProjectId] || projectsData[activeProjectId])
     : (Object.values(projects)[0]);
   const firstAvailableRoomId = currentProject?.rooms ? Object.keys(currentProject.rooms)[0] : null;
   const currentRoom = currentProject?.rooms 
@@ -298,7 +298,7 @@ function MainPortal() {
     );
   }
 
-  const currentDisplayName = portalData?.name || currentProject?.name || (activeProjectId && (projects[activeProjectId]?.name)) || 'RESIDENCIA JEJÉN';
+  const currentDisplayName = portalData?.name || currentProject?.name || (activeProjectId && (projects[activeProjectId]?.name)) || 'IBIZA A14';
 
   // 5. Plataforma Comercial VIP para Invitados (Entrada Abierta de Alto Impacto por Defecto)
   if (userRole === 'guest' && guestView !== 'project') {
@@ -374,7 +374,7 @@ function MainPortal() {
         ) : (
           <ClientHome
             projectName={currentDisplayName}
-            clientName={portalData?.clientName || 'Edinson Jején'}
+            clientName={portalData?.clientName || 'Cliente MASSA'}
             phase={portalData?.currentPhase || 'FASE 3'}
             progressPercentage={portalData?.currentProgress ?? 68}
             architect={portalData?.architect}

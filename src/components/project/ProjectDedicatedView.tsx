@@ -13,7 +13,8 @@ import {
   ZoomIn,
   ZoomOut,
   Building2,
-  MessageSquare
+  MessageSquare,
+  Box
 } from 'lucide-react';
 import { getProjectIdentity, ProjectIdentity, HACIENDA_F22_RENDERS, HACIENDA_F22_ROOMS_360, ProjectRender } from '../../config/projectIdentityConfig';
 import { F22_LEVELS } from '../../data/haciendaF22Specs';
@@ -26,6 +27,7 @@ import { Project, projectsData, resolveCanonicalProjectId } from '../../data/tou
 import { getProjectsFromSupabase } from '../../supabase';
 import { SkiperArchitecturalCarousel } from './SkiperArchitecturalCarousel';
 import { SkiperParallaxGallery } from './SkiperParallaxGallery';
+import { IbizaAnimatedModel3DViewer } from './IbizaAnimatedModel3DViewer';
 import {
   getCanonicalProjectBySlugOrId,
   CanonicalProject
@@ -107,6 +109,7 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
   }, [id, remoteProject]);
 
   const isHaciendaF22 = canonicalProject.id === 'project_hacienda_f22';
+  const isIbizaA14 = canonicalProject.id === 'project_ibiza_a14';
 
   // Resolver identidad visual y tema
   const identity: ProjectIdentity = useMemo(() => getProjectIdentity(canonicalProject.id), [canonicalProject.id]);
@@ -115,6 +118,7 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
   useClaritySectionTracker(canonicalProject.slug, [
     'encabezado',
     'galeria',
+    'modelo-3d',
     'muro-parallax-renders',
     'planos-2d',
     'ficha-tecnica',
@@ -446,6 +450,19 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
             >
               Galería
             </button>
+            {isIbizaA14 && (
+              <button
+                type="button"
+                onClick={() => {
+                  trackClarityEvent('abrir_modelo_3d_ibiza_a14');
+                  document.getElementById('modelo-3d')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="apple-aqua-bubble-studio min-h-[38px] px-3.5 py-1.5 rounded-full font-bold text-[#D9FF66] flex items-center gap-1.5 cursor-pointer"
+              >
+                <Box className="w-3.5 h-3.5 text-[#9CD01A]" />
+                <span>Modelo 3D</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => document.getElementById('planos-2d')?.scrollIntoView({ behavior: 'smooth' })}
@@ -565,6 +582,43 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
             </div>
 
           </>
+        )}
+
+        {/* VISOR 3D INTERACTIVO ANIMADO (EXCLUSIVO PARA IBIZA A14) */}
+        {isIbizaA14 && (
+          <section
+            id="modelo-3d"
+            className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-16 border-t border-white/10 scroll-mt-24"
+          >
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-8">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/15 border border-[#9CD01A]/40 mb-2.5">
+                  <Box className="w-3.5 h-3.5 text-[#9CD01A]" />
+                  <span className="massa-metallic-text text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.22em] uppercase">
+                    GEMELO ARQUITECTÓNICO 3D • VISTA EXPLOSIVA INTERACTIVA
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight leading-none">
+                  MODELO 3D <span className="massa-metallic-text">INTERACTIVO</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-white/65 mt-2 max-w-2xl leading-relaxed">
+                  Explora en 360° la volumetría real de <strong>{canonicalProject.nombre}</strong>. Pausa la animación cuando los niveles 2 y cubierta estén elevados o usa la barra de progreso para inspeccionar la distribución interior a voluntad.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-white/60 shrink-0">
+                <span className="px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10">
+                  Arrastra para orbitar • Rueda para zoom
+                </span>
+              </div>
+            </div>
+
+            <IbizaAnimatedModel3DViewer
+              projectName={canonicalProject.nombre}
+              accentColor={primaryColor}
+              modelUrl="/models/modelo_animado_web_360.glb"
+            />
+          </section>
         )}
 
         <ProjectVisualFloorPlans

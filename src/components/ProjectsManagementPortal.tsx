@@ -28,8 +28,8 @@ interface ProjectsManagementPortalProps {
 // IDs de los proyectos actualmente creados en el portafolio comercial
 const ACTIVE_CURRENT_PROJECT_IDS = ['project_hacienda_f22', 'project_ibiza_a14'];
 
-// IDs de los recorridos 360° guardados históricos (Marquimoda y Edinson Jején)
-const SAVED_360_TOUR_IDS = ['project_1782912175010', 'project_1781963945215'];
+// IDs de los recorridos 360° guardados históricos (Marquimoda)
+const SAVED_360_TOUR_IDS = ['project_1782912175010'];
 
 export function ProjectsManagementPortal({
   projects,
@@ -48,12 +48,12 @@ export function ProjectsManagementPortal({
     .map((id) => projects[id] || projectsData[id])
     .filter((p): p is Project => Boolean(p));
 
-  // Resolver lista de recorridos 360° guardados (Marquimoda, Edinson Jején + proyectos actuales que ya tengan escenas 360°)
+  // Resolver lista de recorridos 360° guardados (Marquimoda + proyectos actuales que ya tengan escenas 360°)
   const savedToursList: Project[] = [
     ...SAVED_360_TOUR_IDS
       .map((id) => projects[id] || projectsData[id])
       .filter((p): p is Project => Boolean(p)),
-    ...activeCurrentProjects.filter((p) => Object.keys(p.rooms || {}).length > 0),
+    ...activeCurrentProjects.filter((p) => Object.values(p.rooms || {}).some((r) => Boolean(r.imageUrl))),
   ];
 
   const totalSavedScenes = savedToursList.reduce(
@@ -97,6 +97,8 @@ export function ProjectsManagementPortal({
       : 'linear-gradient(135deg, #729B0E 0%, #9CD01A 35%, #D4FF5E 52%, #8CBF14 76%, #5B7E08 100%)';
 
     const rooms = Object.values(project.rooms || {});
+    const activeSpheres = rooms.filter((r) => Boolean(r.imageUrl && r.imageUrl.trim()));
+    const isUnderConstruction = isIbiza || activeSpheres.length === 0;
     const roomCount = rooms.length;
     const totalHotspots = rooms.reduce((acc, r) => acc + (r.hotspots?.length || 0), 0);
     const previewImg = resolveProjectPreview(project);
@@ -109,10 +111,19 @@ export function ProjectsManagementPortal({
           isCustomBrand
             ? 'bg-[#09090D] border-[#DFC47B]/35 hover:border-[#DFC47B]/80 shadow-[0_25px_65px_rgba(0,0,0,0.9),0_0_40px_rgba(223,196,123,0.14)]'
             : isIbiza
-            ? 'bg-[#0b0d09] border-[#9CD01A]/30 hover:border-[#9CD01A]/80 shadow-[0_25px_65px_rgba(0,0,0,0.9),0_0_40px_rgba(156,208,26,0.18)]'
+            ? 'bg-[#0b0d09] border-red-500/45 hover:border-red-500/80 shadow-[0_25px_65px_rgba(0,0,0,0.9),0_0_40px_rgba(220,38,38,0.18)]'
             : 'bg-[#121318] border-white/10 hover:border-[#9CD01A]/60 shadow-2xl'
         }`}
       >
+        {/* LETRERO DIAGONAL EN ROJO: EN CONSTRUCCIÓN */}
+        {isUnderConstruction && (
+          <div className="pointer-events-none absolute top-7 -right-12 z-30 w-52 rotate-45 bg-gradient-to-r from-[#991B1B] via-[#EF4444] to-[#991B1B] py-1.5 text-center border-y border-white/35 shadow-[0_8px_25px_rgba(220,38,38,0.75)]">
+            <span className="block text-[10px] sm:text-[11px] font-black font-mono uppercase tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              EN CONSTRUCCIÓN
+            </span>
+          </div>
+        )}
+
         <div>
           {/* Imagen de Portada del Proyecto con Sello de Marca Propia */}
           <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
@@ -537,7 +548,7 @@ export function ProjectsManagementPortal({
             <p className="text-xs sm:text-sm text-white/60 mt-2 max-w-2xl leading-relaxed">
               {activeSection === 'create'
                 ? 'Selecciona cualquiera de los proyectos creados actualmente (Hacienda Club F22 de AMHO Construcciones o Residencia Ibiza A14) para subir sus esferas 360°, enlazar puntos de navegación (hotspots) y configurar su plano interactivo.'
-                : 'Apartado de recorridos 360° creados y guardados en tu biblioteca (incluyendo Sede Marquimoda y Residencia Edinson Jején). Puedes visualizarlos en pantalla completa, compartir su link directo o editar sus escenas.'}
+                : 'Apartado de recorridos 360° creados y guardados en tu biblioteca (incluyendo Sede Marquimoda y Hacienda Club F22). Puedes visualizarlos en pantalla completa, compartir su link directo o editar sus escenas.'}
             </p>
           </div>
 
@@ -586,7 +597,7 @@ export function ProjectsManagementPortal({
           </div>
         )}
 
-        {/* APARTADO 2: RECORRIDOS 360° GUARDADOS (MARQUIMODA, EDINSON JEJÉN, ETC.) */}
+        {/* APARTADO 2: RECORRIDOS 360° GUARDADOS (MARQUIMODA, HACIENDA F22, ETC.) */}
         {activeSection === 'saved' && (
           <div>
             <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-[#121318] border border-white/10 flex flex-wrap items-center justify-between gap-4">
@@ -599,7 +610,7 @@ export function ProjectsManagementPortal({
                     Biblioteca de Recorridos 360° Guardados
                   </h3>
                   <p className="text-xs text-white/55">
-                    Aquí se conservan guardados los recorridos 360° de <strong>Sede Marquimoda</strong> y <strong>Residencia Edinson Jején</strong> junto con los recorridos activos.
+                    Aquí se conservan guardados los recorridos 360° de <strong>Sede Marquimoda</strong> y <strong>Hacienda Club F22</strong> junto con los recorridos activos.
                   </p>
                 </div>
               </div>

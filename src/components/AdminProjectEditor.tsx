@@ -527,7 +527,7 @@ export function AdminProjectEditor({
                         type="text"
                         value={project.name}
                         onChange={(e) => updateField('name', e.target.value)}
-                        placeholder="Ej: RESIDENCIA JEJÉN"
+                        placeholder="Ej: IBIZA A14"
                         className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-white/30 text-sm font-bold focus:outline-none focus:border-[#9CD01A] transition"
                       />
                     </div>

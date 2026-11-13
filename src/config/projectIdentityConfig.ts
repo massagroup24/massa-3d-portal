@@ -1098,57 +1098,11 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
     rooms360: IBIZA_A14_ROOMS_360
   },
 
-  // PROYECTO 3: RESIDENCIA JEJÉN (Obra 03)
-  'project_1781963945215': {
-    id: 'project_1781963945215',
-    slug: 'edinson-jejen',
-    code: 'OBRA 03',
-    name: 'RESIDENCIA JEJÉN',
-    titlePrefix: 'RESIDENCIA',
-    titleHighlight: 'JEJÉN',
-    categoryLabel: 'RESIDENCIA URBANA DE AUTOR',
-    urbanization: 'CALI EXCLUSIVO',
-    lot: 'LOTE 07',
-    location: 'CALI / VALLE DEL CAUCA',
-    locationFull: 'CALI / VALLE DEL CAUCA • CALI EXCLUSIVO • OBRA DE AUTOR',
-    statusBadge: 'TOUR 360° EN VIVO',
-    statusLabel: 'En Ejecución • 92% Avance',
-    brandName: 'MASSA HOME',
-    tagline: 'Casa contemporánea de triple altura con spa turco, ventanales motorizados y terraza rooftop con jacuzzi panorámico.',
-    heroVideoUrl: '/VIDEO H4.mp4',
-    heroVideoPoster: '/images/projects/edinson_jejen_terraza.jpg',
-    theme: {
-      primaryColor: '#9CD01A',
-      primaryHover: '#ABDE24',
-      accentGlow: 'rgba(156, 208, 26, 0.3)',
-      bgColor: '#08090C',
-      surfaceColor: 'rgba(23, 23, 23, 0.8)',
-      borderColor: 'rgba(156, 208, 26, 0.3)',
-      badgeBg: '#9CD01A',
-      badgeText: '#000000',
-      fontFamilyTitle: "'Syne', 'Montserrat', sans-serif",
-      fontFamilyBody: "'Inter', sans-serif"
-    },
-    specs: {
-      areaBuilt: '420 m²',
-      lotArea: '550 m²',
-      lotMetricValue: '550 m²',
-      suitesLabel: '4 Suites',
-      wellnessLabel: 'Jacuzzi & Turco',
-      bedrooms: 4,
-      bathrooms: 5,
-      parkingSpaces: 3,
-      modality: 'Obra Privada',
-      levels: '3 Niveles'
-    },
-    renders: []
-  },
-
-  // PROYECTO 4: SEDE MARQUIMODA (Obra 04)
+  // PROYECTO 3: SEDE MARQUIMODA (Obra 03)
   'project_1782912175010': {
     id: 'project_1782912175010',
     slug: 'marquimoda',
-    code: 'OBRA 04',
+    code: 'OBRA 03',
     name: 'SEDE MARQUIMODA',
     titlePrefix: 'SEDE',
     titleHighlight: 'MARQUIMODA',
@@ -1207,9 +1161,6 @@ export function getProjectIdentity(idOrSlug?: string): ProjectIdentity {
   }
   if (normalized === 'f22' || normalized === 'hacienda-f22' || normalized === 'hacienda_f22' || normalized.includes('hacienda') || normalized.includes('f22')) {
     return PROJECT_IDENTITIES['project_hacienda_f22'];
-  }
-  if (normalized.includes('jejen') || normalized.includes('edinson')) {
-    return PROJECT_IDENTITIES['project_1781963945215'];
   }
   if (normalized.includes('marquimoda')) {
     return PROJECT_IDENTITIES['project_1782912175010'];

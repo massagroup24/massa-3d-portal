@@ -30,8 +30,8 @@ interface ClientHomeProps {
 
 export function ClientHome({
   onNavigateSection,
-  projectName = 'RESIDENCIA JEJÉN',
-  clientName = 'Edinson Jején',
+  projectName = 'IBIZA A14',
+  clientName = 'Cliente MASSA',
   phase = 'FASE 3',
   progressPercentage = 68,
   onOpen360Tour,
@@ -47,7 +47,7 @@ export function ClientHome({
   const isF22 = Boolean(projectName?.includes('F22') || projectName?.includes('HACIENDA') || projectName?.includes('Hacienda'));
   const primaryColor = isF22 ? '#DFC47B' : '#9CD01A';
   const heroImageSrc = isF22 
-    ? '/HACIENDA F22/FACHADA.png' 
+    ? '/HACIENDA F22/FACHADA 3.png' 
     : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop';
   return (
     <div className="w-full flex flex-col gap-6 sm:gap-8 pb-10">

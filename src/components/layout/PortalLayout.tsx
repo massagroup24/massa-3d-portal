@@ -22,7 +22,7 @@ export function PortalLayout({
   children,
   activeTab,
   onSelectTab,
-  projectName = 'RESIDENCIA JEJÉN',
+  projectName = 'IBIZA A14',
 
   userRole = 'client',
   onLogout,

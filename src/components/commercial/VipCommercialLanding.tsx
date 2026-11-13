@@ -12,10 +12,11 @@ import {
 } from 'lucide-react';
 import { CANONICAL_PROJECTS, type CanonicalProject, formatAreaMetric } from '../../data/canonicalProjects';
 import { CommercialLoginModal } from './CommercialLoginModal';
-import { Project } from '../../data/tourData';
+import { Project, projectsData } from '../../data/tourData';
 import { getProjectIdentity } from '../../config/projectIdentityConfig';
 import massaLogoInline from '../../assets/branding/massa-uso.png?inline';
-import { useClaritySectionTracker } from '../../utils/clarityAnalytics';
+import massaCubeInline from '../../assets/branding/massa-cube-transparent.png?inline';
+import { useClaritySectionTracker, trackClarityEvent } from '../../utils/clarityAnalytics';
 
 interface VipCommercialLandingProps {
   onSelectProjectForPortal: (projectId: string) => void;
@@ -26,7 +27,9 @@ interface VipCommercialLandingProps {
 
 export function VipCommercialLanding({
   onSelectProjectForPortal,
+  onLaunch360Tour,
   onLoginSuccess,
+  projects = {},
 }: VipCommercialLandingProps) {
   // Estados de Onboarding cinemático:
   // 1. Splash con logo MASSA animado
@@ -56,8 +59,20 @@ export function VipCommercialLanding({
   }, [filterTipo, filterEstado, filterAño]);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [activeInfoModal, setActiveInfoModal] = useState<'quienes-somos' | null>(null);
+  const [activeInfoModal, setActiveInfoModal] = useState<'quienes-somos' | 'recorridos-360' | null>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Proyectos en la biblioteca de Recorridos 360° (Hacienda F22, Sede Marquimoda e Ibiza A14 en construcción)
+  const hosted360Projects: Project[] = useMemo(() => {
+    const orderedIds = ['project_hacienda_f22', 'project_1782912175010', 'project_ibiza_a14'];
+    const baseList = orderedIds
+      .map((id) => projects[id] || projectsData[id])
+      .filter((p): p is Project => Boolean(p));
+    const extraList = Object.values(projects).filter(
+      (p) => !orderedIds.includes(p.id) && p.id !== 'project_1781963945215' && Object.keys(p.rooms || {}).length > 0
+    );
+    return [...baseList, ...extraList];
+  }, [projects]);
 
   // Rastreo automático de secciones vistas en el portal principal para Microsoft Clarity
   useClaritySectionTracker('portal-principal', [
@@ -72,6 +87,7 @@ export function VipCommercialLanding({
   const [activeProjectIndex, setActiveProjectIndex] = useState<number>(0);
 
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const [showHeroOutro, setShowHeroOutro] = useState<boolean>(false);
 
   // Asegurar reproducción automática fluida del video Hero de inicio
   useEffect(() => {
@@ -83,6 +99,19 @@ export function VipCommercialLanding({
       });
     }
   }, []);
+
+  // Ciclo del cierre de marca en alta definición al terminar el video de entrada (3.2s)
+  useEffect(() => {
+    if (!showHeroOutro) return;
+    const timer = window.setTimeout(() => {
+      setShowHeroOutro(false);
+      if (heroVideoRef.current) {
+        heroVideoRef.current.currentTime = 0;
+        void heroVideoRef.current.play().catch(() => {});
+      }
+    }, 3200);
+    return () => window.clearTimeout(timer);
+  }, [showHeroOutro]);
 
   // Detección de scroll para visibilidad de la barra inferior flotante
   const [isAtTop, setIsAtTop] = useState(true);
@@ -172,20 +201,86 @@ export function VipCommercialLanding({
         className="relative min-h-[100dvh] w-full flex flex-col justify-between overflow-hidden p-6 sm:p-10 lg:p-14 pb-24 sm:pb-28 lg:pb-32"
       >
         
-        {/* VIDEO DE FONDO NÍTIDO */}
+        {/* VIDEO DE FONDO NÍTIDO + CIERRE DE MARCA EN ALTA DEFINICIÓN */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <video
             ref={heroVideoRef}
             autoPlay
-            loop
             muted
             playsInline
             preload="auto"
+            onEnded={() => setShowHeroOutro(true)}
             className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.04] transform scale-[1.01]"
           >
             <source src="/VIDEO%20H4.mp4" type="video/mp4" />
             <source src="/VIDEO H4.mp4" type="video/mp4" />
           </video>
+
+          {/* Cierre animado en alta resolución con los elementos oficiales de marca MASSA */}
+          <AnimatePresence>
+            {showHeroOutro && (
+              <m.div
+                key="hero-massa-hd-outro"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#050608]/95 backdrop-blur-md px-6"
+              >
+                {/* Halo esmeralda/lima de fondo */}
+                <m.div
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1.15, opacity: 1 }}
+                  transition={{ duration: 1.8, ease: 'easeOut' }}
+                  className="pointer-events-none absolute w-[280px] sm:w-[440px] h-[280px] sm:h-[440px] rounded-full bg-[#9CD01A]/15 blur-[100px]"
+                />
+
+                <div className="relative flex flex-col items-center justify-center text-center max-w-md sm:max-w-xl">
+                  {/* Isotipo Cubo MASSA en alta resolución con entrada elástica */}
+                  <m.img
+                    src={massaCubeInline}
+                    alt="Isotipo MASSA"
+                    initial={{ opacity: 0, scale: 0.55, y: 18, rotate: -6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+                    transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+                    className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain mb-5 sm:mb-6 filter drop-shadow-[0_12px_35px_rgba(156,208,26,0.45)]"
+                  />
+
+                  {/* Logotipo Horizontal MASSA™ en alta definición (1080x270) */}
+                  <m.img
+                    src={massaLogoInline}
+                    alt="MASSA GROUP"
+                    initial={{ opacity: 0, y: 14, scale: 0.94 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                    className="w-48 sm:w-64 md:w-80 h-auto object-contain filter drop-shadow-[0_4px_24px_rgba(255,255,255,0.18)]"
+                  />
+
+                  {/* Línea láser arquitectónica */}
+                  <m.div
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    animate={{ scaleX: 1, opacity: 1 }}
+                    transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                    className="my-4 sm:my-5 h-[1.5px] w-28 sm:w-40 rounded-full"
+                    style={{
+                      backgroundImage: 'linear-gradient(90deg, transparent 0%, #9CD01A 25%, #E4FF8A 50%, #9CD01A 75%, transparent 100%)',
+                    }}
+                  />
+
+                  {/* Sello descriptivo */}
+                  <m.span
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.6, ease: 'easeOut' }}
+                    className="text-[9px] sm:text-[11px] font-mono font-bold uppercase tracking-[0.28em] sm:tracking-[0.34em] massa-metallic-text"
+                  >
+                    Arquitectura • Ingeniería • Construcción
+                  </m.span>
+                </div>
+              </m.div>
+            )}
+          </AnimatePresence>
+
           {/* Overlay suave y dinámico para garantizar máxima legibilidad */}
           <div className="absolute inset-0 transition-opacity duration-700 pointer-events-none bg-gradient-to-t from-[#08090D] via-black/25 to-black/40" />
         </div>
@@ -221,22 +316,25 @@ export function VipCommercialLanding({
               <button
                 type="button"
                 onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-                className="px-4 py-2 rounded-2xl bg-[#222328]/90 backdrop-blur-xl border border-white/15 text-xs font-bold text-white flex items-center gap-2 shadow-xl active:scale-95 cursor-pointer"
+                className="apple-aqua-bubble px-4 py-2 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer"
               >
                 <span>Menú</span>
                 <span className={`transform transition-transform text-xs ${isMobileNavOpen ? 'rotate-180' : ''}`}>▼</span>
               </button>
               <button
                 type="button"
-                onClick={() => setIsLoginModalOpen(true)}
-                className="p-2.5 rounded-2xl bg-[#16161A]/90 border border-white/15 text-[#9CD01A] cursor-pointer"
-                title="Ingreso Recorridos 360°"
+                onClick={() => {
+                  trackClarityEvent('hero_nav_recorridos_360_hub');
+                  setActiveInfoModal('recorridos-360');
+                }}
+                className="apple-aqua-bubble-studio p-2.5 rounded-full text-[#9CD01A] cursor-pointer"
+                title="Proyectos Recorridos 360°"
               >
                 <Compass className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Columna Vertical de Cápsulas */}
+            {/* Columna Vertical de Cápsulas (Apple Liquid Glass / Aqua Bubble) */}
             <nav className={`
               ${isMobileNavOpen ? 'flex' : 'hidden'} md:flex
               flex-col items-end gap-2 sm:gap-2.5 select-none
@@ -245,18 +343,20 @@ export function VipCommercialLanding({
               <a
                 href="#hero"
                 onClick={() => setIsMobileNavOpen(false)}
-                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl bg-[#52535a]/80 hover:bg-[#5f6068]/95 backdrop-blur-xl border border-white/10 hover:border-white/25 text-[15px] sm:text-base font-medium text-white transition-all duration-200 shadow-lg text-left block active:scale-98"
+                className="group apple-aqua-bubble w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-[22px] text-[15px] sm:text-base font-medium text-white flex items-center justify-between"
               >
-                Home
+                <span>Home</span>
+                <span className="text-xs text-white/35 group-hover:text-[#9CD01A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200">↗</span>
               </a>
 
               {/* 2. Proyectos */}
               <a
                 href="#proyectos"
                 onClick={() => setIsMobileNavOpen(false)}
-                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl bg-[#52535a]/80 hover:bg-[#5f6068]/95 backdrop-blur-xl border border-white/10 hover:border-white/25 text-[15px] sm:text-base font-medium text-white transition-all duration-200 shadow-lg text-left block active:scale-98"
+                className="group apple-aqua-bubble w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-[22px] text-[15px] sm:text-base font-medium text-white flex items-center justify-between"
               >
-                Proyectos
+                <span>Proyectos</span>
+                <span className="text-xs text-white/35 group-hover:text-[#9CD01A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200">↗</span>
               </a>
 
               {/* 3. Nosotros */}
@@ -266,35 +366,40 @@ export function VipCommercialLanding({
                   setActiveInfoModal('quienes-somos');
                   setIsMobileNavOpen(false);
                 }}
-                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl bg-[#52535a]/80 hover:bg-[#5f6068]/95 backdrop-blur-xl border border-white/10 hover:border-white/25 text-[15px] sm:text-base font-medium text-white transition-all duration-200 shadow-lg text-left cursor-pointer active:scale-98"
+                className="group apple-aqua-bubble w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-[22px] text-[15px] sm:text-base font-medium text-white flex items-center justify-between cursor-pointer"
               >
-                Nosotros
+                <span>Nosotros</span>
+                <span className="text-xs text-white/35 group-hover:text-[#9CD01A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200">↗</span>
               </button>
 
               {/* 4. Contacto */}
               <a
                 href="#contacto"
                 onClick={() => setIsMobileNavOpen(false)}
-                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl bg-[#52535a]/80 hover:bg-[#5f6068]/95 backdrop-blur-xl border border-white/10 hover:border-white/25 text-[15px] sm:text-base font-medium text-white transition-all duration-200 shadow-lg text-left block active:scale-98"
+                className="group apple-aqua-bubble w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 sm:py-3.5 rounded-[22px] text-[15px] sm:text-base font-medium text-white flex items-center justify-between"
               >
-                Contacto
+                <span>Contacto</span>
+                <span className="text-xs text-white/35 group-hover:text-[#9CD01A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200">↗</span>
               </a>
 
-              {/* Ingreso al Creador y Gestor de Recorridos 360° */}
+              {/* 5. Hub / Galería de Proyectos 360° Realizados */}
               <button
                 type="button"
                 onClick={() => {
-                  setIsLoginModalOpen(true);
+                  trackClarityEvent('hero_nav_recorridos_360_hub');
+                  setActiveInfoModal('recorridos-360');
                   setIsMobileNavOpen(false);
                 }}
-                className="w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 rounded-2xl bg-[#2e2f35]/90 hover:bg-[#3d3e46]/95 backdrop-blur-xl border border-white/10 hover:border-[#9CD01A]/50 text-xs sm:text-sm font-semibold text-white/80 hover:text-white transition-all duration-200 shadow-lg flex items-center justify-between cursor-pointer active:scale-98 mt-1"
-                title="Ingreso Recorridos 360°"
+                className="apple-aqua-bubble-studio w-52 sm:w-60 md:w-64 px-5 sm:px-6 py-3 rounded-[22px] text-xs sm:text-sm font-semibold text-white/95 hover:text-white flex items-center justify-between cursor-pointer mt-1"
               >
                 <div className="flex items-center gap-2">
-                  <Compass className="w-3.5 h-3.5 text-[#9CD01A]" />
+                  <Compass className="w-3.5 h-3.5 text-[#9CD01A] drop-shadow-[0_0_6px_rgba(156,208,26,0.65)]" />
                   <span>Recorridos 360°</span>
                 </div>
-                <span className="text-[10px] font-mono text-[#9CD01A]/80 tracking-wider">STUDIO</span>
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-[#9CD01A] tracking-wider drop-shadow-[0_0_6px_rgba(156,208,26,0.45)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#9CD01A] animate-pulse" />
+                  {hosted360Projects.length} OBRAS
+                </span>
               </button>
             </nav>
           </div>
@@ -316,11 +421,11 @@ export function VipCommercialLanding({
           >
             <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-[0.88] uppercase select-none filter drop-shadow-[0_15px_45px_rgba(0,0,0,0.95)]">
               MASSA<br />
-              <span className="text-[#9CD01A]">HOME</span>
+              <span className="massa-metallic-text">HOME</span>
             </h1>
           </m.div>
 
-          {/* Bloque de Valor Abajo Derecha */}
+          {/* Bloque de Valor Abajo Derecha + Quick-Launch Pill Ibiza A14 */}
           <m.div
             initial={false}
             animate={{
@@ -333,18 +438,39 @@ export function VipCommercialLanding({
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight filter drop-shadow-[0_8px_25px_rgba(0,0,0,0.9)]">
               Portafolio Proyectos <br />
-              <span className="text-[#9CD01A]">de Alto Valor</span>
+              <span className="massa-metallic-text">de Alto Valor</span>
             </h2>
 
-            <a
-              href="#proyectos"
-              className="group flex items-start md:items-center md:justify-end gap-2.5 mt-3 text-xs sm:text-sm text-white/80 hover:text-white transition leading-relaxed font-medium"
-            >
-              <span className="text-[#9CD01A] font-black text-lg group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform">↗</span>
-              <p className="text-left md:text-right">
-                Diseñamos y construimos residencias de autor y proyectos referentes en Cúcuta y Colombia.
-              </p>
-            </a>
+            <p className="mt-2.5 text-xs sm:text-sm text-white/80 leading-relaxed font-medium text-left md:text-right">
+              Diseñamos y construimos residencias de autor y proyectos referentes en Cúcuta y Colombia.
+            </p>
+
+            {/* Píldoras de Acción Rápida (Lanzamiento Ibiza A14 + Ver Portafolio) */}
+            <div className="mt-4 flex flex-wrap items-center md:justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  trackClarityEvent('hero_cta_lanzamiento_ibiza_a14');
+                  onSelectProjectForPortal('project_ibiza_a14');
+                }}
+                className="apple-aqua-bubble-studio px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-[13px] font-bold text-white flex items-center gap-2 cursor-pointer group"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#9CD01A] animate-pulse shrink-0" />
+                <span>
+                  Lanzamiento: <strong className="massa-metallic-text font-black">IBIZA A14</strong>
+                </span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#9CD01A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </button>
+
+              <a
+                href="#proyectos"
+                onClick={() => trackClarityEvent('hero_cta_ver_portafolio')}
+                className="apple-aqua-bubble px-4 py-2.5 rounded-full text-xs sm:text-[13px] font-semibold text-white/90 hover:text-white flex items-center gap-1.5"
+              >
+                <span>Ver Portafolio</span>
+                <ChevronDown className="w-3.5 h-3.5 text-[#9CD01A]" />
+              </a>
+            </div>
 
           </m.div>
 
@@ -566,20 +692,22 @@ export function VipCommercialLanding({
                       : 'lg:flex-[1] flex-none min-h-[90px] lg:min-h-0 border-[#9CD01A]/20 hover:border-[#9CD01A]/50'
                 }`}
               >
-                {/* Visual de Fondo: Render de Fachada */}
+                {/* Visual de Fondo: Render de Fachada en Alta Definición */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#101218] via-[#0b0c10] to-[#06070a] overflow-hidden">
                   <img
                     src={encodeURI(facadeRender)}
                     alt={project.nombre}
-                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out ${
+                    decoding="async"
+                    className={`absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 ease-out ${
                       isActive
-                        ? 'scale-105 filter brightness-[0.78] contrast-[1.08]'
+                        ? 'scale-100 filter brightness-[0.92] contrast-[1.06] saturate-[1.04]'
                         : 'filter brightness-[0.38] contrast-[0.95] grayscale-[15%]'
                     }`}
                     loading="eager"
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent pointer-events-none" />
 
                 {/* CONTENIDO CUANDO EL PROYECTO NO ESTÁ ACTIVO */}
                 {!isActive && (
@@ -735,19 +863,18 @@ export function VipCommercialLanding({
                         )}
                       </div>
 
-                      {/* Botón Principal perfectamente centrado y contenido en móvil */}
+                      {/* Botón Principal perfectamente centrado y contenido en móvil con efecto Burbuja Aqua */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelectProjectForPortal(project.id);
                         }}
-                        className={`w-full sm:w-auto max-w-full justify-center px-4 sm:px-8 py-3.5 sm:py-4 rounded-full font-black text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-widest transition-all duration-300 flex items-center gap-2 cursor-pointer sm:hover:scale-105 active:scale-95 ${
+                        className={`w-full sm:w-auto max-w-full justify-center px-5 sm:px-8 py-3.5 sm:py-4 rounded-full font-black text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-widest flex items-center gap-2 cursor-pointer text-[#060804] ${
                           isCustomBrand
-                            ? 'text-[#060608] border border-[#F7E8A8]/55 shadow-[0_10px_30px_rgba(223,196,123,0.4)]'
-                            : 'bg-[#9CD01A] hover:bg-white text-black shadow-2xl'
+                            ? 'apple-aqua-bubble-gold'
+                            : 'apple-aqua-bubble-lime'
                         }`}
-                        style={isCustomBrand ? { backgroundImage: metallicGradient } : undefined}
                       >
                         <span className="truncate">
                           {project.hasTour360 ? (
@@ -851,17 +978,13 @@ export function VipCommercialLanding({
                   Habla directamente con nuestro equipo de arquitectura e ingeniería para evaluar tu lote, cotizar un proyecto desde cero o solicitar el dossier técnico de nuestras obras en desarrollo.
                 </p>
 
-                {/* Acciones Principales: WhatsApp + Llamada */}
+                {/* Acciones Principales: WhatsApp + Llamada con Efecto Burbuja Aqua */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
                   <a
                     href="https://wa.me/573133051060?text=Hola%20Massa%20Group,%20estoy%20interesado%20en%20recibir%20asesor%C3%ADa%20sobre%20sus%20proyectos%20arquitect%C3%B3nicos."
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                      backgroundImage: 'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)',
-                      boxShadow: '0 12px 32px rgba(156, 208, 26, 0.32)',
-                    }}
-                    className="min-h-[50px] px-4 sm:px-5 py-3.5 rounded-2xl text-[#060804] font-black text-xs uppercase tracking-wider flex items-center justify-between gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="apple-aqua-bubble-lime min-h-[52px] px-5 sm:px-6 py-3.5 rounded-full text-[#060804] font-black text-xs uppercase tracking-wider flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.585 1.77.893 2.791.894h.005c3.182 0 5.768-2.587 5.769-5.766.001-1.543-.599-2.994-1.69-4.086-1.09-1.091-2.541-1.694-4.085-1.694zm7.391 1.621c1.558 1.558 2.416 3.63 2.416 5.834 0 4.549-3.702 8.25-8.254 8.25-.001 0-.001 0 0 0-1.408 0-2.79-.364-4.004-1.054l-5.58 1.462 1.488-5.438c-.764-1.282-1.168-2.748-1.168-4.22 0-4.55 3.702-8.251 8.255-8.251 2.204 0 4.276.858 5.834 2.417zm-4.09 5.86c-.198-.099-1.171-.577-1.353-.643-.182-.066-.314-.099-.446.099-.133.197-.513.643-.629.775-.116.132-.232.148-.43.05-.198-.099-.836-.308-1.592-.982-.589-.526-.987-1.176-1.103-1.374-.116-.198-.012-.305.087-.404.089-.089.198-.232.297-.348.099-.116.132-.198.198-.33.066-.132.033-.248-.017-.348-.05-.099-.446-1.072-.611-1.469-.161-.387-.325-.334-.446-.34-.116-.006-.248-.007-.38-.007-.132 0-.348.05-.53.248-.182.198-.694.677-.694 1.653 0 .975.71 1.916.81 2.048.099.132 1.398 2.134 3.387 2.991.473.204.842.326 1.13.418.475.151.907.129 1.248.078.38-.057 1.171-.479 1.336-.942.166-.462.166-.859.116-.942-.049-.082-.181-.132-.38-.231z"/></svg>
@@ -872,7 +995,7 @@ export function VipCommercialLanding({
 
                   <a
                     href="tel:+573133051060"
-                    className="min-h-[50px] px-4 sm:px-5 py-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 hover:border-[#9CD01A]/50 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-between gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="apple-aqua-bubble min-h-[52px] px-5 sm:px-6 py-3.5 rounded-full text-white font-bold text-xs uppercase tracking-wider flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Phone className="w-4 h-4 text-[#9CD01A] shrink-0" />
@@ -889,7 +1012,7 @@ export function VipCommercialLanding({
                 className="relative z-10 mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group/mail"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/15 flex items-center justify-center text-[#9CD01A] group-hover/mail:border-[#9CD01A]/50 transition-colors shrink-0">
+                  <div className="apple-aqua-bubble w-10 h-10 rounded-full flex items-center justify-center text-[#9CD01A] shrink-0">
                     <Mail className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
@@ -901,9 +1024,9 @@ export function VipCommercialLanding({
                     </span>
                   </div>
                 </div>
-                <span className="inline-flex items-center justify-center sm:justify-end gap-1.5 py-2.5 px-3.5 sm:p-0 rounded-xl bg-white/[0.04] sm:bg-transparent border border-white/10 sm:border-0 text-xs font-mono font-bold uppercase tracking-wider text-[#9CD01A] shrink-0">
+                <span className="apple-aqua-bubble-studio inline-flex items-center justify-center gap-1.5 py-2 px-4 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider text-[#9CD01A] shrink-0">
                   <span>Redactar correo</span>
-                  <ArrowUpRight className="w-4 h-4 group-hover/mail:translate-x-0.5 group-hover/mail:-translate-y-0.5 transition-transform" />
+                  <ArrowUpRight className="w-3.5 h-3.5 group-hover/mail:translate-x-0.5 group-hover/mail:-translate-y-0.5 transition-transform" />
                 </span>
               </a>
             </div>
@@ -936,7 +1059,7 @@ export function VipCommercialLanding({
                       </h3>
                     </div>
                   </div>
-                  <div className="w-9 h-9 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-white/70 group-hover:text-[#E1306C] group-hover:border-[#E1306C]/40 transition-colors shrink-0">
+                  <div className="apple-aqua-bubble w-9 h-9 rounded-full flex items-center justify-center text-white/80 group-hover:text-[#E1306C] transition-colors shrink-0">
                     <ArrowUpRight className="w-4 h-4" />
                   </div>
                 </div>
@@ -945,7 +1068,7 @@ export function VipCommercialLanding({
                   <span className="text-xs text-white/60">
                     Portafolio de renders 4K, diseño interior y dirección de obra.
                   </span>
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#E1306C] shrink-0">
+                  <span className="apple-aqua-bubble px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider text-[#E1306C] shrink-0">
                     Explorar ↗
                   </span>
                 </div>
@@ -977,7 +1100,7 @@ export function VipCommercialLanding({
                       </h3>
                     </div>
                   </div>
-                  <div className="w-9 h-9 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-white/70 group-hover:text-[#00F2FE] group-hover:border-[#00F2FE]/40 transition-colors shrink-0">
+                  <div className="apple-aqua-bubble w-9 h-9 rounded-full flex items-center justify-center text-white/80 group-hover:text-[#00F2FE] transition-colors shrink-0">
                     <ArrowUpRight className="w-4 h-4" />
                   </div>
                 </div>
@@ -986,7 +1109,7 @@ export function VipCommercialLanding({
                   <span className="text-xs text-white/60">
                     Reels arquitectónicos, recorridos en obra y procesos constructivos.
                   </span>
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#00F2FE] shrink-0">
+                  <span className="apple-aqua-bubble px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider text-[#00F2FE] shrink-0">
                     Ver videos ↗
                   </span>
                 </div>
@@ -1013,9 +1136,8 @@ export function VipCommercialLanding({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Ver Oficina Principal en Google Maps"
-                  className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#9CD01A]/15 border border-[#9CD01A]/40 flex items-center justify-center text-[#9CD01A] shrink-0 shadow-[0_0_25px_rgba(156,208,26,0.2)] hover:scale-105 transition-transform"
+                  className="apple-aqua-bubble-studio relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-[#9CD01A] shrink-0"
                 >
-                  <span className="absolute inset-0 rounded-2xl border border-[#9CD01A]/40 animate-ping opacity-30" />
                   <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
                 </a>
                 <div className="min-w-0">
@@ -1041,11 +1163,7 @@ export function VipCommercialLanding({
                   href="https://maps.app.goo.gl/TuKJeBdYcAjLwsYr7"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    backgroundImage: 'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)',
-                    boxShadow: '0 10px 28px rgba(156, 208, 26, 0.3)',
-                  }}
-                  className="min-h-[48px] px-6 py-3.5 rounded-xl text-[#060804] font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                  className="apple-aqua-bubble-lime min-h-[50px] px-6 sm:px-7 py-3.5 rounded-full text-[#060804] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2.5 shrink-0"
                 >
                   <MapPin className="w-4 h-4 shrink-0" />
                   <span>Ver Ubicación en Google Maps</span>
@@ -1089,11 +1207,18 @@ export function VipCommercialLanding({
             <a href="#contacto" className="hover:text-[#9CD01A] transition">Contacto</a>
             <button
               type="button"
-              onClick={() => setIsLoginModalOpen(true)}
-              className="text-white/40 hover:text-[#9CD01A] transition flex items-center gap-1.5 cursor-pointer"
+              onClick={() => setActiveInfoModal('recorridos-360')}
+              className="text-white/60 hover:text-[#9CD01A] transition flex items-center gap-1.5 cursor-pointer"
             >
-              <Compass className="w-3.5 h-3.5" />
+              <Compass className="w-3.5 h-3.5 text-[#9CD01A]" />
               <span>Recorridos 360°</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsLoginModalOpen(true)}
+              className="text-white/35 hover:text-[#9CD01A] transition text-[11px] font-mono cursor-pointer"
+            >
+              Studio Admin
             </button>
           </div>
 
@@ -1159,7 +1284,7 @@ export function VipCommercialLanding({
                 <button
                   type="button"
                   onClick={() => setActiveInfoModal(null)}
-                  className="min-h-[38px] px-3.5 py-1.5 rounded-full bg-white/[0.07] hover:bg-[#9CD01A] border border-white/15 hover:border-[#9CD01A] text-white/85 hover:text-black text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-lg shrink-0"
+                  className="apple-aqua-bubble min-h-[38px] px-4 py-1.5 rounded-full text-white text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
                   title="Cerrar ventana"
                 >
                   <span>Cerrar</span>
@@ -1323,17 +1448,12 @@ export function VipCommercialLanding({
                     </div>
                   </div>
 
-                  {/* Acciones Directas */}
+                  {/* Acciones Directas con Efecto Burbuja Aqua */}
                   <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-3 border-t border-white/[0.08]">
                     <a
                       href="#proyectos"
                       onClick={() => setActiveInfoModal(null)}
-                      style={{
-                        backgroundImage:
-                          'linear-gradient(135deg, #4E6E08 0%, #8EC115 16%, #E4FF8A 34%, #9CD01A 50%, #5F870A 66%, #DAFF6E 82%, #7CB010 100%)',
-                        boxShadow: '0 10px 28px rgba(156, 208, 26, 0.28)',
-                      }}
-                      className="min-h-[48px] flex-1 py-3.5 px-5 rounded-xl text-[#060804] font-black text-xs text-center uppercase tracking-wider transition-transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                      className="apple-aqua-bubble-lime min-h-[48px] flex-1 py-3.5 px-5 rounded-full text-[#060804] font-black text-xs text-center uppercase tracking-wider flex items-center justify-center gap-2"
                     >
                       <span>Ver Catálogo de Obras</span>
                       <ArrowUpRight className="w-4 h-4 shrink-0" />
@@ -1341,11 +1461,331 @@ export function VipCommercialLanding({
                     <a
                       href="#contacto"
                       onClick={() => setActiveInfoModal(null)}
-                      className="min-h-[48px] py-3.5 px-5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 hover:border-[#9CD01A]/45 text-white font-bold text-xs text-center uppercase tracking-wider transition-all flex items-center justify-center"
+                      className="apple-aqua-bubble min-h-[48px] py-3.5 px-5 rounded-full text-white font-bold text-xs text-center uppercase tracking-wider flex items-center justify-center"
                     >
                       Contacto Directo
                     </a>
                   </div>
+                </div>
+              </div>
+            </m.div>
+          </m.div>
+        )}
+
+        {/* MODAL HUB / GALERÍA DE PROYECTOS 360° REALIZADOS */}
+        {activeInfoModal === 'recorridos-360' && (
+          <m.div
+            key="modal-recorridos-360-hub"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => setActiveInfoModal(null)}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 lg:p-10 bg-black/85 backdrop-blur-xl overflow-y-auto overscroll-contain"
+          >
+            <m.div
+              initial={{ opacity: 0, scale: 0.96, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 24 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
+              }}
+              className="relative w-full max-w-6xl max-h-[94dvh] sm:max-h-[92dvh] overflow-y-auto overscroll-contain rounded-t-[28px] sm:rounded-[34px] bg-[#090B0F] border-t sm:border border-[#9CD01A]/35 shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_60px_rgba(156,208,26,0.12)] text-left sm:my-auto"
+            >
+              {/* Retícula arquitectónica sutil y luz ambiental */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-[0.03]"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(#9CD01A 1px, transparent 1px), linear-gradient(90deg, #9CD01A 1px, transparent 1px)',
+                  backgroundSize: '48px 48px',
+                }}
+              />
+              <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#9CD01A]/10 blur-[130px]" />
+              <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-[#DFC47B]/[0.08] blur-[130px]" />
+
+              {/* Barra Superior Sticky */}
+              <div className="sticky top-0 z-30 flex items-center justify-between gap-2.5 px-4 py-3.5 sm:px-8 sm:py-5 bg-[#090B0F]/92 backdrop-blur-xl border-b border-white/[0.08] flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#9CD01A]/10 border border-[#9CD01A]/35 min-w-0">
+                  <Compass className="w-3.5 h-3.5 text-[#9CD01A] shrink-0" />
+                  <span className="massa-metallic-text text-[9px] sm:text-[10px] font-mono font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase truncate">
+                    BIBLIOTECA DE PROYECTOS 360° • GEMELOS DIGITALES
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveInfoModal(null);
+                      setIsLoginModalOpen(true);
+                    }}
+                    className="apple-aqua-bubble-studio min-h-[38px] px-4 py-1.5 rounded-full text-[#D9FF66] text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                    title="Ingresar al Creador y Editor de Recorridos 360°"
+                  >
+                    <Compass className="w-3.5 h-3.5 text-[#9CD01A]" />
+                    <span>Crear / Editar 360° (Studio)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveInfoModal(null)}
+                    className="apple-aqua-bubble min-h-[38px] px-4 py-1.5 rounded-full text-white text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                    title="Cerrar ventana"
+                  >
+                    <span>Cerrar</span>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative z-10 p-4 sm:p-8 lg:p-10">
+                {/* Encabezado de la Biblioteca 360° */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6 sm:mb-8 pb-5 border-b border-white/[0.08]">
+                  <div>
+                    <h3 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[0.95] uppercase">
+                      Proyectos <span className="massa-metallic-text">Recorridos 360°</span>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-white/70 mt-2 max-w-2xl leading-relaxed">
+                      Explora los recorridos virtuales inmersivos realizados hasta el momento. Selecciona cualquier obra para ingresar a sus esferas panorámicas 360° e interactuar con sus espacios.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono shrink-0">
+                    <span className="px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white/85">
+                      Obras 360° alojadas: <strong className="massa-metallic-text">{hosted360Projects.length}</strong>
+                    </span>
+                    <span className="px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-white/85">
+                      Escenas interactivas:{' '}
+                      <strong className="massa-metallic-text">
+                        {hosted360Projects.reduce((acc, p) => acc + Object.keys(p.rooms || {}).length, 0)}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Cuadrícula de Proyectos 360° Realizados y En Construcción */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                  {hosted360Projects.map((proj, index) => {
+                    const identity = getProjectIdentity(proj.id);
+                    const isHacienda = proj.id === 'project_hacienda_f22';
+                    const isIbiza = proj.id === 'project_ibiza_a14';
+                    const brand = identity.clientBrand;
+                    const isCustomBrand = Boolean(brand && isHacienda);
+                    const primaryColor = isHacienda ? '#DFC47B' : '#9CD01A';
+
+                    const rooms = Object.values(proj.rooms || {});
+                    const activeSpheres = rooms.filter((r) => Boolean(r.imageUrl && r.imageUrl.trim()));
+                    const isUnderConstruction = isIbiza || activeSpheres.length === 0;
+                    const roomCount = rooms.length;
+                    const totalHotspots = rooms.reduce((acc, r) => acc + (r.hotspots?.length || 0), 0);
+                    const firstRoomImg = activeSpheres[0]?.imageUrl;
+                    const previewImg = isHacienda
+                      ? '/HACIENDA F22/FACHADA 3.png'
+                      : proj.heroImage || proj.thumbnail || firstRoomImg || '/IBIZA A14/01-F004.jpg';
+
+                    return (
+                      <div
+                        key={proj.id}
+                        className={`group relative rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 border ${
+                          isUnderConstruction
+                            ? 'bg-[#0C0B0E] border-red-500/45 hover:border-red-500/80 shadow-[0_20px_50px_rgba(0,0,0,0.88),0_0_35px_rgba(220,38,38,0.16)]'
+                            : isCustomBrand
+                            ? 'bg-[#09090D] border-[#DFC47B]/35 hover:border-[#DFC47B]/80 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_35px_rgba(223,196,123,0.12)]'
+                            : 'bg-[#0D1016] border-white/12 hover:border-[#9CD01A]/70 shadow-[0_20px_50px_rgba(0,0,0,0.85)]'
+                        }`}
+                      >
+                        {/* LETRERO DIAGONAL EN ROJO: EN CONSTRUCCIÓN */}
+                        {isUnderConstruction && (
+                          <div className="pointer-events-none absolute top-7 -right-12 z-30 w-52 rotate-45 bg-gradient-to-r from-[#991B1B] via-[#EF4444] to-[#991B1B] py-1.5 text-center border-y border-white/35 shadow-[0_8px_25px_rgba(220,38,38,0.75)]">
+                            <span className="block text-[10px] sm:text-[11px] font-black font-mono uppercase tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                              EN CONSTRUCCIÓN
+                            </span>
+                          </div>
+                        )}
+
+                        <div>
+                          {/* Imagen de Portada del Proyecto 360° */}
+                          <div className="relative aspect-[16/10] w-full overflow-hidden bg-black">
+                            <img
+                              src={encodeURI(previewImg)}
+                              alt={proj.name}
+                              onError={(e) => {
+                                if (firstRoomImg && e.currentTarget.src !== firstRoomImg) {
+                                  e.currentTarget.src = firstRoomImg;
+                                }
+                              }}
+                              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#090B0F] via-black/35 to-black/25" />
+
+                            {/* Badges Superiores */}
+                            <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between gap-2">
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider backdrop-blur-md border ${
+                                  isCustomBrand
+                                    ? 'bg-black/75 border-[#DFC47B]/50 text-[#F1E29B]'
+                                    : 'bg-black/75 border-[#9CD01A]/45 text-[#9CD01A]'
+                                }`}
+                              >
+                                {isCustomBrand ? 'AMHO • 360°' : `OBRA 360° #0${index + 1}`}
+                              </span>
+
+                              {!isUnderConstruction && (
+                                <span
+                                  className={`px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider backdrop-blur-md border flex items-center gap-1.5 ${
+                                    isCustomBrand
+                                      ? 'bg-black/80 border-[#DFC47B]/55 text-[#F1E29B]'
+                                      : 'bg-[#9CD01A]/20 border-[#9CD01A]/50 text-[#D9FF66]'
+                                  }`}
+                                >
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full animate-pulse"
+                                    style={{ backgroundColor: primaryColor }}
+                                  />
+                                  {roomCount} ESCENAS 360°
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Título & Ubicación sobre la imagen */}
+                            <div className="absolute bottom-3.5 left-4 right-4">
+                              <div
+                                className={`flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider mb-1 ${
+                                  isCustomBrand ? 'text-[#F1E29B]' : 'text-[#9CD01A]'
+                                }`}
+                              >
+                                <MapPin className="w-3 h-3 shrink-0" style={{ color: primaryColor }} />
+                                <span className="truncate">
+                                  {proj.location || identity.location}
+                                </span>
+                              </div>
+
+                              <h4
+                                style={{ fontFamily: identity.theme.fontFamilyTitle }}
+                                className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-white"
+                              >
+                                {isHacienda ? (
+                                  <>
+                                    <span>HACIENDA CLUB </span>
+                                    <span className="gold-metallic-text">F22</span>
+                                  </>
+                                ) : isIbiza ? (
+                                  <>
+                                    <span>IBIZA </span>
+                                    <span className="massa-metallic-text">A14</span>
+                                  </>
+                                ) : (
+                                  proj.name
+                                )}
+                              </h4>
+                            </div>
+                          </div>
+
+                          {/* Detalles del Recorrido 360° */}
+                          <div className="p-4 sm:p-5">
+                            <p className="text-xs text-white/65 leading-relaxed mb-4 line-clamp-2">
+                              {proj.tagline || identity.tagline || proj.description}
+                            </p>
+
+                            {/* Métricas de Escenas y Hotspots */}
+                            <div
+                              className={`grid grid-cols-2 gap-2 p-3 rounded-2xl bg-black/45 border mb-4 text-center ${
+                                isUnderConstruction
+                                  ? 'border-red-500/25'
+                                  : isCustomBrand
+                                  ? 'border-[#DFC47B]/25'
+                                  : 'border-white/[0.08]'
+                              }`}
+                            >
+                              <div>
+                                <div
+                                  className="text-base sm:text-lg font-black font-mono"
+                                  style={{ color: isUnderConstruction ? '#F87171' : primaryColor }}
+                                >
+                                  {isUnderConstruction ? 'EN OBRA' : roomCount}
+                                </div>
+                                <div className="text-[9px] font-mono uppercase text-white/45">
+                                  {isUnderConstruction ? 'Estado 360°' : 'Esferas 360°'}
+                                </div>
+                              </div>
+                              <div
+                                className={`border-l ${
+                                  isUnderConstruction
+                                    ? 'border-red-500/20'
+                                    : isCustomBrand
+                                    ? 'border-[#DFC47B]/20'
+                                    : 'border-white/[0.08]'
+                                }`}
+                              >
+                                <div className="text-base sm:text-lg font-black text-white font-mono">
+                                  {isUnderConstruction ? `${roomCount} Zonas` : totalHotspots}
+                                </div>
+                                <div className="text-[9px] font-mono uppercase text-white/45">
+                                  {isUnderConstruction ? 'Proyectadas' : 'Puntos Interactivos'}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Chips de las primeras habitaciones */}
+                            <div className="flex flex-wrap gap-1.5">
+                              {rooms.slice(0, 4).map((r, i) => (
+                                <span
+                                  key={r.id}
+                                  className={`px-2 py-0.5 rounded-md text-[10px] font-mono border truncate max-w-[140px] ${
+                                    isCustomBrand
+                                      ? 'bg-[#DFC47B]/[0.08] border-[#DFC47B]/30 text-[#F5F2EB]'
+                                      : 'bg-white/[0.05] border-white/10 text-white/75'
+                                  }`}
+                                >
+                                  {i + 1}. {r.name}
+                                </span>
+                              ))}
+                              {rooms.length > 4 && (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-white/[0.04] border border-white/10 text-white/50">
+                                  +{rooms.length - 4} más
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Botón Principal con Efecto Burbuja Aqua */}
+                        <div className="p-4 sm:p-5 pt-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              trackClarityEvent(`hub_360_open_${proj.id}`);
+                              setActiveInfoModal(null);
+                              if (isUnderConstruction) {
+                                onSelectProjectForPortal(proj.id);
+                              } else if (onLaunch360Tour) {
+                                onLaunch360Tour(proj.id);
+                              } else {
+                                onSelectProjectForPortal(proj.id);
+                              }
+                            }}
+                            className={`w-full py-3.5 px-4 rounded-full font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${
+                              isUnderConstruction
+                                ? 'apple-aqua-bubble border-red-500/50 text-red-200'
+                                : isCustomBrand
+                                ? 'apple-aqua-bubble-gold text-[#060608]'
+                                : 'apple-aqua-bubble-lime text-[#060804]'
+                            }`}
+                          >
+                            <Compass className="w-4 h-4 stroke-[2.5]" />
+                            <span>
+                              {isUnderConstruction ? 'En Construcción • Ver Proyecto' : 'Explorar Recorrido 360°'}
+                            </span>
+                            <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </m.div>
