@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -27,7 +27,8 @@ import { Project, projectsData, resolveCanonicalProjectId } from '../../data/tou
 import { getProjectsFromSupabase } from '../../supabase';
 import { SkiperArchitecturalCarousel } from './SkiperArchitecturalCarousel';
 import { SkiperParallaxGallery } from './SkiperParallaxGallery';
-import { IbizaAnimatedModel3DViewer } from './IbizaAnimatedModel3DViewer';
+
+const IbizaAnimatedModel3DViewer = lazy(() => import('./IbizaAnimatedModel3DViewer'));
 import {
   getCanonicalProjectBySlugOrId,
   CanonicalProject
@@ -613,11 +614,21 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
               </div>
             </div>
 
-            <IbizaAnimatedModel3DViewer
-              projectName={canonicalProject.nombre}
-              accentColor={primaryColor}
-              modelUrl="/models/modelo_animado_web_360.glb"
-            />
+            <Suspense
+              fallback={
+                <div className="w-full h-[500px] sm:h-[640px] lg:h-[720px] rounded-2xl sm:rounded-3xl bg-[#07090C] border border-[#9CD01A]/35 flex items-center justify-center">
+                  <span className="text-xs font-mono text-[#9CD01A] uppercase tracking-widest animate-pulse">
+                    Inicializando Visor 3D Interactivo...
+                  </span>
+                </div>
+              }
+            >
+              <IbizaAnimatedModel3DViewer
+                projectName={canonicalProject.nombre}
+                accentColor={primaryColor}
+                modelUrl="/models/modelo_animado_web_360.glb"
+              />
+            </Suspense>
           </section>
         )}
 
