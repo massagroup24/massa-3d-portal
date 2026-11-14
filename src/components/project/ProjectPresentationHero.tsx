@@ -294,12 +294,12 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
             INICIA EN EL CENTRO Y SE DESPLAZA A ESQUINA SUPERIOR IZQUIERDA E INFERIOR DERECHA */}
         <h1
           aria-label={identity.name}
-          className="project-f22-title pointer-events-none absolute inset-0 z-30 uppercase text-[#FFFDF8]"
+          className={`${isIbizaA14 ? 'project-ibiza-wordmark' : 'project-f22-title'} pointer-events-none absolute inset-0 z-30 uppercase text-[#FFFDF8]`}
         >
           {/* Parte 1: Del centro a la esquina superior izquierda */}
           <span
             key={`${identity.id}-top-${introRunId}`}
-            className={`project-f22-word-enter-1 ${isIbizaA14 ? 'project-ibiza-wordmark' : ''} absolute block whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`project-f22-word-enter-1 absolute block whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
               isSplit
                 ? 'left-3.5 top-12 sm:left-8 sm:top-14 lg:left-12 lg:top-16 translate-x-0 translate-y-0 scale-100 text-left'
                 : 'left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 scale-105 text-center'
@@ -316,7 +316,7 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
                 ? 'right-3.5 bottom-[9.8rem] sm:right-8 sm:bottom-20 lg:right-12 lg:bottom-20 translate-x-0 translate-y-0 scale-110 sm:scale-125 origin-bottom-right text-right'
                 : 'right-1/2 bottom-[39%] translate-x-1/2 translate-y-1/2 scale-110 text-center'
             }`}
-          ><span style={{ color }}>{bottomTitleWord}</span></span>
+          ><span className={isIbizaA14 ? 'massa-metallic-text' : ''} style={{ color }}>{bottomTitleWord}</span></span>
         </h1>
 
         {/* Detalle decorativo justo debajo del título en la esquina superior izquierda (CAPA z-30) */}

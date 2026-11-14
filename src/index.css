@@ -116,6 +116,9 @@
 .project-f22-title span > span[style*="#9CD01A"],
 .project-f22-title span > span[style*="#9cd01a"],
 .project-f22-title span > span[style*="156, 208, 26"],
+.project-ibiza-wordmark span > span[style*="#9CD01A"],
+.project-ibiza-wordmark span > span[style*="#9cd01a"],
+.project-ibiza-wordmark span > span[style*="156, 208, 26"],
 .massa-metallic-text {
   background-image: linear-gradient(
     135deg,
@@ -163,17 +166,17 @@
   animation: f22-central-wave-in 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
 }
 
-/* Tipografía monumental gruesa y elegante para el emblema principal de IBIZA A14 */
+/* Tipografía monumental gruesa y limpia (sans-serif geométrica) para IBIZA A14 */
 .project-ibiza-wordmark {
-  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-family: 'Montserrat', 'Inter', sans-serif;
   font-style: normal;
   font-weight: 900;
   text-transform: uppercase;
-  font-size: clamp(2.35rem, 6.6vw, 5.6rem);
-  line-height: 0.94;
-  letter-spacing: 0.08em;
+  font-size: clamp(2.4rem, 6.8vw, 5.75rem);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
   color: #FFFDF8;
-  -webkit-text-stroke: 0.45px rgba(255, 253, 248, 0.35);
+  -webkit-text-stroke: 0;
   filter:
     drop-shadow(0 4px 16px rgba(0, 0, 0, 0.95))
     drop-shadow(0 10px 28px rgba(0, 0, 0, 0.85))

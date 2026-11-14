@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Image as ImageIcon, Layers, Maximize2, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { PROJECT_VISUAL_PLANS, type ProjectVisualPlan } from '../../config/projectVisualPlans';
 import { trackClarityEvent } from '../../utils/clarityAnalytics';
+import { getOptimizedWebpUrl } from '../../lib/imageOptimization';
 
 interface ProjectVisualFloorPlansProps {
   projectId: string;
@@ -102,12 +103,19 @@ export function ProjectVisualFloorPlans({
             <div className="relative flex flex-col items-center justify-center sm:min-h-[540px]">
               <img
                 key={activePlan.imageUrl}
-                src={encodeURI(activePlan.imageUrl)}
+                src={encodeURI(getOptimizedWebpUrl(activePlan.imageUrl))}
                 alt={`Plano ilustrado en 2D de ${activePlan.title.toLowerCase()} · ${projectName}`}
-                loading="eager"
+                loading="lazy"
                 decoding="async"
                 onClick={openModal}
-                onError={() => setFailedImage(activePlan.imageUrl)}
+                onError={(e) => {
+                  const fallback = encodeURI(activePlan.imageUrl);
+                  if (e.currentTarget.src !== new URL(fallback, window.location.origin).href) {
+                    e.currentTarget.src = fallback;
+                  } else {
+                    setFailedImage(activePlan.imageUrl);
+                  }
+                }}
                 className="w-full max-h-[760px] object-contain rounded-xl cursor-zoom-in shadow-2xl"
               />
               {/* En desktop flota en la esquina inferior derecha sin tapar la brújula Norte; en móvil se integra debajo de la imagen */}

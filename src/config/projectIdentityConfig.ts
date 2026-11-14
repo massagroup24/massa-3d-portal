@@ -1076,7 +1076,7 @@ export const IBIZA_A14_LEVELS: ProjectLevelInfo[] = [
     id: 'a14-nivel-2',
     label: 'Planta Nivel 2 • Suites & Descanso',
     area: '168,00 m² • Nivel Privado',
-    height: 'Altura libre 3.10 m con protección solar',
+    height: 'Segundo nivel residencial',
     summary: 'Nivel íntimo residencial con circulación ventilada naturalmente, sala de estar familiar y suites con balcones profundos orientados hacia las visuales del Condominio Ibiza.',
     spaces: [
       'Master Suite Principal A14 con terraza privada y control lumínico',
@@ -1272,11 +1272,7 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
       areaBuilt: A14_AREA_BUILT,
       lotArea: A14_LOT_AREA,
       lotMetricValue: A14_LOT_AREA,
-      suitesLabel: '4 Suites',
       wellnessLabel: 'Piscina 59,32 m²',
-      bedrooms: 4,
-      bathrooms: 5,
-      parkingSpaces: 3,
       modality: 'Vivienda unifamiliar de 2 niveles',
       levels: '2 Plantas + Cubierta'
     },

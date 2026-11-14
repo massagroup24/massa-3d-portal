@@ -1,6 +1,7 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, FileDown } from 'lucide-react';
 import { technicalRowGroups, formatArea, type ProjectTechnicalSpecs } from '../../data/haciendaF22Specs';
 import { type CanonicalProject, formatAreaMetric } from '../../data/canonicalProjects';
+import { downloadProjectDossierPdf } from '../../lib/dossierGenerator';
 
 interface ProjectFichaTecnicaProps {
   project?: CanonicalProject | null;
@@ -66,7 +67,18 @@ export function ProjectFichaTecnica({ project, technicalSpecs, accentColor = '#D
         <p className="mb-3 flex items-center gap-3 text-[10px] font-medium uppercase tracking-[0.24em]" style={{ color: accentColor }}><span className={`h-px w-8 ${isGold ? 'gold-metallic-bg' : ''}`} style={{ backgroundColor: accentColor }} /> <span className={isGold ? 'gold-metallic-text' : ''}>Arquitectura en detalle</span></p>
         <h2 className="text-3xl font-medium tracking-[-0.04em] text-white sm:text-5xl">Ficha técnica<span className={isGold ? 'gold-metallic-text' : ''} style={{ color: accentColor }}>.</span></h2>
       </div>
-      <p className="max-w-xs text-xs leading-relaxed text-white/50 sm:text-right">{projectName || project?.nombre}<span className="mt-1 block text-white/35">{technicalSpecs?.typology || project?.alcance}</span></p>
+      <div className="flex flex-col items-start sm:items-end gap-3">
+        <p className="max-w-xs text-xs leading-relaxed text-white/50 sm:text-right">{projectName || project?.nombre}<span className="mt-1 block text-white/35">{technicalSpecs?.typology || project?.alcance}</span></p>
+        <button
+          type="button"
+          onClick={() => downloadProjectDossierPdf({ project, technicalSpecs, projectName, accentColor })}
+          className="inline-flex items-center gap-2 rounded-full border bg-white/[0.04] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition-all hover:bg-white/[0.09] active:scale-[0.98] cursor-pointer"
+          style={{ borderColor: `${accentColor}55` }}
+        >
+          <FileDown className="h-3.5 w-3.5 shrink-0" style={{ color: accentColor }} />
+          <span>Descargar Dossier PDF</span>
+        </button>
+      </div>
     </div>
 
     <div className="overflow-hidden rounded-[20px] sm:rounded-[24px] border bg-[#0B0B0E]/95 shadow-[0_24px_80px_#0004]" style={{ borderColor: `${accentColor}30` }}>

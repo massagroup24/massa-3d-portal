@@ -126,40 +126,20 @@ export const IBIZA_A14_BLUEPRINTS: ProjectMediaItem[] = [
     project_id: 'project_ibiza_a14',
     type: 'blueprint',
     title: 'Planta Nivel 1 • Acceso & Área Social',
-    storage_path: '/PLANO.jpg',
+    storage_path: '/IBIZA A14/PLANTA 1.jpg',
     category: 'Plantas',
     order_index: 1,
-    metadata: { level: 'Nivel 1', area: '190 m²', description: 'Espacio listo para plano de salón social, cocina gourmet, piscina y garajes.' }
+    metadata: { level: 'Nivel 1', area: '236,89 m²', description: 'Salón social, comedor, cocina con isla, estudio, habitación auxiliar, deck, piscina (59,32 m²) y parqueadero.' }
   },
   {
     id: 'bp-ibiza-2',
     project_id: 'project_ibiza_a14',
     type: 'blueprint',
-    title: 'Planta Nivel 2 • Área Íntima & Habitaciones',
-    storage_path: '/PLANO.jpg',
+    title: 'Planta Nivel 2 • Área Íntima & Suites',
+    storage_path: '/IBIZA A14/PLANTA 2.jpg',
     category: 'Plantas',
     order_index: 2,
-    metadata: { level: 'Nivel 2', area: '165 m²', description: 'Espacio listo para plano de Master Suite, vestidor, 2 habitaciones y estar TV.' }
-  },
-  {
-    id: 'bp-ibiza-3',
-    project_id: 'project_ibiza_a14',
-    type: 'blueprint',
-    title: 'Planta Cubierta • Solárium & Aleros Bioclimáticos',
-    storage_path: '/PLANO.jpg',
-    category: 'Cubiertas',
-    order_index: 3,
-    metadata: { level: 'Cubierta', area: '85 m²', description: 'Espacio listo para plano de losa técnica, aleros de protección y paneles solares.' }
-  },
-  {
-    id: 'bp-ibiza-4',
-    project_id: 'project_ibiza_a14',
-    type: 'blueprint',
-    title: 'Corte Longitudinal A-A\' • Doble Altura',
-    storage_path: '/PLANO.jpg',
-    category: 'Cortes',
-    order_index: 4,
-    metadata: { level: 'Cortes & Secciones', area: 'Alturas 3.20m', description: 'Espacio listo para corte arquitectónico con detalles de cimentación y ventilación cruzada.' }
+    metadata: { level: 'Nivel 2', area: '168,00 m²', description: 'Master Suite con vestier y baño privado, doble altura central, escalera y dos suites auxiliares con baños y balcones.' }
   }
 ];
 

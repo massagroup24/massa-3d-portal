@@ -234,9 +234,6 @@ export const projectsData: Record<string, Project> = {
     areaBuilt: A14_AREA_BUILT,
     areaLot: A14_LOT_AREA,
     technicalSpecs: IBIZA_A14_TECHNICAL,
-    bedrooms: 4,
-    bathrooms: 5,
-    parkingSpaces: 3,
     priceCOP: 'A consultar',
     priceUSD: 'Inversión Personalizada',
     status: 'disponible',
@@ -246,7 +243,7 @@ export const projectsData: Record<string, Project> = {
     featured: true,
     heroImage: '/IBIZA A14/01-F004.jpg',
     thumbnail: '/IBIZA A14/01-F004.jpg',
-    minimapImage: '/PLANO.jpg', // Plano base para minimapa
+    minimapImage: '/IBIZA A14/PLANTA 1.jpg', // Plano base para minimapa
     initialRoomId: 'room_ibiza_1',
     tourType: '360_spheres',
     highlights: [

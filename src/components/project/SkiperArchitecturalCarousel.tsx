@@ -10,6 +10,7 @@ import {
   CarouselItem,
 } from '../ui/carousel';
 import { ProjectIdentity, ProjectRender } from '../../config/projectIdentityConfig';
+import { getOptimizedWebpUrl } from '../../lib/imageOptimization';
 
 interface SkiperArchitecturalCarouselProps {
   renders: ProjectRender[];
@@ -285,9 +286,16 @@ export function SkiperArchitecturalCarousel({
                     {hasImage ? (
                       <>
                         <img
-                          src={encodeURI(render.url)}
+                          src={encodeURI(getOptimizedWebpUrl(render.url))}
                           alt={render.title}
                           loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            const fallback = encodeURI(render.url);
+                            if (e.currentTarget.src !== new URL(fallback, window.location.origin).href) {
+                              e.currentTarget.src = fallback;
+                            }
+                          }}
                           className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl sm:rounded-2xl transition-transform duration-700 ease-out"
                         />
                         <div className="absolute top-3 left-3 z-20">
