@@ -1169,7 +1169,7 @@ export const PROJECT_IDENTITIES: Record<string, ProjectIdentity> = {
     statusLabel: 'Proyecto residencial',
     brandName: 'AMHO CONSTRUCCIONES',
     tagline: F22_SUMMARY,
-    heroVideoUrl: '/HACIENDA F22/HACIENDA CLUB F22.mp4',
+    heroVideoUrl: '/F22 HACIENDA CLUB.mp4',
     heroVideoPoster: '/HACIENDA F22/FACHADA.png',
     theme: {
       primaryColor: '#DFC47B',        // Oro champaña metálico oficial extraído del isotipo AMHO Construcciones

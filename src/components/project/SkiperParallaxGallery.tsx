@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, Image as ImageIcon, Layers } from 'lucide-react';
 import type { ProjectIdentity, ProjectRender } from '../../config/projectIdentityConfig';
 import { buildParallaxColumns, getRenderAspectRatio } from '../../utils/parallaxLayout';
+import { getOptimizedWebpUrl } from '../../lib/imageOptimization';
 
 interface SkiperParallaxGalleryProps {
   renders: ProjectRender[];
@@ -24,7 +25,7 @@ function ParallaxColumn({ column, index, progress, reducedMotion, color, onSelec
   return (
     <motion.div
       data-parallax-column={index}
-      className="relative flex min-w-0 flex-col gap-[var(--gallery-gap)]"
+      className="relative flex min-w-0 flex-col gap-[var(--gallery-gap)] will-change-transform"
       style={{ y, top: column.top }}
     >
       {column.items.map((render, itemIndex) => (
@@ -39,11 +40,18 @@ function ParallaxColumn({ column, index, progress, reducedMotion, color, onSelec
         >
           {render.url ? (
             <img
-              src={encodeURI(render.url)}
+              src={encodeURI(getOptimizedWebpUrl(render.url))}
               alt={render.title}
-              loading="lazy"
+              loading="eager"
+              decoding="async"
               width={render.width}
               height={render.height}
+              onError={(e) => {
+                const fallback = encodeURI(render.url);
+                if (e.currentTarget.src !== new URL(fallback, window.location.origin).href) {
+                  e.currentTarget.src = fallback;
+                }
+              }}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:transition-none"
             />
           ) : (

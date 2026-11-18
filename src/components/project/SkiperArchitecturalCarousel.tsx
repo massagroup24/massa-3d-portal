@@ -219,9 +219,9 @@ export function SkiperArchitecturalCarousel({
         }
       >
         <CarouselContent 
-          className="flex h-[340px] sm:h-[600px] md:h-[700px] lg:h-[800px] xl:h-[860px] 2xl:h-[900px] w-full items-center"
+          className="flex h-[245px] sm:h-[600px] md:h-[700px] lg:h-[800px] xl:h-[860px] 2xl:h-[900px] w-full items-center"
           style={{
-            ['--stage-height' as any]: isMobile ? '340px' : 'clamp(560px, 78vh, 880px)'
+            ['--stage-height' as any]: isMobile ? '245px' : 'clamp(560px, 78vh, 880px)'
           }}
         >
           {displayedRenders.map((render, index) => {
@@ -288,7 +288,7 @@ export function SkiperArchitecturalCarousel({
                         <img
                           src={encodeURI(getOptimizedWebpUrl(render.url))}
                           alt={render.title}
-                          loading="lazy"
+                          loading="eager"
                           decoding="async"
                           onError={(e) => {
                             const fallback = encodeURI(render.url);

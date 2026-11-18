@@ -499,11 +499,28 @@ export default function App() {
           element={
             <Suspense
               fallback={
-                <div className="fixed inset-0 bg-[#05070A] flex items-center justify-center">
-                  <span className="text-xs font-mono text-[#9CD01A] uppercase tracking-[0.22em] animate-pulse">
-                    Cargando Visor 3D Exclusivo • Casa Ibiza A14...
-                  </span>
-                </div>
+                (() => {
+                  const isF22Route =
+                    typeof window !== 'undefined' &&
+                    /f22|hacienda/i.test(window.location.pathname);
+                  if (typeof document !== 'undefined' && isF22Route) {
+                    document.title = 'HACIENDA CLUB F22 • Visor 3D Interactivo | AMHO CONSTRUCCIONES';
+                    const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+                    if (icon) icon.href = encodeURI('/HACIENDA F22/branding/amho-icon.png');
+                  }
+                  return (
+                    <div className="fixed inset-0 bg-[#05070A] flex items-center justify-center px-4 text-center">
+                      <span
+                        className="text-xs font-mono uppercase tracking-[0.22em] animate-pulse"
+                        style={{ color: isF22Route ? '#DFC47B' : '#9CD01A' }}
+                      >
+                        {isF22Route
+                          ? 'Cargando Visor 3D Exclusivo • Hacienda Club F22 · AMHO Construcciones...'
+                          : 'Cargando Visor 3D Exclusivo • Casa Ibiza A14...'}
+                      </span>
+                    </div>
+                  );
+                })()
               }
             >
               <IbizaStandalone3DPage />

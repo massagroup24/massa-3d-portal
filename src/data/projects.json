@@ -78,7 +78,7 @@
       }
     ],
     "imagen_principal": "/HACIENDA F22/FACHADA 3.png",
-    "video": "/HACIENDA F22/HACIENDA CLUB F22.mp4",
+    "video": "/F22 HACIENDA CLUB.mp4",
     "hasTour360": true,
     "galeria": [
       { "url": "/HACIENDA F22/FACHADA 3.png", "tipo": "render", "alt": "Fachada principal frontal" },

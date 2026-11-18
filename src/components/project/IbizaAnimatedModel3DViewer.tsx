@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { resolveActiveProject3DModel } from '../../config/projectIdentityConfig';
+import { getProjectIdentity, resolveActiveProject3DModel } from '../../config/projectIdentityConfig';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
   AdaptiveDpr,
@@ -529,8 +529,8 @@ export function IbizaAnimatedModel3DViewer({
             className="relative z-10 max-w-sm w-full p-7 rounded-[28px] bg-[#0B0E14] border flex flex-col items-center"
           >
             <img
-              src="/massa-cube-transparent.png"
-              alt="MASSA"
+              src={isGoldTheme ? '/HACIENDA F22/branding/amho-icon.png' : '/massa-cube-transparent.png'}
+              alt={isGoldTheme ? 'AMHO Construcciones' : 'MASSA'}
               className="w-12 h-12 object-contain mb-4"
             />
 
@@ -1017,13 +1017,22 @@ export function IbizaStandalone3DPage() {
     [id]
   );
 
+  const identity = useMemo(() => getProjectIdentity(id || 'ibiza-a14'), [id]);
+
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = `${resolved3D.name} • Visor 3D Interactivo | MASSA HOME`;
+    const isF22 = resolved3D.accentColor.toUpperCase() === '#DFC47B';
+    document.title = `${resolved3D.name} • Visor 3D Interactivo | ${isF22 ? 'AMHO CONSTRUCCIONES' : 'MASSA HOME'}`;
+    const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    const prevIcon = icon?.getAttribute('href');
+    if (icon && identity.clientBrand?.logoIcon) {
+      icon.href = encodeURI(identity.clientBrand.logoIcon);
+    }
     return () => {
       document.title = prevTitle;
+      if (icon && prevIcon != null) icon.setAttribute('href', prevIcon);
     };
-  }, [resolved3D.name]);
+  }, [resolved3D.name, resolved3D.accentColor, identity]);
 
   const handleBack = () => {
     if (window.opener || window.history.length <= 1) {
