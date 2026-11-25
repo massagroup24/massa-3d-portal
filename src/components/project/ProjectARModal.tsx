@@ -81,6 +81,9 @@ export function ProjectARModal({
   const [exportError, setExportError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [customHost, setCustomHost] = useState<string>('');
+  // Caché en memoria de archivos USDZ ya generados por combinación (pose + escala)
+  // Evita saturar el límite de memoria de <canvas> de iOS Safari en el 2º o 3er intento
+  const [usdzCache, setUsdzCache] = useState<Record<string, string>>({});
 
   const isGoldTheme = accentColor.toUpperCase() === '#DFC47B';
   const brandLabel = isGoldTheme ? 'AMHO CONSTRUCCIONES' : 'MASSA HOME';
@@ -137,33 +140,9 @@ export function ProjectARModal({
     }
   };
 
-  // Lanza Apple AR Quick Look en iPhone / iPad exportando la escena actual a USDZ en memoria
-  const handleLaunchIOSQuickLook = async () => {
-    if (!getPreparedARScene) {
-      setExportError('Abre primero el visor 3D para preparar la geometría AR.');
-      return;
-    }
-    setIsExportingUsdz(true);
-    setExportError(null);
-    try {
-      const preparedRoot = await getPreparedARScene(posePreset, scalePreset);
-      if (!preparedRoot) {
-        throw new Error('No se pudo preparar la escena 3D para AR.');
-      }
-
-      const exporter = new USDZExporter();
-      const arraybuffer = await exporter.parseAsync(preparedRoot, {
-        quickLookCompatible: true,
-        maxTextureSize: 1024,
-        ar: {
-          anchoring: { type: 'plane' },
-          planeAnchoring: { alignment: 'horizontal' },
-        },
-      } as any);
-
-      const blob = new Blob([arraybuffer as unknown as BlobPart], { type: 'model/vnd.usdz+zip' });
-      const blobUrl = URL.createObjectURL(blob);
-
+  // Dispara el enlace nativo <a rel="ar"> en iOS Safari con el Blob URL del USDZ
+  const triggerIOSQuickLookAnchor = useCallback(
+    (blobUrl: string) => {
       const anchor = document.createElement('a');
       anchor.setAttribute('rel', 'ar');
       anchor.setAttribute(
@@ -178,8 +157,79 @@ export function ProjectARModal({
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);
+    },
+    [projectName]
+  );
 
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  // Lanza Apple AR Quick Look en iPhone / iPad exportando la escena actual a USDZ en memoria (con caché y respaldo de memoria)
+  const handleLaunchIOSQuickLook = async () => {
+    const cacheKey = `${projectSlug}_${posePreset}_${scalePreset}`;
+    if (usdzCache[cacheKey]) {
+      setExportError(null);
+      triggerIOSQuickLookAnchor(usdzCache[cacheKey]);
+      return;
+    }
+
+    if (!getPreparedARScene) {
+      setExportError('Abre primero el visor 3D para preparar la geometría AR.');
+      return;
+    }
+    setIsExportingUsdz(true);
+    setExportError(null);
+    try {
+      const preparedRoot = await getPreparedARScene(posePreset, scalePreset);
+      if (!preparedRoot) {
+        throw new Error('No se pudo preparar la escena 3D para AR.');
+      }
+
+      const exporter = new USDZExporter();
+      let arraybuffer: Uint8Array;
+      try {
+        // En iOS usamos maxTextureSize: 512 para no exceder el límite de RAM de Canvas de WebKit en múltiples aperturas
+        arraybuffer = await exporter.parseAsync(preparedRoot, {
+          quickLookCompatible: true,
+          maxTextureSize: isIOS ? 512 : 1024,
+          ar: {
+            anchoring: { type: 'plane' },
+            planeAnchoring: { alignment: 'horizontal' },
+          },
+        } as any);
+      } catch (firstErr) {
+        console.warn('Reintentando exportación USDZ en modo ligero de texturas (iOS Safari RAM):', firstErr);
+        // Si iOS Safari agotó la memoria de <canvas> tras regresar de Quick Look, clonamos materiales sin texturas pesadas
+        preparedRoot.traverse((obj) => {
+          const mesh = obj as THREE.Mesh;
+          if (mesh.isMesh && mesh.material) {
+            const cloneMat = (m: THREE.Material) => {
+              const c = m.clone() as THREE.MeshStandardMaterial;
+              if ('map' in c) c.map = null;
+              if ('normalMap' in c) c.normalMap = null;
+              if ('roughnessMap' in c) c.roughnessMap = null;
+              if ('metalnessMap' in c) c.metalnessMap = null;
+              if ('aoMap' in c) c.aoMap = null;
+              return c;
+            };
+            mesh.material = Array.isArray(mesh.material)
+              ? mesh.material.map(cloneMat)
+              : cloneMat(mesh.material);
+          }
+        });
+        arraybuffer = await exporter.parseAsync(preparedRoot, {
+          quickLookCompatible: true,
+          maxTextureSize: 256,
+          ar: {
+            anchoring: { type: 'plane' },
+            planeAnchoring: { alignment: 'horizontal' },
+          },
+        } as any);
+      }
+
+      const blob = new Blob([arraybuffer as unknown as BlobPart], {
+        type: 'model/vnd.usdz+zip',
+      });
+      const blobUrl = URL.createObjectURL(blob);
+      setUsdzCache((prev) => ({ ...prev, [cacheKey]: blobUrl }));
+      triggerIOSQuickLookAnchor(blobUrl);
     } catch (err: any) {
       console.error('Error exportando USDZ para AR Quick Look:', err);
       setExportError(

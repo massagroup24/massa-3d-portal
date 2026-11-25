@@ -1038,7 +1038,7 @@ export function IbizaAnimatedModel3DViewer({
           </>
         )}
 
-        {(!isPortraitMobile || isLiveCameraAR) && (
+        {(!isPortraitMobile || isLiveCameraAR || isARModalOpen) && (
           <Canvas
             shadows={!isMobileDevice}
             dpr={isMobileDevice ? [1, 1.35] : [1, 1.85]}
@@ -1252,6 +1252,13 @@ export function IbizaAnimatedModel3DViewer({
         accentColor={accentColor}
         modelUrl={modelUrl}
         getPreparedARScene={async (pose, scalePreset) => {
+          // Si el modelo .glb aún se está descargando en <Suspense> (ej. al entrar en vertical o con ?ar=1),
+          // esperamos hasta que AnimatedIbizaBuilding termine de montar y registre el puente AR.
+          let attempts = 0;
+          while (!arPrepareBridgeRef.current && attempts < 100) {
+            await new Promise((r) => setTimeout(r, 150));
+            attempts++;
+          }
           if (!arPrepareBridgeRef.current) return null;
           return arPrepareBridgeRef.current(pose, scalePreset);
         }}
