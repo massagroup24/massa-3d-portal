@@ -379,19 +379,18 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
           </div>
         </div>
 
-        {/* 5. TÍTULO PROTAGONISTA EN CAPA SUPERIOR z-30 (ENCIMA DEL FILTRO OSCURO):
-            INICIA EN EL CENTRO Y SE DESPLAZA A ESQUINA SUPERIOR IZQUIERDA E INFERIOR DERECHA */}
+        {/* 5. TÍTULO PROTAGONISTA EN CAPA SUPERIOR z-30 (SE OCULTA EN PANTALLA COMPLETA PARA VER EL VIDEO LIMPIO) */}
         <h1
           aria-label={identity.name}
-          className={`${isIbizaA14 ? 'project-ibiza-wordmark' : 'project-f22-title'} pointer-events-none absolute inset-0 z-30 uppercase text-[#FFFDF8]`}
+          className={`${isIbizaA14 ? 'project-ibiza-wordmark' : 'project-f22-title'} ${fullscreen ? 'opacity-0 pointer-events-none' : ''} pointer-events-none absolute inset-0 z-30 uppercase text-[#FFFDF8] transition-opacity duration-300`}
         >
           {/* Parte 1: Del centro a la esquina superior izquierda */}
           <span
             key={`${identity.id}-top-${introRunId}`}
-            className={`project-f22-word-enter-1 absolute block whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`project-f22-word-enter-1 absolute block max-w-[92%] truncate whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
               isSplit
                 ? 'left-3.5 top-12 sm:left-8 sm:top-14 lg:left-12 lg:top-16 translate-x-0 translate-y-0 scale-100 text-left'
-                : 'left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 scale-105 text-center'
+                : 'left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 scale-100 sm:scale-105 text-center'
             }`}
           >
             {topTitleWord}
@@ -402,8 +401,8 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
             key={`${identity.id}-bottom-${introRunId}`}
             className={`project-f22-word-enter-2 absolute block whitespace-nowrap select-none transition-all duration-[1150ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
               isSplit
-                ? 'right-3.5 bottom-[9.8rem] sm:right-8 sm:bottom-20 lg:right-12 lg:bottom-20 translate-x-0 translate-y-0 scale-110 sm:scale-125 origin-bottom-right text-right'
-                : 'right-1/2 bottom-[39%] translate-x-1/2 translate-y-1/2 scale-110 text-center'
+                ? 'right-3.5 bottom-[11.2rem] sm:right-8 sm:bottom-20 lg:right-12 lg:bottom-20 translate-x-0 translate-y-0 scale-100 sm:scale-125 origin-bottom-right text-right'
+                : 'right-1/2 bottom-[39%] translate-x-1/2 translate-y-1/2 scale-105 sm:scale-110 text-center'
             }`}
           ><span className={isIbizaA14 ? 'massa-metallic-text' : ''} style={{ color }}>{bottomTitleWord}</span></span>
         </h1>
@@ -413,15 +412,15 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
           aria-hidden="true"
           style={{
             top: isIbizaA14
-              ? 'calc(clamp(3rem, 4.2vw, 4rem) + clamp(2.35rem, 6.6vw, 5.6rem) + 0.55rem)'
-              : 'calc(clamp(3.5rem, 4.8vw, 5rem) + clamp(1.52rem, 5.3vw, 4.75rem) + 0.55rem)'
+              ? 'calc(clamp(3rem, 4.2vw, 4rem) + clamp(2.1rem, 6.4vw, 5.6rem) + 0.45rem)'
+              : 'calc(clamp(3.2rem, 4.8vw, 5rem) + clamp(1.52rem, 5.3vw, 4.75rem) + 0.45rem)'
           }}
-          className={`pointer-events-none absolute left-3.5 sm:left-8 lg:left-12 z-30 flex items-center gap-2.5 transition-all duration-700 delay-300 ${
-            isSplit ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
+          className={`pointer-events-none absolute left-3.5 right-3.5 sm:left-8 sm:right-8 lg:left-12 z-30 flex items-center gap-2 overflow-hidden transition-all duration-700 delay-300 ${
+            isSplit && !fullscreen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
           }`}
         >
-          <span className="h-[2px] w-10 sm:w-20 rounded-full" style={{ backgroundImage: gradient }} />
-          <span className={`${isGold ? 'gold-metallic-text' : ''} text-[8px] sm:text-[10px] font-mono font-bold uppercase tracking-[0.22em] sm:tracking-[0.26em]`} style={{ color: hoverColor }}>
+          <span className="h-[2px] w-7 sm:w-20 shrink-0 rounded-full" style={{ backgroundImage: gradient }} />
+          <span className={`${isGold ? 'gold-metallic-text' : ''} truncate text-[8px] sm:text-[10px] font-mono font-bold uppercase tracking-[0.14em] sm:tracking-[0.26em]`} style={{ color: hoverColor }}>
             Arquitectura residencial · {project.ciudad || 'Cúcuta'}
           </span>
         </div>
@@ -429,7 +428,7 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
         {/* 6. ESQUINA INFERIOR IZQUIERDA: DESCRIPCIÓN EDITORIAL & BOTONES DE ACCIÓN (CAPA z-30 SOBRE EL FILTRO) */}
         <div
           className={`absolute left-3.5 right-3.5 bottom-14 sm:left-8 sm:right-auto sm:bottom-20 lg:left-12 lg:bottom-20 z-30 max-w-md transition-all duration-700 delay-200 ${
-            isSplit ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0 pointer-events-none'
+            isSplit && !fullscreen ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0 pointer-events-none'
           }`}
         >
           <p className="mb-3 text-[11px] sm:text-sm leading-relaxed text-white/85 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] line-clamp-2 sm:line-clamp-3">

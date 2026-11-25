@@ -260,14 +260,20 @@ export function ProjectARModal({
       aria-modal="true"
       aria-label={`Realidad Aumentada • ${projectName}`}
       onPointerDown={(e) => e.stopPropagation()}
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/85 backdrop-blur-2xl p-3 sm:p-6 overflow-y-auto"
+      style={{
+        paddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
+        paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))',
+        paddingLeft: 'max(12px, env(safe-area-inset-left, 12px))',
+        paddingRight: 'max(12px, env(safe-area-inset-right, 12px))',
+      }}
+      className="fixed inset-0 z-[120] flex items-start sm:items-center justify-center bg-black/85 backdrop-blur-2xl overflow-y-auto"
     >
       <div
         style={{
           borderColor: `${accentColor}55`,
           boxShadow: `0 30px 100px rgba(0,0,0,0.95), 0 0 60px ${accentColor}24`,
         }}
-        className="relative w-full max-w-3xl rounded-3xl border bg-[#080A0F]/95 p-5 sm:p-8 text-left text-white my-auto"
+        className="relative w-full max-w-3xl max-h-[92dvh] overflow-y-auto rounded-2xl sm:rounded-3xl border bg-[#080A0F]/95 p-4 sm:p-8 text-left text-white my-auto"
       >
         {/* Botón cerrar */}
         <button

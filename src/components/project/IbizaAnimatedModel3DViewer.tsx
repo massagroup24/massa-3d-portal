@@ -30,7 +30,6 @@ import {
   Eye,
   Compass,
   Hand,
-  Smartphone,
   ArrowLeft,
   Sparkles,
   Camera,
@@ -422,7 +421,6 @@ export function IbizaAnimatedModel3DViewer({
   const arStreamRef = useRef<MediaStream | null>(null);
   const isGoldTheme = accentColor.toUpperCase() === '#DFC47B';
   const primaryBubbleClass = isGoldTheme ? 'apple-aqua-bubble-gold text-[#060608]' : 'apple-aqua-bubble-lime text-[#060804]';
-  const metallicTextClass = isGoldTheme ? 'gold-metallic-text' : 'massa-metallic-text';
   const lightAccentHex = isGoldTheme ? '#F1E29B' : '#D9FF66';
 
   const controlsRef = useRef<any>(null);
@@ -593,20 +591,6 @@ export function IbizaAnimatedModel3DViewer({
     }
   };
 
-  const handleForceLandscapeFullscreen = async () => {
-    const targetEl = containerRef.current || document.documentElement;
-    try {
-      if (!document.fullscreenElement) {
-        await targetEl.requestFullscreen();
-      }
-      if (screen.orientation && typeof (screen.orientation as any).lock === 'function') {
-        await (screen.orientation as any).lock('landscape');
-      }
-    } catch {
-      // Si el navegador requiere giro físico manual del dispositivo, el overlay permanece activo hasta que gire
-    }
-  };
-
   const togglePlaybackSpeed = () => {
     setPlaybackSpeed((prev) => (prev === 1 ? 0.5 : prev === 0.5 ? 1.5 : 1));
   };
@@ -694,112 +678,41 @@ export function IbizaAnimatedModel3DViewer({
       } ${className}`}
     >
       {/* =========================================================================
-          BLOQUEO OBLIGATORIO DE ORIENTACIÓN HORIZONTAL EN DISPOSITIVOS MÓVILES
-          (Se desactiva cuando el usuario está en Modo Cámara AR en Vivo o con el modal AR abierto)
+          1. BARRA SUPERIOR FLOTANTE: ADAPTADA A SAFE-AREA DE IPHONE 16e (VERTICAL Y HORIZONTAL)
           ========================================================================= */}
-      {isPortraitMobile && !isLiveCameraAR && !isARModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-[#06080B]/98 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                `linear-gradient(${accentColor} 1px, transparent 1px), linear-gradient(90deg, ${accentColor} 1px, transparent 1px)`,
-              backgroundSize: '40px 40px',
-            }}
-          />
-
-          <div
-            style={{
-              borderColor: `${accentColor}66`,
-              boxShadow: `0 25px 80px rgba(0,0,0,0.95), 0 0 50px ${accentColor}2E`,
-            }}
-            className="relative z-10 max-w-sm w-full p-7 rounded-[28px] bg-[#0B0E14] border flex flex-col items-center"
-          >
-            <img
-              src={isGoldTheme ? '/HACIENDA F22/branding/amho-icon.png' : '/massa-cube-transparent.png'}
-              alt={isGoldTheme ? 'AMHO Construcciones' : 'MASSA'}
-              className="w-12 h-12 object-contain mb-4"
-            />
-
-            {/* Ícono animado indicando rotación a horizontal */}
-            <div
-              style={{
-                backgroundColor: `${accentColor}24`,
-                borderColor: `${accentColor}73`,
-                boxShadow: `0 0 30px ${accentColor}40`,
-              }}
-              className="relative w-20 h-20 rounded-3xl border flex items-center justify-center mb-5"
-            >
-              <Smartphone className="w-10 h-10 animate-[spin_2.6s_ease-in-out_infinite] -rotate-90" style={{ color: accentColor }} />
-            </div>
-
-            <span className={`${metallicTextClass} text-[10px] font-mono font-bold uppercase tracking-[0.24em] mb-2`}>
-              MODO HORIZONTAL REQUERIDO • 3D STUDIO
-            </span>
-
-            <h2 className="text-xl font-black text-white uppercase tracking-tight leading-snug mb-2.5">
-              Gira tu Dispositivo Horizontalmente
-            </h2>
-
-            <p className="text-xs text-white/70 leading-relaxed mb-6">
-              Para interactuar con la volumetría 3D y la vista por etapas de{' '}
-              <strong className="text-white">{projectName}</strong> con máxima fluidez y espacio en
-              pantalla, coloca tu teléfono en posición horizontal.
-            </p>
-
-            <button
-              type="button"
-              onClick={handleForceLandscapeFullscreen}
-              className={`${primaryBubbleClass} w-full py-3.5 px-5 rounded-full font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer mb-3`}
-            >
-              <Maximize2 className="w-4 h-4" />
-              <span>Rotar a Horizontal Automáticamente</span>
-            </button>
-
+      <div
+        onPointerDown={(e) => e.stopPropagation()}
+        style={{
+          top: 'max(10px, env(safe-area-inset-top, 10px))',
+          left: 'max(10px, env(safe-area-inset-left, 10px))',
+          right: 'max(10px, env(safe-area-inset-right, 10px))',
+        }}
+        className="absolute z-20 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-1.5 sm:gap-2 pointer-events-none"
+      >
+        <div className="flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 pointer-events-auto min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
             {onBackToProject && (
               <button
                 type="button"
                 onClick={onBackToProject}
-                className="apple-aqua-bubble w-full py-2.5 px-4 rounded-full text-white/80 text-[11px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer"
+                className="apple-aqua-bubble px-2.5 sm:px-3 py-1.5 rounded-full flex items-center gap-1 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-white/90 hover:text-white cursor-pointer shrink-0"
+                title={`Volver a la ficha de ${projectName}`}
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Volver a la Ficha del Proyecto</span>
+                <ArrowLeft className="w-3.5 h-3.5" style={{ color: accentColor }} />
+                <span>Ficha</span>
               </button>
             )}
-          </div>
-        </div>
-      )}
 
-      {/* =========================================================================
-          1. BARRA SUPERIOR FLOTANTE: ESTADO DE PISOS Y MODOS DE APERTURA (1 TOQUE)
-          ========================================================================= */}
-      <div
-        onPointerDown={(e) => e.stopPropagation()}
-        className="absolute top-2.5 left-3 right-3 sm:top-4 sm:left-5 sm:right-5 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none"
-      >
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {onBackToProject && (
-            <button
-              type="button"
-              onClick={onBackToProject}
-              className="apple-aqua-bubble px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-white/90 hover:text-white cursor-pointer"
-              title={`Volver a la ficha de ${projectName}`}
-            >
-              <ArrowLeft className="w-3.5 h-3.5" style={{ color: accentColor }} />
-              <span className="hidden sm:inline">Ficha Proyecto</span>
-            </button>
-          )}
-
-          <div className="apple-aqua-bubble-studio px-3 sm:px-3.5 py-1.5 rounded-full flex items-center gap-2 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-white">
-            <span
-              className="w-2 h-2 rounded-full animate-pulse shrink-0"
-              style={{ backgroundColor: accentColor }}
-            />
-            <span className="truncate">{projectName} • VISOR 3D DEDICADO</span>
+            <div className="apple-aqua-bubble-studio px-2.5 sm:px-3.5 py-1.5 rounded-full flex items-center gap-1.5 text-[9.5px] sm:text-xs font-mono font-bold uppercase tracking-wider text-white min-w-0">
+              <span
+                className="w-2 h-2 rounded-full animate-pulse shrink-0"
+                style={{ backgroundColor: accentColor }}
+              />
+              <span className="truncate">{projectName} • 3D</span>
+            </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border border-white/15 text-[10px] font-mono text-white/80">
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-xl border border-white/15 text-[10px] font-mono text-white/80 shrink-0">
             <Layers className="w-3.5 h-3.5" style={{ color: accentColor }} />
             <span>Apertura Niveles:</span>
             <strong ref={explosionPercentRef} className="text-white tabular-nums">
@@ -808,15 +721,15 @@ export function IbizaAnimatedModel3DViewer({
           </div>
         </div>
 
-        {/* Selector Rápido de Apertura de Pisos + Pantalla Completa */}
-        <div className="flex items-center gap-1.5 pointer-events-auto overflow-x-auto no-scrollbar max-w-full">
+        {/* Selector Rápido de Apertura de Pisos + AR + Pantalla Completa */}
+        <div className="flex items-center gap-1.5 pointer-events-auto overflow-x-auto no-scrollbar max-w-full pb-0.5">
           <button
             type="button"
             onClick={() => {
               triggerSeek(0, true, 'closed');
               applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0], 0);
             }}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-full text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all ${
               activeFloorMode === 'closed' && !isPlaying
                 ? `${primaryBubbleClass} font-black`
                 : 'apple-aqua-bubble text-white/85 hover:text-white'
@@ -837,7 +750,7 @@ export function IbizaAnimatedModel3DViewer({
                 ? { color: lightAccentHex }
                 : undefined
             }
-            className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-full text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 ${
               activeFloorMode === 'exploded' && !isPlaying
                 ? `${primaryBubbleClass} font-black`
                 : 'apple-aqua-bubble-studio'
@@ -854,7 +767,7 @@ export function IbizaAnimatedModel3DViewer({
               setActiveFloorMode('auto');
               setIsPlaying(true);
             }}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-full text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 ${
               isPlaying
                 ? `${primaryBubbleClass} font-black`
                 : 'apple-aqua-bubble text-white/85 hover:text-white'
@@ -872,18 +785,19 @@ export function IbizaAnimatedModel3DViewer({
               borderColor: `${accentColor}80`,
               color: lightAccentHex,
             }}
-            className="apple-aqua-bubble-studio px-3 py-1.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1.5 border"
+            className="apple-aqua-bubble-studio px-2.5 sm:px-3 py-1.5 rounded-full text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 border"
             title="Proyectar modelo 3D en Realidad Aumentada (AR)"
           >
             <Sparkles className="w-3 h-3 shrink-0" style={{ color: accentColor }} />
-            <span>Realidad Aumentada (AR)</span>
+            <span className="sm:hidden">AR</span>
+            <span className="hidden sm:inline">Realidad Aumentada (AR)</span>
           </button>
 
           {isLiveCameraAR && (
             <button
               type="button"
               onClick={stopLiveCameraAR}
-              className="px-3 py-1.5 rounded-full bg-red-500/90 hover:bg-red-500 text-white text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 shadow-lg"
+              className="px-2.5 py-1.5 rounded-full bg-red-500/90 hover:bg-red-500 text-white text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 shadow-lg"
               title="Salir del modo Cámara AR en Vivo"
             >
               <X className="w-3 h-3 shrink-0" />
@@ -894,10 +808,10 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="apple-aqua-bubble w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/85 hover:text-white cursor-pointer shrink-0"
+            className="apple-aqua-bubble w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/85 hover:text-white cursor-pointer shrink-0 ml-auto sm:ml-0"
             title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
           >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
         </div>
       </div>
@@ -907,9 +821,12 @@ export function IbizaAnimatedModel3DViewer({
           ========================================================================= */}
       <div
         onPointerDown={(e) => e.stopPropagation()}
-        className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end gap-1.5 pointer-events-none"
+        style={{
+          right: 'max(8px, env(safe-area-inset-right, 8px))',
+        }}
+        className="absolute top-[52%] -translate-y-1/2 z-20 flex flex-col items-end gap-1 pointer-events-none"
       >
-        <div className="pointer-events-auto flex flex-col gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-black/70 backdrop-blur-xl border border-white/15 shadow-xl">
+        <div className="pointer-events-auto flex flex-col gap-1 p-1 sm:p-1.5 rounded-2xl bg-black/75 backdrop-blur-xl border border-white/15 shadow-xl">
           <button
             type="button"
             onClick={() => handleSelectCameraView('general', [20, 14, 20], [0, 2.5, 0])}
@@ -918,7 +835,7 @@ export function IbizaAnimatedModel3DViewer({
                 ? { backgroundColor: accentColor, color: '#060608' }
                 : undefined
             }
-            className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl text-[8.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeCamPresetName === 'general'
                 ? ''
                 : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -935,7 +852,7 @@ export function IbizaAnimatedModel3DViewer({
                 ? { backgroundColor: accentColor, color: '#060608' }
                 : undefined
             }
-            className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl text-[8.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeCamPresetName === 'fachada'
                 ? ''
                 : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -952,7 +869,7 @@ export function IbizaAnimatedModel3DViewer({
                 ? { backgroundColor: accentColor, color: '#060608' }
                 : undefined
             }
-            className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl text-[8.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeCamPresetName === 'interior'
                 ? ''
                 : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -969,7 +886,7 @@ export function IbizaAnimatedModel3DViewer({
                 ? { backgroundColor: accentColor, color: '#060608' }
                 : undefined
             }
-            className={`px-2.5 py-1 sm:py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl text-[8.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
               activeCamPresetName === 'piscina'
                 ? ''
                 : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -1003,17 +920,18 @@ export function IbizaAnimatedModel3DViewer({
       </div>
 
       {/* Guía táctil discreta al primer contacto */}
-      {showTouchHint && !isPortraitMobile && (
-        <div className="pointer-events-none absolute top-14 sm:top-16 left-1/2 -translate-x-1/2 z-10">
-          <div className="px-3.5 py-1 rounded-full bg-black/65 backdrop-blur-md border border-white/15 text-[10px] font-mono text-white/80 flex items-center gap-1.5 shadow-lg">
-            <Hand className="w-3 h-3" style={{ color: accentColor }} />
-            <span>Arrastra para orbitar 360° • Pellizca o usa la rueda para Zoom</span>
+      {showTouchHint && (
+        <div className="pointer-events-none absolute top-24 sm:top-16 left-1/2 -translate-x-1/2 z-10 w-max max-w-[90vw]">
+          <div className="px-3 py-1 rounded-full bg-black/65 backdrop-blur-md border border-white/15 text-[9px] sm:text-[10px] font-mono text-white/80 flex items-center gap-1.5 shadow-lg">
+            <Hand className="w-3 h-3 shrink-0" style={{ color: accentColor }} />
+            <span className="truncate">Arrastra para girar 360° • Pellizca para Zoom</span>
           </div>
         </div>
       )}
 
       {/* =========================================================================
           3. ESCENA 3D WEBGL + CÁMARA TRASERA EN VIVO PARA MODO REALIDAD AUMENTADA
+          (Activa tanto en vertical como en horizontal en iPhone 16e)
           ========================================================================= */}
       <div
         onPointerDown={() => {
@@ -1031,26 +949,25 @@ export function IbizaAnimatedModel3DViewer({
               className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
             />
             {/* Retícula arquitectónica sutil para ubicar la maqueta sobre la mesa */}
-            <div className="pointer-events-none absolute top-14 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-[10px] font-mono text-white/90 flex items-center gap-1.5 shadow-xl">
-              <Camera className="w-3 h-3" style={{ color: accentColor }} />
-              <span>Modo Maqueta AR en Vivo • Usa 1 dedo para girar y 2 dedos para escalar/mover</span>
+            <div className="pointer-events-none absolute top-24 sm:top-14 left-1/2 -translate-x-1/2 z-10 max-w-[92vw] px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-[9px] sm:text-[10px] font-mono text-white/90 flex items-center gap-1.5 shadow-xl">
+              <Camera className="w-3 h-3 shrink-0" style={{ color: accentColor }} />
+              <span className="truncate">Maqueta AR en Vivo • 1 dedo gira · 2 dedos escalan</span>
             </div>
           </>
         )}
 
-        {(!isPortraitMobile || isLiveCameraAR || isARModalOpen) && (
-          <Canvas
-            shadows={!isMobileDevice}
-            dpr={isMobileDevice ? [1, 1.35] : [1, 1.85]}
-            camera={{ position: [20, 14, 20], fov: 45 }}
-            gl={{
-              alpha: true,
-              antialias: !isMobileDevice,
-              powerPreference: 'high-performance',
-              preserveDrawingBuffer: false,
-            }}
-            className="relative z-[1]"
-          >
+        <Canvas
+          shadows={!isMobileDevice}
+          dpr={isMobileDevice ? [1, 1.35] : [1, 1.85]}
+          camera={{ position: isPortraitMobile ? [26, 18, 26] : [20, 14, 20], fov: isPortraitMobile ? 52 : 45 }}
+          gl={{
+            alpha: true,
+            antialias: !isMobileDevice,
+            powerPreference: 'high-performance',
+            preserveDrawingBuffer: false,
+          }}
+          className="relative z-[1]"
+        >
             {!isLiveCameraAR && <color attach="background" args={['#07090C']} />}
 
             <AdaptiveDpr pixelated />
@@ -1123,18 +1040,22 @@ export function IbizaAnimatedModel3DViewer({
               }}
             />
           </Canvas>
-        )}
       </div>
 
       {/* =========================================================================
-          4. CONTROLES FLOTANTES INFERIORES DE ALTA PRECISIÓN TÁCTIL (Regla 3)
+          4. CONTROLES FLOTANTES INFERIORES DE ALTA PRECISIÓN TÁCTIL (SAFE-AREA IPHONE 16e)
           ========================================================================= */}
       <div
         onPointerDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
-        className="absolute bottom-2.5 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pointer-events-none"
+        style={{
+          bottom: 'max(10px, env(safe-area-inset-bottom, 10px))',
+          left: 'max(10px, env(safe-area-inset-left, 10px))',
+          right: 'max(10px, env(safe-area-inset-right, 10px))',
+        }}
+        className="absolute z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pointer-events-none"
       >
-        <div className="pointer-events-auto flex-1 max-w-4xl mx-auto w-full px-3 py-2 sm:px-5 sm:py-3 rounded-full bg-black/80 backdrop-blur-2xl border border-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.9)] flex items-center gap-2 sm:gap-3">
+        <div className="pointer-events-auto flex-1 max-w-4xl mx-auto w-full px-2.5 py-2 sm:px-5 sm:py-3 rounded-full bg-black/80 backdrop-blur-2xl border border-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.9)] flex items-center gap-1.5 sm:gap-3">
           {/* Botón Pausar / Reanudar */}
           <button
             type="button"
@@ -1142,39 +1063,39 @@ export function IbizaAnimatedModel3DViewer({
               setIsPlaying((prev) => !prev);
               setActiveFloorMode('auto');
             }}
-            className={`${primaryBubbleClass} px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0`}
+            className={`${primaryBubbleClass} px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-mono text-[9.5px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1 sm:gap-1.5 cursor-pointer shrink-0`}
             title={isPlaying ? 'Pausar animación para inspeccionar interior' : 'Reanudar animación 360°'}
           >
             {isPlaying ? (
               <>
-                <Pause className="w-3.5 h-3.5 fill-current" />
+                <Pause className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
                 <span>Pausar</span>
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Reanudar</span>
+                <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
+                <span>Play</span>
               </>
             )}
           </button>
 
-          {/* Botón Retroceder (-1.5s) */}
+          {/* Botón Retroceder (-1.5s) — oculto en pantallas muy estrechas para dar espacio al slider */}
           <button
             type="button"
             onClick={() => handleStepTime(-1.5)}
-            className="apple-aqua-bubble w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/85 hover:text-white cursor-pointer shrink-0"
+            className="hidden sm:flex apple-aqua-bubble w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-white/85 hover:text-white cursor-pointer shrink-0"
             title="Retroceder animación (-1.5s)"
           >
             <Rewind className="w-3.5 h-3.5" />
           </button>
 
           {/* Slider interactivo táctil (action.time) sincronizado por Ref */}
-          <div className="flex-1 flex flex-col justify-center min-w-[95px]">
-            <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-mono text-white/70 mb-0.5 sm:mb-1">
-              <span className="truncate">Control de Niveles &amp; Giro 360°</span>
+          <div className="flex-1 flex flex-col justify-center min-w-[80px]">
+            <div className="flex items-center justify-between text-[8.5px] sm:text-[10px] font-mono text-white/70 mb-0.5 sm:mb-1">
+              <span className="truncate">Niveles &amp; Giro 360°</span>
               <span
                 ref={timeReadoutRef}
-                className="tabular-nums font-bold text-white ml-2 shrink-0"
+                className="tabular-nums font-bold text-white ml-1.5 shrink-0"
               >
                 0.0s / {duration.toFixed(1)}s
               </span>
@@ -1213,7 +1134,7 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={() => handleStepTime(1.5)}
-            className="apple-aqua-bubble w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/85 hover:text-white cursor-pointer shrink-0"
+            className="hidden sm:flex apple-aqua-bubble w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-white/85 hover:text-white cursor-pointer shrink-0"
             title="Adelantar animación (+1.5s)"
           >
             <FastForward className="w-3.5 h-3.5" />
@@ -1224,7 +1145,7 @@ export function IbizaAnimatedModel3DViewer({
             type="button"
             onClick={togglePlaybackSpeed}
             style={{ color: lightAccentHex }}
-            className="apple-aqua-bubble px-2.5 py-1.5 sm:py-2 rounded-full text-[10px] font-mono font-bold cursor-pointer shrink-0"
+            className="apple-aqua-bubble px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-full text-[9.5px] sm:text-[10px] font-mono font-bold cursor-pointer shrink-0"
             title="Cambiar velocidad de la animación"
           >
             {playbackSpeed}x
@@ -1234,7 +1155,7 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={handleResetCamera}
-            className="apple-aqua-bubble px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-white/90 hover:text-white font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="apple-aqua-bubble px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-white/90 hover:text-white font-mono text-[9.5px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shrink-0"
             title="Resetear cámara a la vista original"
           >
             <RotateCcw className="w-3.5 h-3.5" style={{ color: accentColor }} />

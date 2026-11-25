@@ -683,7 +683,7 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
                 </div>
 
                 {/* Bloque CTA hacia nueva pestaña */}
-                <div className="w-full lg:w-auto shrink-0 flex flex-col items-stretch sm:items-center lg:items-end gap-3">
+                <div className="w-full lg:w-auto shrink-0 flex flex-col items-stretch sm:items-center lg:items-end gap-2.5 sm:gap-3">
                   <a
                     href={activeModel3D.viewerTabUrl}
                     target="_blank"
@@ -694,11 +694,11 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
                     style={{
                       boxShadow: `0 0 40px ${primaryColor}70`,
                     }}
-                    className={`${isHaciendaF22 ? 'apple-aqua-bubble-gold text-[#060608]' : 'apple-aqua-bubble-lime text-black'} group inline-flex items-center justify-center gap-3 px-7 py-4 sm:px-9 sm:py-5 rounded-full text-xs sm:text-sm font-mono font-black uppercase tracking-[0.16em] hover:scale-[1.03] active:scale-95 transition-all cursor-pointer text-center`}
+                    className={`${isHaciendaF22 ? 'apple-aqua-bubble-gold text-[#060608]' : 'apple-aqua-bubble-lime text-black'} group w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 px-4 py-3.5 sm:px-9 sm:py-5 rounded-full text-[11px] sm:text-sm font-mono font-black uppercase tracking-[0.08em] sm:tracking-[0.16em] hover:scale-[1.03] active:scale-95 transition-all cursor-pointer text-center`}
                   >
-                    <Box className="w-5 h-5 text-black transition-transform duration-300 group-hover:rotate-12" />
-                    <span>ABRIR VISOR 3D EN NUEVA PESTAÑA</span>
-                    <ExternalLink className="w-4 h-4 text-black/80 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    <Box className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-black transition-transform duration-300 group-hover:rotate-12" />
+                    <span className="truncate">ABRIR VISOR 3D EN NUEVA PESTAÑA</span>
+                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-black/80 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </a>
 
                   <a
@@ -712,10 +712,10 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
                       borderColor: `${primaryColor}70`,
                       color: primaryHover,
                     }}
-                    className="apple-aqua-bubble-studio group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full border text-[11px] sm:text-xs font-mono font-bold uppercase tracking-[0.16em] hover:scale-[1.02] active:scale-95 transition-all cursor-pointer text-center"
+                    className="apple-aqua-bubble-studio group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:px-6 sm:py-3.5 rounded-full border text-[10px] sm:text-xs font-mono font-bold uppercase tracking-[0.08em] sm:tracking-[0.16em] hover:scale-[1.02] active:scale-95 transition-all cursor-pointer text-center"
                   >
                     <Sparkles className="w-4 h-4 shrink-0" style={{ color: primaryColor }} />
-                    <span>PROYECTAR EN REALIDAD AUMENTADA (AR)</span>
+                    <span className="truncate">PROYECTAR EN REALIDAD AUMENTADA (AR)</span>
                   </a>
 
                   <span className="text-[10px] sm:text-[11px] font-mono text-white/55 text-center lg:text-right">
