@@ -184,6 +184,7 @@ interface AnimatedIbizaBuildingProps {
   playbackSpeed: number;
   isMobileDevice: boolean;
   seekRequest: { time: number; seq: number } | null;
+  freezeRotation?: boolean;
   onDurationReady: (duration: number) => void;
   onSyncTimeDom: (time: number, duration: number) => void;
   onRegisterARBridge?: (
@@ -197,6 +198,7 @@ function AnimatedIbizaBuilding({
   playbackSpeed,
   isMobileDevice,
   seekRequest,
+  freezeRotation = false,
   onDurationReady,
   onSyncTimeDom,
   onRegisterARBridge,
@@ -317,6 +319,14 @@ function AnimatedIbizaBuilding({
   }, [onRegisterARBridge, actions, mixer, scene]);
 
   useFrame(() => {
+    if (freezeRotation) {
+      scene.traverse((node) => {
+        if (node.name && node.name.includes('Rotador_General_Obra')) {
+          node.rotation.set(0, 0, 0);
+          node.quaternion.identity();
+        }
+      });
+    }
     if (!isPlaying) return;
     const firstAction = Object.values(actions).find(
       (action): action is THREE.AnimationAction => Boolean(action)
@@ -605,8 +615,8 @@ export function IbizaAnimatedModel3DViewer({
   }, []);
 
   const startLiveCameraAR = useCallback(
-    async (pose: ARPosePreset, scalePreset: ARScalePreset) => {
-      // Ajustar pose de la maqueta (7.5s desplegada o 0s inicial)
+    async (pose: ARPosePreset, scalePreset: ARScalePreset, preferWebXR = false) => {
+      // 1. Ajustar pose de la maqueta (7.5s 100% desplegada o 0s inicial) y detener giro automático
       if (pose === 'exploded_75') {
         triggerSeek(7.5, true, 'exploded');
         applyCameraPreset('interior', [18, 16, 18], [0, 2.5, 0], 7.5);
@@ -615,7 +625,23 @@ export function IbizaAnimatedModel3DViewer({
         applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0], 0);
       }
 
-      // Escala visual relativa en cámara en vivo para simular maqueta sobre la mesa
+      // 2. Si estamos en Android Chrome y pidió WebXR nativo (ARCore), intentar sesión immersive-ar
+      if (preferWebXR && typeof navigator !== 'undefined' && 'xr' in navigator && (navigator as any).xr) {
+        try {
+          const xr = (navigator as any).xr;
+          const supported = await xr.isSessionSupported('immersive-ar');
+          if (supported) {
+            // Escala física real en metros para WebXR (1:50 = 0.02, 1:20 = 0.05, 1:1 = 1.0)
+            setLiveARScale(getARScaleFactor(scalePreset));
+            setIsLiveCameraAR(true);
+            return;
+          }
+        } catch {
+          // Continuar con Cámara AR en Vivo universal
+        }
+      }
+
+      // 3. Modo Cámara AR en Vivo Universal (Android & iOS): abre cámara trasera en 1080p con maqueta fija
       const visualScale =
         scalePreset === 'tabletop_1_50' ? 0.72 : scalePreset === 'salon_1_20' ? 0.9 : 1.15;
       setLiveARScale(visualScale);
@@ -996,6 +1022,7 @@ export function IbizaAnimatedModel3DViewer({
                   playbackSpeed={playbackSpeed}
                   isMobileDevice={isMobileDevice}
                   seekRequest={seekRequest}
+                  freezeRotation={isLiveCameraAR}
                   onDurationReady={handleDurationReady}
                   onSyncTimeDom={handleSyncTimeDom}
                   onRegisterARBridge={(fn) => {

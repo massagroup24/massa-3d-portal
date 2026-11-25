@@ -28,7 +28,7 @@ export interface ProjectARModalProps {
   /** Escena Three.js ya cargada en el visor 3D para exportar a USDZ en el estado/escala exactos */
   getPreparedARScene?: (pose: ARPosePreset, scalePreset: ARScalePreset) => Promise<THREE.Object3D | null>;
   /** Activa el modo Cámara AR en Vivo directamente sobre el lienzo 3D */
-  onStartLiveCameraAR?: (pose: ARPosePreset, scalePreset: ARScalePreset) => void;
+  onStartLiveCameraAR?: (pose: ARPosePreset, scalePreset: ARScalePreset, preferWebXR?: boolean) => void;
 }
 
 const SCALE_OPTIONS: {
@@ -240,15 +240,23 @@ export function ProjectARModal({
     }
   };
 
-  // Lanza Google Scene Viewer nativo en Android
+  // Lanza Google Scene Viewer nativo en Android usando el modelo AR pre-ensamblado (7.5s, escala maqueta, texturas JPEG/PNG estándar)
   const handleLaunchAndroidSceneViewer = () => {
     if (typeof window === 'undefined') return;
-    const absoluteGlbUrl = new URL(encodeURI(modelUrl), window.location.origin).href;
+    const isF22 =
+      projectSlug.toLowerCase().includes('f22') ||
+      projectName.toLowerCase().includes('hacienda');
+    const arGlbUrl = isF22
+      ? '/models/hacienda_f22_ar.glb'
+      : modelUrl.includes('modelo_animado')
+      ? '/models/ibiza_a14_ar.glb'
+      : modelUrl || '/models/ibiza_a14_ar.glb';
+    const absoluteGlbUrl = new URL(encodeURI(arGlbUrl), window.location.origin).href;
     const title = encodeURIComponent(`${projectName} • ${brandLabel}`);
     const fallback = encodeURIComponent(window.location.href);
     const intentUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
       absoluteGlbUrl
-    )}&mode=ar_preferred&title=${title}#Intent;scheme=https;package=com.google.android.gms;action=android.intent.action.VIEW;S.browser_fallback_url=${fallback};end;`;
+    )}&mode=ar_preferred&resizable=true&title=${title}#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${fallback};end;`;
     window.location.href = intentUrl;
   };
 
@@ -436,7 +444,46 @@ export function ProjectARModal({
             )}
 
             <div className="flex flex-col gap-2.5">
-              {/* Opción 1: Cámara AR en Vivo integrada (funciona en el 100% de dispositivos con cámara y conserva las etapas/controles) */}
+              {/* 1. BOTÓN PRINCIPAL (PRIMERO Y EN VERDE / DORADO):
+                  - En Android: Abrir en Google AR Nativo (Scene Viewer)
+                  - En iPhone / iPad / Desktop: Abrir en Apple AR Quick Look */}
+              {isAndroid ? (
+                <button
+                  type="button"
+                  onClick={handleLaunchAndroidSceneViewer}
+                  className={`${primaryBubbleClass} w-full py-3.5 px-5 rounded-2xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-xl`}
+                >
+                  <Smartphone className="w-4 h-4 shrink-0" />
+                  <span>Abrir en Google AR Nativo (Scene Viewer)</span>
+                </button>
+              ) : (
+                getPreparedARScene && (
+                  <button
+                    type="button"
+                    disabled={isExportingUsdz}
+                    onClick={handleLaunchIOSQuickLook}
+                    className={`${primaryBubbleClass} w-full py-3.5 px-5 rounded-2xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-xl disabled:opacity-50`}
+                  >
+                    {isExportingUsdz ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Generando Maqueta USDZ para Apple AR...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Smartphone className="w-4 h-4 shrink-0" />
+                        <span>
+                          {isIOS
+                            ? 'Abrir en Apple AR Quick Look (iPhone / iPad)'
+                            : 'Abrir en Apple AR Quick Look (.USDZ)'}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )
+              )}
+
+              {/* 2. BOTÓN SECUNDARIO: Cámara AR en Vivo integrada en el navegador */}
               {onStartLiveCameraAR && (
                 <button
                   type="button"
@@ -444,48 +491,10 @@ export function ProjectARModal({
                     onStartLiveCameraAR(posePreset, scalePreset);
                     onClose();
                   }}
-                  className={`${primaryBubbleClass} w-full py-3.5 px-5 rounded-2xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-xl`}
-                >
-                  <Camera className="w-4 h-4 shrink-0" />
-                  <span>Activar Cámara AR en Vivo (Maqueta Interactiva)</span>
-                </button>
-              )}
-
-              {/* Opción 2: Visor Nativo iOS (AR Quick Look USDZ) */}
-              {(isIOS || !isAndroid) && getPreparedARScene && (
-                <button
-                  type="button"
-                  disabled={isExportingUsdz}
-                  onClick={handleLaunchIOSQuickLook}
-                  className="apple-aqua-bubble w-full py-3 px-4 rounded-2xl font-mono text-[11px] font-bold uppercase tracking-wider text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {isExportingUsdz ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" style={{ color: accentColor }} />
-                      <span>Generando Maqueta USDZ para Apple AR...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Smartphone className="w-4 h-4 shrink-0" style={{ color: accentColor }} />
-                      <span>
-                        {isIOS
-                          ? 'Abrir en Apple AR Quick Look (iPhone / iPad)'
-                          : 'Exportar / Abrir Apple AR Quick Look (.USDZ)'}
-                      </span>
-                    </>
-                  )}
-                </button>
-              )}
-
-              {/* Opción 3: Visor Nativo Android (Google Scene Viewer) */}
-              {isAndroid && (
-                <button
-                  type="button"
-                  onClick={handleLaunchAndroidSceneViewer}
                   className="apple-aqua-bubble w-full py-3 px-4 rounded-2xl font-mono text-[11px] font-bold uppercase tracking-wider text-white flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Smartphone className="w-4 h-4 shrink-0" style={{ color: accentColor }} />
-                  <span>Abrir en Google AR Nativo (Scene Viewer)</span>
+                  <Camera className="w-4 h-4 shrink-0" style={{ color: accentColor }} />
+                  <span>Activar Cámara AR en Vivo (Maqueta en Navegador)</span>
                 </button>
               )}
             </div>
