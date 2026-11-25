@@ -102,10 +102,27 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
   }, [reducedMotion, minIntroDone, isLoading]);
 
   useEffect(() => {
-    const syncFullscreen = () => setFullscreen(document.fullscreenElement === stage.current);
+    const vid = video.current;
+    const syncFullscreen = () => {
+      const docAny = document as any;
+      const fsEl = document.fullscreenElement || docAny.webkitFullscreenElement;
+      setFullscreen(Boolean(fsEl && (fsEl === stage.current || fsEl === vid)));
+    };
+    const onWebkitBegin = () => setFullscreen(true);
+    const onWebkitEnd = () => setFullscreen(false);
+
     document.addEventListener('fullscreenchange', syncFullscreen);
-    return () => document.removeEventListener('fullscreenchange', syncFullscreen);
-  }, []);
+    document.addEventListener('webkitfullscreenchange', syncFullscreen as EventListener);
+    vid?.addEventListener('webkitbeginfullscreen', onWebkitBegin);
+    vid?.addEventListener('webkitendfullscreen', onWebkitEnd);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreen);
+      document.removeEventListener('webkitfullscreenchange', syncFullscreen as EventListener);
+      vid?.removeEventListener('webkitbeginfullscreen', onWebkitBegin);
+      vid?.removeEventListener('webkitendfullscreen', onWebkitEnd);
+    };
+  }, [hasVideo]);
 
   useEffect(() => {
     if (!showOutro) return;
@@ -130,8 +147,72 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
   };
 
   const toggleFullscreen = async () => {
-    if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-    else await stage.current?.requestFullscreen().catch(() => {});
+    const docAny = document as any;
+    const stageEl = stage.current as any;
+    const videoEl = video.current as any;
+    const isNativeFs = Boolean(document.fullscreenElement || docAny.webkitFullscreenElement);
+
+    if (isNativeFs || fullscreen) {
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (docAny.webkitFullscreenElement && docAny.webkitExitFullscreen) {
+          await docAny.webkitExitFullscreen();
+        } else if (videoEl?.webkitExitFullscreen) {
+          videoEl.webkitExitFullscreen();
+        }
+      } catch {
+        // Ignorar errores de salida nativa
+      }
+      try {
+        if (screen.orientation && typeof (screen.orientation as any).unlock === 'function') {
+          (screen.orientation as any).unlock();
+        }
+      } catch {
+        // Ignorar si unlock no está soportado
+      }
+      setFullscreen(false);
+      return;
+    }
+
+    // 1. Intentar Fullscreen API estándar en el contenedor (Android Chrome / Desktop)
+    if (stageEl && typeof stageEl.requestFullscreen === 'function') {
+      try {
+        await stageEl.requestFullscreen();
+        setFullscreen(true);
+        if (screen.orientation && typeof (screen.orientation as any).lock === 'function') {
+          await (screen.orientation as any).lock('landscape').catch(() => {});
+        }
+        return;
+      } catch {
+        // Continuar al fallback de video nativo o pantalla completa CSS
+      }
+    }
+
+    // 2. Intentar webkitRequestFullscreen en el contenedor
+    if (stageEl && typeof stageEl.webkitRequestFullscreen === 'function') {
+      try {
+        stageEl.webkitRequestFullscreen();
+        setFullscreen(true);
+        return;
+      } catch {
+        // Continuar al fallback de iOS video
+      }
+    }
+
+    // 3. Fallback nativo de iOS Safari / iPhone directamente sobre el elemento <video>
+    if (videoEl && typeof videoEl.webkitEnterFullscreen === 'function') {
+      try {
+        videoEl.webkitEnterFullscreen();
+        setFullscreen(true);
+        return;
+      } catch {
+        // Continuar al fallback CSS fixed inset-0
+      }
+    }
+
+    // 4. Fallback universal en caso de WebViews móviles que bloquean la API nativa
+    setFullscreen(true);
   };
 
   const replayIntro = () => {
@@ -155,11 +236,19 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
       <div
         ref={stage}
         id="project-hero-video-stage"
-        className="group relative min-h-[520px] h-[79svh] sm:h-[83svh] lg:h-[85svh] max-h-[920px] w-full overflow-hidden rounded-2xl border bg-[#060609] sm:rounded-[32px]"
-        style={{
-          borderColor: `${color}58`,
-          boxShadow: `0 30px 90px rgba(0,0,0,0.92), 0 0 65px ${color}1F`
-        }}
+        className={`group relative w-full overflow-hidden bg-[#060609] ${
+          fullscreen
+            ? 'fixed inset-0 z-[9999] h-[100dvh] min-h-0 max-h-none w-screen rounded-none border-0'
+            : 'min-h-[520px] h-[79svh] sm:h-[83svh] lg:h-[85svh] max-h-[920px] rounded-2xl border sm:rounded-[32px]'
+        }`}
+        style={
+          fullscreen
+            ? undefined
+            : {
+                borderColor: `${color}58`,
+                boxShadow: `0 30px 90px rgba(0,0,0,0.92), 0 0 65px ${color}1F`
+              }
+        }
       >
         {/* 1. CAPA DE VIDEO / IMAGEN ARQUITECTÓNICA DE FONDO */}
         {hasVideo ? (
@@ -184,7 +273,7 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
                 setProgress((video.current.currentTime / video.current.duration) * 100);
               }
             }}
-            className={`relative z-0 h-full w-full object-cover transition-all duration-[1400ms] ease-out ${
+            className={`relative z-0 h-full w-full ${fullscreen ? 'object-contain bg-black' : 'object-cover'} transition-all duration-[1400ms] ease-out ${
               isSplit ? 'scale-100 opacity-100 brightness-100 contrast-[1.04]' : 'scale-[1.07] opacity-25 brightness-60'
             }`}
             src={encodeURI(videoUrl)}
@@ -431,7 +520,7 @@ export function ProjectPresentationHero({ project, identity, renderCount, onOpen
                 type="button"
                 aria-label={fullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
                 onClick={() => void toggleFullscreen()}
-                className="ml-auto grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-full border border-white/20 bg-black/75 backdrop-blur-md text-white transition-transform hover:scale-105 cursor-pointer"
+                className="ml-auto grid h-10 w-10 sm:h-10 sm:w-10 place-items-center rounded-full border border-white/25 bg-black/80 backdrop-blur-md text-white transition-transform hover:scale-105 active:scale-95 cursor-pointer"
               >
                 {fullscreen ? <Minimize2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: hoverColor }} /> : <Maximize2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: hoverColor }} />}
               </button>

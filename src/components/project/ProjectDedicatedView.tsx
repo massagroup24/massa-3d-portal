@@ -17,7 +17,8 @@ import {
   Box,
   ExternalLink,
   Smartphone,
-  Layers
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { getProjectIdentity, resolveActiveProject3DModel, ProjectIdentity, HACIENDA_F22_RENDERS, HACIENDA_F22_ROOMS_360, ProjectRender } from '../../config/projectIdentityConfig';
 import { F22_LEVELS } from '../../data/haciendaF22Specs';
@@ -700,8 +701,25 @@ function ProjectDedicatedContent({ remoteProject, isLoading = false }: { remoteP
                     <ExternalLink className="w-4 h-4 text-black/80 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </a>
 
+                  <a
+                    href={`${activeModel3D.viewerTabUrl}?ar=1`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      trackClarityEvent(`abrir_realidad_aumentada_3d_${canonicalProject.slug}`);
+                    }}
+                    style={{
+                      borderColor: `${primaryColor}70`,
+                      color: primaryHover,
+                    }}
+                    className="apple-aqua-bubble-studio group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full border text-[11px] sm:text-xs font-mono font-bold uppercase tracking-[0.16em] hover:scale-[1.02] active:scale-95 transition-all cursor-pointer text-center"
+                  >
+                    <Sparkles className="w-4 h-4 shrink-0" style={{ color: primaryColor }} />
+                    <span>PROYECTAR EN REALIDAD AUMENTADA (AR)</span>
+                  </a>
+
                   <span className="text-[10px] sm:text-[11px] font-mono text-white/55 text-center lg:text-right">
-                    Se abre en una pestaña aislada • Carga exclusiva WebGL 3D
+                    Se abre en una pestaña aislada • Carga exclusiva WebGL 3D &amp; Realidad Aumentada
                   </span>
                 </div>
               </div>

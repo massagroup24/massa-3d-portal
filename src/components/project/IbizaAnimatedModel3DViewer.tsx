@@ -32,7 +32,16 @@ import {
   Hand,
   Smartphone,
   ArrowLeft,
+  Sparkles,
+  Camera,
+  X,
 } from 'lucide-react';
+import {
+  ProjectARModal,
+  getARScaleFactor,
+  type ARPosePreset,
+  type ARScalePreset,
+} from './ProjectARModal';
 
 export const DRACO_DECODER_URL = 'https://www.gstatic.com/draco/versioned/decoders/1.5.7/';
 export const IBIZA_MODEL_URL = '/models/modelo_animado_web_360.glb';
@@ -55,14 +64,34 @@ const extendGltfLoader = (loader: any) => {
   }));
 };
 
-// Calcula el porcentaje real de apertura de Nivel 2 (+4.5m) y Cubierta (+9.0m)
+// Calcula el porcentaje real de apertura/despliegue (alcanza el 100% estable en el segundo 7.5)
 function computeExplosionPercent(time: number, duration: number): number {
   const dur = duration || 15;
   const t = Math.max(0, Math.min(dur, time));
-  const third = dur / 3;
-  if (t <= third) return Math.round((t / third) * 100);
-  if (t <= third * 2) return 100;
-  return Math.round(Math.max(0, (1 - (t - third * 2) / third) * 100));
+  const peakStart = Math.min(7.5, dur * 0.5);
+  const peakEnd = Math.min(dur * 0.62, Math.max(peakStart + 1.0, dur - 5.0));
+  if (t <= 0.05) return 0;
+  if (t < peakStart) return Math.min(100, Math.round((t / peakStart) * 100));
+  if (t <= peakEnd) return 100;
+  return Math.round(Math.max(0, (1 - (t - peakEnd) / Math.max(0.1, dur - peakEnd)) * 100));
+}
+
+// Rota una posición de cámara base [x, y, z] según el giro acumulado de Rotador_General_Obra en el segundo `time`
+function rotateCameraPositionForTime(
+  basePosition: [number, number, number],
+  time: number,
+  duration: number
+): [number, number, number] {
+  const dur = duration > 0 ? duration : 15;
+  const angle = ((time % dur) / dur) * Math.PI * 2;
+  const [x0, y0, z0] = basePosition;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  return [
+    Number((x0 * cos + z0 * sin).toFixed(3)),
+    y0,
+    Number((-x0 * sin + z0 * cos).toFixed(3)),
+  ];
 }
 
 export interface CameraPresetTarget {
@@ -158,6 +187,9 @@ interface AnimatedIbizaBuildingProps {
   seekRequest: { time: number; seq: number } | null;
   onDurationReady: (duration: number) => void;
   onSyncTimeDom: (time: number, duration: number) => void;
+  onRegisterARBridge?: (
+    prepareFn: (pose: ARPosePreset, scalePreset: ARScalePreset) => Promise<THREE.Object3D | null>
+  ) => void;
 }
 
 function AnimatedIbizaBuilding({
@@ -168,6 +200,7 @@ function AnimatedIbizaBuilding({
   seekRequest,
   onDurationReady,
   onSyncTimeDom,
+  onRegisterARBridge,
 }: AnimatedIbizaBuildingProps) {
   const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(modelUrl, DRACO_DECODER_URL, true, extendGltfLoader);
@@ -249,6 +282,41 @@ function AnimatedIbizaBuilding({
     invalidate();
   }, [seekRequest, actions, mixer, onSyncTimeDom, invalidate]);
 
+  useEffect(() => {
+    if (!onRegisterARBridge) return;
+    onRegisterARBridge(async (pose: ARPosePreset, scalePreset: ARScalePreset) => {
+      const actionList = Object.values(actions).filter(
+        (action): action is THREE.AnimationAction => Boolean(action)
+      );
+      const targetTime = pose === 'exploded_75' ? 7.5 : 0;
+      const prevTimeScale = mixer.timeScale;
+      mixer.timeScale = 1;
+      actionList.forEach((action) => {
+        action.paused = false;
+        action.time = targetTime;
+      });
+      mixer.update(0);
+      mixer.timeScale = prevTimeScale;
+
+      // Clonar escena con las transformaciones del segundo elegido (0s o 7.5s) y enderezar Rotador_General_Obra
+      const clonedScene = scene.clone(true);
+      clonedScene.traverse((node) => {
+        if (node.name && node.name.includes('Rotador_General_Obra')) {
+          node.rotation.set(0, 0, 0);
+          node.quaternion.identity();
+        }
+      });
+
+      const arWrapper = new THREE.Group();
+      arWrapper.name = 'AR_Maqueta_Root';
+      const factor = getARScaleFactor(scalePreset);
+      arWrapper.scale.setScalar(factor);
+      arWrapper.add(clonedScene);
+      arWrapper.updateMatrixWorld(true);
+      return arWrapper;
+    });
+  }, [onRegisterARBridge, actions, mixer, scene]);
+
   useFrame(() => {
     if (!isPlaying) return;
     const firstAction = Object.values(actions).find(
@@ -314,6 +382,7 @@ function ElegantModelLoader({ accentColor = '#9CD01A' }: { accentColor?: string 
 
 export interface IbizaAnimatedModel3DViewerProps {
   projectName?: string;
+  projectSlug?: string;
   accentColor?: string;
   modelUrl?: string;
   className?: string;
@@ -323,6 +392,7 @@ export interface IbizaAnimatedModel3DViewerProps {
 
 export function IbizaAnimatedModel3DViewer({
   projectName = 'IBIZA A14',
+  projectSlug = 'ibiza-a14',
   accentColor = '#9CD01A',
   modelUrl = IBIZA_MODEL_URL,
   className = '',
@@ -341,6 +411,15 @@ export function IbizaAnimatedModel3DViewer({
   const [isMobileDevice, setIsMobileDevice] = useState<boolean>(false);
   const [isPortraitMobile, setIsPortraitMobile] = useState<boolean>(false);
   const [showTouchHint, setShowTouchHint] = useState<boolean>(true);
+  const [isARModalOpen, setIsARModalOpen] = useState<boolean>(false);
+  const [isLiveCameraAR, setIsLiveCameraAR] = useState<boolean>(false);
+  const [liveARScale, setLiveARScale] = useState<number>(1);
+
+  const arPrepareBridgeRef = useRef<
+    ((pose: ARPosePreset, scalePreset: ARScalePreset) => Promise<THREE.Object3D | null>) | null
+  >(null);
+  const arVideoRef = useRef<HTMLVideoElement | null>(null);
+  const arStreamRef = useRef<MediaStream | null>(null);
   const isGoldTheme = accentColor.toUpperCase() === '#DFC47B';
   const primaryBubbleClass = isGoldTheme ? 'apple-aqua-bubble-gold text-[#060608]' : 'apple-aqua-bubble-lime text-[#060804]';
   const metallicTextClass = isGoldTheme ? 'gold-metallic-text' : 'massa-metallic-text';
@@ -434,19 +513,64 @@ export function IbizaAnimatedModel3DViewer({
   };
 
   const applyCameraPreset = useCallback(
-    (presetName: string, position: [number, number, number], target: [number, number, number]) => {
+    (
+      presetName: string,
+      basePosition: [number, number, number],
+      target: [number, number, number],
+      atTime?: number
+    ) => {
+      const effectiveTime = typeof atTime === 'number' ? atTime : currentTimeRef.current;
+      const rotatedPos = rotateCameraPositionForTime(basePosition, effectiveTime, duration);
       setActiveCamPresetName(presetName);
       setCameraPreset((prev) => ({
-        position,
+        position: rotatedPos,
         target,
         seq: (prev?.seq || 0) + 1,
       }));
     },
-    []
+    [duration]
+  );
+
+  // Selecciona una vista arquitectónica lateral con lógica de estado (pausa en 7.5s cuando se requiere ver la obra desplegada)
+  const handleSelectCameraView = useCallback(
+    (
+      presetName: 'general' | 'fachada' | 'interior' | 'piscina',
+      basePosition: [number, number, number],
+      target: [number, number, number]
+    ) => {
+      if (presetName === 'interior') {
+        // Planta 3D / Interior siempre se pausa en el segundo 7.5 donde todos los elementos ya se acomodaron al 100%
+        triggerSeek(7.5, true, 'exploded');
+        applyCameraPreset('interior', basePosition, target, 7.5);
+        return;
+      }
+
+      // En Hacienda Club F22 (secuencia constructiva), si está antes de 7.5s o desensamblándose (>10.5s),
+      // llevamos la obra al segundo 7.5 para que la fachada, piscina o isometría se vean 100% construidas y acomodadas.
+      const cur = currentTimeRef.current;
+      if (isGoldTheme && (cur < 7.4 || cur > 10.5)) {
+        triggerSeek(7.5, true, 'exploded');
+        applyCameraPreset(presetName, basePosition, target, 7.5);
+        return;
+      }
+
+      // En Ibiza A14, al pedir Fachada o Piscina si está en giro automático, pausamos en el estado actual (o 0s para fachada cerrada)
+      if (!isGoldTheme && presetName === 'fachada' && isPlaying) {
+        triggerSeek(0, true, 'closed');
+        applyCameraPreset('fachada', basePosition, target, 0);
+        return;
+      }
+
+      setIsPlaying(false);
+      applyCameraPreset(presetName, basePosition, target, cur);
+    },
+    [applyCameraPreset, isGoldTheme, isPlaying, triggerSeek]
   );
 
   const handleResetCamera = () => {
-    applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0]);
+    triggerSeek(0, false, 'auto');
+    setIsPlaying(true);
+    applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0], 0);
   };
 
   const handleZoomStep = (delta: number) => {
@@ -487,6 +611,69 @@ export function IbizaAnimatedModel3DViewer({
     setPlaybackSpeed((prev) => (prev === 1 ? 0.5 : prev === 0.5 ? 1.5 : 1));
   };
 
+  const stopLiveCameraAR = useCallback(() => {
+    if (arStreamRef.current) {
+      arStreamRef.current.getTracks().forEach((t) => t.stop());
+      arStreamRef.current = null;
+    }
+    setIsLiveCameraAR(false);
+    setLiveARScale(1);
+  }, []);
+
+  const startLiveCameraAR = useCallback(
+    async (pose: ARPosePreset, scalePreset: ARScalePreset) => {
+      // Ajustar pose de la maqueta (7.5s desplegada o 0s inicial)
+      if (pose === 'exploded_75') {
+        triggerSeek(7.5, true, 'exploded');
+        applyCameraPreset('interior', [18, 16, 18], [0, 2.5, 0], 7.5);
+      } else {
+        triggerSeek(0, true, 'closed');
+        applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0], 0);
+      }
+
+      // Escala visual relativa en cámara en vivo para simular maqueta sobre la mesa
+      const visualScale =
+        scalePreset === 'tabletop_1_50' ? 0.72 : scalePreset === 'salon_1_20' ? 0.9 : 1.15;
+      setLiveARScale(visualScale);
+      setIsLiveCameraAR(true);
+
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            },
+            audio: false,
+          });
+          arStreamRef.current = stream;
+          if (arVideoRef.current) {
+            arVideoRef.current.srcObject = stream;
+            await arVideoRef.current.play().catch(() => {});
+          }
+        }
+      } catch (err) {
+        console.warn('No se pudo acceder a la cámara trasera para AR en vivo:', err);
+      }
+    },
+    [applyCameraPreset, triggerSeek]
+  );
+
+  // Si la URL incluye ?ar=1 (por ejemplo al escanear el código QR desde el celular), abrir automáticamente el asistente AR
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ar') === '1') {
+      setIsARModalOpen(true);
+    }
+    return () => {
+      if (arStreamRef.current) {
+        arStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -508,8 +695,9 @@ export function IbizaAnimatedModel3DViewer({
     >
       {/* =========================================================================
           BLOQUEO OBLIGATORIO DE ORIENTACIÓN HORIZONTAL EN DISPOSITIVOS MÓVILES
+          (Se desactiva cuando el usuario está en Modo Cámara AR en Vivo o con el modal AR abierto)
           ========================================================================= */}
-      {isPortraitMobile && (
+      {isPortraitMobile && !isLiveCameraAR && !isARModalOpen && (
         <div className="fixed inset-0 z-[100] bg-[#06080B]/98 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none">
           <div
             aria-hidden="true"
@@ -624,13 +812,16 @@ export function IbizaAnimatedModel3DViewer({
         <div className="flex items-center gap-1.5 pointer-events-auto overflow-x-auto no-scrollbar max-w-full">
           <button
             type="button"
-            onClick={() => triggerSeek(0, true, 'closed')}
+            onClick={() => {
+              triggerSeek(0, true, 'closed');
+              applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0], 0);
+            }}
             className={`px-3 py-1.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all ${
               activeFloorMode === 'closed' && !isPlaying
                 ? `${primaryBubbleClass} font-black`
                 : 'apple-aqua-bubble text-white/85 hover:text-white'
             }`}
-            title="Cerrar todos los pisos y pausar para ver fachada exterior"
+            title="Ir al segundo 0.0s (0%) y enfocar vista general"
           >
             Cerrado (0%)
           </button>
@@ -638,8 +829,8 @@ export function IbizaAnimatedModel3DViewer({
           <button
             type="button"
             onClick={() => {
-              triggerSeek(6.5, true, 'exploded');
-              applyCameraPreset('interior', [15, 20, 15], [0, 3.8, 0]);
+              triggerSeek(7.5, true, 'exploded');
+              applyCameraPreset('interior', [14, 22, 14], [0, 3.5, 0], 7.5);
             }}
             style={
               !(activeFloorMode === 'exploded' && !isPlaying)
@@ -651,7 +842,7 @@ export function IbizaAnimatedModel3DViewer({
                 ? `${primaryBubbleClass} font-black`
                 : 'apple-aqua-bubble-studio'
             }`}
-            title="Pausar en vista abierta y enfocar cámara al interior"
+            title="Pausar en el segundo 7.5s (100% acomodado) y enfocar cámara al interior"
           >
             <Eye className="w-3 h-3 shrink-0" />
             <span>Ver Interior (100%)</span>
@@ -676,6 +867,32 @@ export function IbizaAnimatedModel3DViewer({
 
           <button
             type="button"
+            onClick={() => setIsARModalOpen(true)}
+            style={{
+              borderColor: `${accentColor}80`,
+              color: lightAccentHex,
+            }}
+            className="apple-aqua-bubble-studio px-3 py-1.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1.5 border"
+            title="Proyectar modelo 3D en Realidad Aumentada (AR)"
+          >
+            <Sparkles className="w-3 h-3 shrink-0" style={{ color: accentColor }} />
+            <span>Realidad Aumentada (AR)</span>
+          </button>
+
+          {isLiveCameraAR && (
+            <button
+              type="button"
+              onClick={stopLiveCameraAR}
+              className="px-3 py-1.5 rounded-full bg-red-500/90 hover:bg-red-500 text-white text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer shrink-0 transition-all flex items-center gap-1 shadow-lg"
+              title="Salir del modo Cámara AR en Vivo"
+            >
+              <X className="w-3 h-3 shrink-0" />
+              <span>Salir AR</span>
+            </button>
+          )}
+
+          <button
+            type="button"
             onClick={toggleFullscreen}
             className="apple-aqua-bubble w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/85 hover:text-white cursor-pointer shrink-0"
             title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
@@ -695,7 +912,7 @@ export function IbizaAnimatedModel3DViewer({
         <div className="pointer-events-auto flex flex-col gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-black/70 backdrop-blur-xl border border-white/15 shadow-xl">
           <button
             type="button"
-            onClick={() => applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0])}
+            onClick={() => handleSelectCameraView('general', [20, 14, 20], [0, 2.5, 0])}
             style={
               activeCamPresetName === 'general'
                 ? { backgroundColor: accentColor, color: '#060608' }
@@ -712,7 +929,7 @@ export function IbizaAnimatedModel3DViewer({
           </button>
           <button
             type="button"
-            onClick={() => applyCameraPreset('fachada', [0, 7.5, 25], [0, 3, 0])}
+            onClick={() => handleSelectCameraView('fachada', [0, 7.5, 25], [0, 3, 0])}
             style={
               activeCamPresetName === 'fachada'
                 ? { backgroundColor: accentColor, color: '#060608' }
@@ -729,7 +946,7 @@ export function IbizaAnimatedModel3DViewer({
           </button>
           <button
             type="button"
-            onClick={() => applyCameraPreset('interior', [14, 22, 14], [0, 3.5, 0])}
+            onClick={() => handleSelectCameraView('interior', [14, 22, 14], [0, 3.5, 0])}
             style={
               activeCamPresetName === 'interior'
                 ? { backgroundColor: accentColor, color: '#060608' }
@@ -740,13 +957,13 @@ export function IbizaAnimatedModel3DViewer({
                 ? ''
                 : 'text-white/75 hover:text-white hover:bg-white/10'
             }`}
-            title="Vista elevada para inspeccionar distribución interior"
+            title="Pausar en 7.5s y elevar cámara para inspeccionar distribución interior"
           >
             Planta 3D
           </button>
           <button
             type="button"
-            onClick={() => applyCameraPreset('piscina', [-19, 9.5, -19], [0, 2.5, 0])}
+            onClick={() => handleSelectCameraView('piscina', [-19, 9.5, -19], [0, 2.5, 0])}
             style={
               activeCamPresetName === 'piscina'
                 ? { backgroundColor: accentColor, color: '#060608' }
@@ -796,32 +1013,51 @@ export function IbizaAnimatedModel3DViewer({
       )}
 
       {/* =========================================================================
-          3. ESCENA 3D WEBGL (PAUSADA SI EL MÓVIL ESTÁ EN VERTICAL)
+          3. ESCENA 3D WEBGL + CÁMARA TRASERA EN VIVO PARA MODO REALIDAD AUMENTADA
           ========================================================================= */}
       <div
         onPointerDown={() => {
           if (showTouchHint) setShowTouchHint(false);
         }}
-        className="w-full h-full cursor-grab active:cursor-grabbing"
+        className="relative w-full h-full cursor-grab active:cursor-grabbing"
       >
-        {!isPortraitMobile && (
+        {isLiveCameraAR && (
+          <>
+            <video
+              ref={arVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
+            />
+            {/* Retícula arquitectónica sutil para ubicar la maqueta sobre la mesa */}
+            <div className="pointer-events-none absolute top-14 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-[10px] font-mono text-white/90 flex items-center gap-1.5 shadow-xl">
+              <Camera className="w-3 h-3" style={{ color: accentColor }} />
+              <span>Modo Maqueta AR en Vivo • Usa 1 dedo para girar y 2 dedos para escalar/mover</span>
+            </div>
+          </>
+        )}
+
+        {(!isPortraitMobile || isLiveCameraAR) && (
           <Canvas
             shadows={!isMobileDevice}
             dpr={isMobileDevice ? [1, 1.35] : [1, 1.85]}
             camera={{ position: [20, 14, 20], fov: 45 }}
             gl={{
+              alpha: true,
               antialias: !isMobileDevice,
               powerPreference: 'high-performance',
               preserveDrawingBuffer: false,
             }}
+            className="relative z-[1]"
           >
-            <color attach="background" args={['#07090C']} />
+            {!isLiveCameraAR && <color attach="background" args={['#07090C']} />}
 
             <AdaptiveDpr pixelated />
             <AdaptiveEvents />
 
             {/* Iluminación y Entorno Arquitectónico (Regla 4) */}
-            <ambientLight intensity={isMobileDevice ? 0.65 : 0.45} />
+            <ambientLight intensity={isLiveCameraAR ? 0.85 : isMobileDevice ? 0.65 : 0.45} />
             <directionalLight
               position={[18, 28, 16]}
               intensity={1.6}
@@ -836,15 +1072,20 @@ export function IbizaAnimatedModel3DViewer({
 
             {/* Modelo 3D envuelto en Suspense con Center top (Regla 5) */}
             <Suspense fallback={<ElegantModelLoader accentColor={accentColor} />}>
-              <AnimatedIbizaBuilding
-                modelUrl={modelUrl}
-                isPlaying={isPlaying}
-                playbackSpeed={playbackSpeed}
-                isMobileDevice={isMobileDevice}
-                seekRequest={seekRequest}
-                onDurationReady={handleDurationReady}
-                onSyncTimeDom={handleSyncTimeDom}
-              />
+              <group scale={liveARScale}>
+                <AnimatedIbizaBuilding
+                  modelUrl={modelUrl}
+                  isPlaying={isPlaying}
+                  playbackSpeed={playbackSpeed}
+                  isMobileDevice={isMobileDevice}
+                  seekRequest={seekRequest}
+                  onDurationReady={handleDurationReady}
+                  onSyncTimeDom={handleSyncTimeDom}
+                  onRegisterARBridge={(fn) => {
+                    arPrepareBridgeRef.current = fn;
+                  }}
+                />
+              </group>
             </Suspense>
 
             {/* ContactShadows horneado (frames={1}) en y={-0.01} */}
@@ -1001,6 +1242,21 @@ export function IbizaAnimatedModel3DViewer({
           </button>
         </div>
       </div>
+
+      {/* Modal de Realidad Aumentada (iOS AR Quick Look, Android Scene Viewer, Cámara AR en Vivo y Puente QR) */}
+      <ProjectARModal
+        isOpen={isARModalOpen}
+        onClose={() => setIsARModalOpen(false)}
+        projectName={projectName}
+        projectSlug={projectSlug}
+        accentColor={accentColor}
+        modelUrl={modelUrl}
+        getPreparedARScene={async (pose, scalePreset) => {
+          if (!arPrepareBridgeRef.current) return null;
+          return arPrepareBridgeRef.current(pose, scalePreset);
+        }}
+        onStartLiveCameraAR={startLiveCameraAR}
+      />
     </div>
   );
 }
@@ -1048,6 +1304,7 @@ export function IbizaStandalone3DPage() {
     <main className="w-screen h-[100dvh] bg-[#050608] overflow-hidden select-none">
       <IbizaAnimatedModel3DViewer
         projectName={resolved3D.name}
+        projectSlug={resolved3D.slug}
         accentColor={resolved3D.accentColor}
         modelUrl={resolved3D.modelUrl}
         fullViewport={true}
