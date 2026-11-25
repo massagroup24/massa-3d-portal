@@ -188,7 +188,11 @@ interface AnimatedIbizaBuildingProps {
   onDurationReady: (duration: number) => void;
   onSyncTimeDom: (time: number, duration: number) => void;
   onRegisterARBridge?: (
-    prepareFn: (pose: ARPosePreset, scalePreset: ARScalePreset) => Promise<THREE.Object3D | null>
+    prepareFn: (
+      pose: ARPosePreset,
+      scalePreset: ARScalePreset,
+      exactTimeSec?: number
+    ) => Promise<THREE.Object3D | null>
   ) => void;
 }
 
@@ -285,37 +289,48 @@ function AnimatedIbizaBuilding({
 
   useEffect(() => {
     if (!onRegisterARBridge) return;
-    onRegisterARBridge(async (pose: ARPosePreset, scalePreset: ARScalePreset) => {
-      const actionList = Object.values(actions).filter(
-        (action): action is THREE.AnimationAction => Boolean(action)
-      );
-      const targetTime = pose === 'exploded_75' ? 7.5 : 0;
-      const prevTimeScale = mixer.timeScale;
-      mixer.timeScale = 1;
-      actionList.forEach((action) => {
-        action.paused = false;
-        action.time = targetTime;
-      });
-      mixer.update(0);
-      mixer.timeScale = prevTimeScale;
+    onRegisterARBridge(
+      async (pose: ARPosePreset, scalePreset: ARScalePreset, exactTimeSec?: number) => {
+        const actionList = Object.values(actions).filter(
+          (action): action is THREE.AnimationAction => Boolean(action)
+        );
+        const targetTime =
+          typeof exactTimeSec === 'number'
+            ? exactTimeSec
+            : pose === 'exploded_75'
+            ? 7.5
+            : pose === 'mid_45'
+            ? 4.5
+            : pose === 'semi_22'
+            ? 2.2
+            : 0;
+        const prevTimeScale = mixer.timeScale;
+        mixer.timeScale = 1;
+        actionList.forEach((action) => {
+          action.paused = false;
+          action.time = targetTime;
+        });
+        mixer.update(0);
+        mixer.timeScale = prevTimeScale;
 
-      // Clonar escena con las transformaciones del segundo elegido (0s o 7.5s) y enderezar Rotador_General_Obra
-      const clonedScene = scene.clone(true);
-      clonedScene.traverse((node) => {
-        if (node.name && node.name.includes('Rotador_General_Obra')) {
-          node.rotation.set(0, 0, 0);
-          node.quaternion.identity();
-        }
-      });
+        // Clonar escena con las transformaciones exactas del segundo elegido y enderezar Rotador_General_Obra
+        const clonedScene = scene.clone(true);
+        clonedScene.traverse((node) => {
+          if (node.name && node.name.includes('Rotador_General_Obra')) {
+            node.rotation.set(0, 0, 0);
+            node.quaternion.identity();
+          }
+        });
 
-      const arWrapper = new THREE.Group();
-      arWrapper.name = 'AR_Maqueta_Root';
-      const factor = getARScaleFactor(scalePreset);
-      arWrapper.scale.setScalar(factor);
-      arWrapper.add(clonedScene);
-      arWrapper.updateMatrixWorld(true);
-      return arWrapper;
-    });
+        const arWrapper = new THREE.Group();
+        arWrapper.name = 'AR_Maqueta_Root';
+        const factor = getARScaleFactor(scalePreset);
+        arWrapper.scale.setScalar(factor);
+        arWrapper.add(clonedScene);
+        arWrapper.updateMatrixWorld(true);
+        return arWrapper;
+      }
+    );
   }, [onRegisterARBridge, actions, mixer, scene]);
 
   useFrame(() => {
@@ -425,7 +440,11 @@ export function IbizaAnimatedModel3DViewer({
   const [liveARScale, setLiveARScale] = useState<number>(1);
 
   const arPrepareBridgeRef = useRef<
-    ((pose: ARPosePreset, scalePreset: ARScalePreset) => Promise<THREE.Object3D | null>) | null
+    ((
+      pose: ARPosePreset,
+      scalePreset: ARScalePreset,
+      exactTimeSec?: number
+    ) => Promise<THREE.Object3D | null>) | null
   >(null);
   const arVideoRef = useRef<HTMLVideoElement | null>(null);
   const arStreamRef = useRef<MediaStream | null>(null);
@@ -615,35 +634,35 @@ export function IbizaAnimatedModel3DViewer({
   }, []);
 
   const startLiveCameraAR = useCallback(
-    async (pose: ARPosePreset, scalePreset: ARScalePreset, preferWebXR = false) => {
-      // 1. Ajustar pose de la maqueta (7.5s 100% desplegada o 0s inicial) y detener giro automático
-      if (pose === 'exploded_75') {
-        triggerSeek(7.5, true, 'exploded');
-        applyCameraPreset('interior', [18, 16, 18], [0, 2.5, 0], 7.5);
+    async (pose: ARPosePreset, scalePreset: ARScalePreset, exactTimeSec?: number) => {
+      const targetTime =
+        typeof exactTimeSec === 'number'
+          ? exactTimeSec
+          : pose === 'exploded_75'
+          ? 7.5
+          : pose === 'mid_45'
+          ? 4.5
+          : pose === 'semi_22'
+          ? 2.2
+          : 0;
+
+      if (targetTime >= 2.0) {
+        triggerSeek(targetTime, true, 'exploded');
+        applyCameraPreset('interior', [18, 16, 18], [0, 2.5, 0], targetTime);
       } else {
         triggerSeek(0, true, 'closed');
         applyCameraPreset('general', [20, 14, 20], [0, 2.5, 0], 0);
       }
 
-      // 2. Si estamos en Android Chrome y pidió WebXR nativo (ARCore), intentar sesión immersive-ar
-      if (preferWebXR && typeof navigator !== 'undefined' && 'xr' in navigator && (navigator as any).xr) {
-        try {
-          const xr = (navigator as any).xr;
-          const supported = await xr.isSessionSupported('immersive-ar');
-          if (supported) {
-            // Escala física real en metros para WebXR (1:50 = 0.02, 1:20 = 0.05, 1:1 = 1.0)
-            setLiveARScale(getARScaleFactor(scalePreset));
-            setIsLiveCameraAR(true);
-            return;
-          }
-        } catch {
-          // Continuar con Cámara AR en Vivo universal
-        }
-      }
-
-      // 3. Modo Cámara AR en Vivo Universal (Android & iOS): abre cámara trasera en 1080p con maqueta fija
+      // Escala visual relativa en cámara en vivo según el tamaño elegido
       const visualScale =
-        scalePreset === 'tabletop_1_50' ? 0.72 : scalePreset === 'salon_1_20' ? 0.9 : 1.15;
+        scalePreset === 'desk_1_75'
+          ? 0.55
+          : scalePreset === 'tabletop_1_50'
+          ? 0.75
+          : scalePreset === 'salon_1_20'
+          ? 0.95
+          : 1.2;
       setLiveARScale(visualScale);
       setIsLiveCameraAR(true);
 
@@ -1199,16 +1218,17 @@ export function IbizaAnimatedModel3DViewer({
         projectSlug={projectSlug}
         accentColor={accentColor}
         modelUrl={modelUrl}
-        getPreparedARScene={async (pose, scalePreset) => {
-          // Si el modelo .glb aún se está descargando en <Suspense> (ej. al entrar en vertical o con ?ar=1),
-          // esperamos hasta que AnimatedIbizaBuilding termine de montar y registre el puente AR.
+        onPreviewTimeChange={(timeSec) => {
+          triggerSeek(timeSec, true, timeSec >= 2 ? 'exploded' : 'closed');
+        }}
+        getPreparedARScene={async (pose, scalePreset, exactTimeSec) => {
           let attempts = 0;
           while (!arPrepareBridgeRef.current && attempts < 100) {
             await new Promise((r) => setTimeout(r, 150));
             attempts++;
           }
           if (!arPrepareBridgeRef.current) return null;
-          return arPrepareBridgeRef.current(pose, scalePreset);
+          return arPrepareBridgeRef.current(pose, scalePreset, exactTimeSec);
         }}
         onStartLiveCameraAR={startLiveCameraAR}
       />
